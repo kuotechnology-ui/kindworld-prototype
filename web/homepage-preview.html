@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KindWorld - Transform Kindness into Impact</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            background: #F9F9F9;
+            color: #000;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: #fff;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav a {
+            color: #000;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: #4A90E2;
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4A90E2, #357ABD);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Month Selector */
+        .month-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .month-pill {
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            background: #fff;
+            border: 2px solid #E0E0E0;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .month-pill.active {
+            background: #000;
+            color: #fff;
+            border-color: #000;
+        }
+
+        .month-pill:hover {
+            border-color: #4A90E2;
+        }
+
+        /* Points Card */
+        .points-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .points-number {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 0.5rem;
+        }
+
+        .points-label {
+            font-size: 1.25rem;
+            color: #757575;
+            margin-bottom: 1rem;
+        }
+
+        .growth-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4CAF50;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .exchange-link {
+            color: #4A90E2;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .exchange-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(180deg, #E3F2FD 0%, #fff 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-line {
+            position: absolute;
+            bottom: 20%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4A90E2 0%, #7AB8FF 100%);
+            transform: translateY(-50%);
+        }
+
+        .chart-line::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(180deg, rgba(74, 144, 226, 0.1) 0%, transparent 100%);
+            bottom: 0;
+        }
+
+        /* Leaderboard */
+        .leaderboard-section {
+            background: #fff;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .leaderboard-item:hover {
+            background: #F5F5F5;
+        }
+
+        .rank {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #757575;
+            min-width: 30px;
+        }
+
+        .rank.top {
+            color: #FFD700;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4A90E2, #357ABD);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-points {
+            color: #757575;
+            font-size: 0.9rem;
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-top: 1px solid #E0E0E0;
+            display: flex;
+            justify-content: space-around;
+            padding: 1rem;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: #757575;
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: #000;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                padding-bottom: 5rem;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+
+            .nav {
+                display: none;
+            }
+
+            .points-number {
+                font-size: 3rem;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .bottom-nav {
+                display: none;
+            }
+        }
+
+        /* Language Selector */
+        .language-selector {
+            position: relative;
+            display: inline-block;
+        }
+
+        .language-btn {
+            background: #fff;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .language-btn:hover {
+            border-color: #4A90E2;
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #fff;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            min-width: 200px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .language-dropdown.show {
+            display: block;
+        }
+
+        .language-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #F0F0F0;
+        }
+
+        .language-option:last-child {
+            border-bottom: none;
+        }
+
+        .language-option:hover {
+            background: #F5F5F5;
+        }
+
+        .language-option.active {
+            background: #4A90E2;
+            color: #fff;
+        }
+
+        /* Statistics Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4A90E2;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #757575;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            color: #4CAF50;
+        }
+
+        .stat-change.negative {
+            color: #F44336;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1rem;
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #hoursChart {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">KindWorld</div>
+        <nav class="nav">
+            <a href="#home" data-translate="nav.home">Home</a>
+            <a href="#missions" data-translate="nav.missions">Missions</a>
+            <a href="#badges" data-translate="nav.badges">Badges</a>
+            <a href="#leaderboard" data-translate="nav.leaderboard">Leaderboard</a>
+            <div class="language-selector">
+                <div class="language-btn" onclick="toggleLanguageDropdown()">
+                    <span id="current-language">🇺🇸 EN</span>
+                    <span>▼</span>
+                </div>
+                <div class="language-dropdown" id="language-dropdown">
+                    <div class="language-option active" onclick="changeLanguage('en')">🇺🇸 English</div>
+                    <div class="language-option" onclick="changeLanguage('id')">🇮🇩 Bahasa Indonesia</div>
+                    <div class="language-option" onclick="changeLanguage('zh-cn')">🇨🇳 简体中文</div>
+                    <div class="language-option" onclick="changeLanguage('zh-tw')">🇹🇼 繁體中文</div>
+                </div>
+            </div>
+            <div class="profile-avatar">AC</div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Month Selector -->
+        <div class="month-selector">
+            <div class="month-pill">Dec 2025</div>
+            <div class="month-pill">Nov 2025</div>
+            <div class="month-pill active">Oct 2025</div>
+            <div class="month-pill">Sept 2025</div>
+            <div class="month-pill">Aug 2025</div>
+        </div>
+
+        <!-- Points Card -->
+        <div class="points-card">
+            <div class="points-number">530</div>
+            <div class="points-label" data-translate="points.label">Volunteer Hours Completed</div>
+            <div class="growth-indicator">
+                <span>↑</span>
+                <span data-translate="points.growth">+20% month over month</span>
+            </div>
+            <a href="#badges" class="exchange-link" data-translate="points.badges">View Badges & Milestones →</a>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">530</div>
+                <div class="stat-label" data-translate="stats.totalHours">Total Hours</div>
+                <div class="stat-change positive">+45 this month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">23</div>
+                <div class="stat-label" data-translate="stats.projects">Projects Completed</div>
+                <div class="stat-change positive">+3 this month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">12</div>
+                <div class="stat-label" data-translate="stats.organizations">Organizations Helped</div>
+                <div class="stat-change positive">+2 this month</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4.9</div>
+                <div class="stat-label" data-translate="stats.rating">Average Rating</div>
+                <div class="stat-change positive">+0.2 this month</div>
+            </div>
+        </div>
+
+        <!-- Points Chart -->
+        <div class="chart-section">
+            <h2 class="chart-title" data-translate="chart.title">Hours Statement</h2>
+            <div class="chart-container">
+                <canvas id="hoursChart" width="800" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard-section">
+            <h2 class="section-title" data-translate="leaderboard.title">Leaderboard</h2>
+            
+            <div class="leaderboard-item">
+                <div class="rank top">1</div>
+                <div class="avatar">SM</div>
+                <div class="user-info">
+                    <div class="user-name">Sarah Martinez</div>
+                    <div class="user-points">1,230 <span data-translate="leaderboard.hours">hours</span></div>
+                </div>
+            </div>
+
+            <div class="leaderboard-item">
+                <div class="rank top">2</div>
+                <div class="avatar">JC</div>
+                <div class="user-info">
+                    <div class="user-name">James Chen</div>
+                    <div class="user-points">1,180 <span data-translate="leaderboard.hours">hours</span></div>
+                </div>
+            </div>
+
+            <div class="leaderboard-item">
+                <div class="rank top">3</div>
+                <div class="avatar">EP</div>
+                <div class="user-info">
+                    <div class="user-name">Emma Patel</div>
+                    <div class="user-points">950 <span data-translate="leaderboard.hours">hours</span></div>
+                </div>
+            </div>
+
+            <div class="leaderboard-item">
+                <div class="rank">4</div>
+                <div class="avatar">AC</div>
+                <div class="user-info">
+                    <div class="user-name">Alex Chen (<span data-translate="leaderboard.you">You</span>)</div>
+                    <div class="user-points">530 <span data-translate="leaderboard.hours">hours</span></div>
+                </div>
+            </div>
+
+            <div class="leaderboard-item">
+                <div class="rank">5</div>
+                <div class="avatar">MJ</div>
+                <div class="user-info">
+                    <div class="user-name">Maria Johnson</div>
+                    <div class="user-points">420 <span data-translate="leaderboard.hours">hours</span></div>
+                </div>
+            </div>
+
+            <div class="leaderboard-item">
+                <div class="rank">6</div>
+                <div class="avatar">DK</div>
+                <div class="user-info">
+                    <div class="user-name">David Kim</div>
+                    <div class="user-points">390 <span data-translate="leaderboard.hours">hours</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="#home" class="nav-item active">
+            <svg class="nav-icon" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span data-translate="nav.home">Home</span>
+        </a>
+        <a href="#search" class="nav-item">
+            <svg class="nav-icon" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <span data-translate="nav.search">Search</span>
+        </a>
+        <a href="#activity" class="nav-item">
+            <svg class="nav-icon" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+            <span data-translate="nav.activity">Activity</span>
+        </a>
+        <a href="#profile" class="nav-item">
+            <svg class="nav-icon" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span data-translate="nav.profile">Profile</span>
+        </a>
+    </nav>
+
+    <script>
+        // Language translations
+        const translations = {
+            'en': {
+                'nav.home': 'Home',
+                'nav.missions': 'Missions',
+                'nav.badges': 'Badges',
+                'nav.leaderboard': 'Leaderboard',
+                'nav.search': 'Search',
+                'nav.activity': 'Activity',
+                'nav.profile': 'Profile',
+                'points.label': 'Volunteer Hours Completed',
+                'points.growth': '+20% month over month',
+                'points.badges': 'View Badges & Milestones →',
+                'chart.title': 'Hours Statement',
+                'chart.description': '30-day volunteer hours visualization',
+                'leaderboard.title': 'Leaderboard',
+                'leaderboard.hours': 'hours',
+                'leaderboard.you': 'You'
+            },
+            'id': {
+                'nav.home': 'Beranda',
+                'nav.missions': 'Misi',
+                'nav.badges': 'Lencana',
+                'nav.leaderboard': 'Papan Peringkat',
+                'nav.search': 'Cari',
+                'nav.activity': 'Aktivitas',
+                'nav.profile': 'Profil',
+                'points.label': 'Jam Sukarela Selesai',
+                'points.growth': '+20% bulan ke bulan',
+                'points.badges': 'Lihat Lencana & Pencapaian →',
+                'chart.title': 'Laporan Jam',
+                'chart.description': 'Visualisasi jam sukarela 30 hari',
+                'leaderboard.title': 'Papan Peringkat',
+                'leaderboard.hours': 'jam',
+                'leaderboard.you': 'Anda'
+            },
+            'zh-cn': {
+                'nav.home': '首页',
+                'nav.missions': '任务',
+                'nav.badges': '徽章',
+                'nav.leaderboard': '排行榜',
+                'nav.search': '搜索',
+                'nav.activity': '活动',
+                'nav.profile': '个人资料',
+                'points.label': '志愿服务小时完成',
+                'points.growth': '+20% 月环比',
+                'points.badges': '查看徽章和里程碑 →',
+                'chart.title': '小时报表',
+                'chart.description': '30天志愿服务小时可视化',
+                'leaderboard.title': '排行榜',
+                'leaderboard.hours': '小时',
+                'leaderboard.you': '您'
+            },
+            'zh-tw': {
+                'nav.home': '首頁',
+                'nav.missions': '任務',
+                'nav.badges': '徽章',
+                'nav.leaderboard': '排行榜',
+                'nav.search': '搜尋',
+                'nav.activity': '活動',
+                'nav.profile': '個人資料',
+                'points.label': '志願服務小時完成',
+                'points.growth': '+20% 月環比',
+                'points.badges': '查看徽章和里程碑 →',
+                'chart.title': '小時報表',
+                'chart.description': '30天志願服務小時視覺化',
+                'leaderboard.title': '排行榜',
+                'leaderboard.hours': '小時',
+                'leaderboard.you': '您'
+            }
+        };
+
+        let currentLanguage = 'en';
+
+        function toggleLanguageDropdown() {
+            const dropdown = document.getElementById('language-dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update current language display
+            const languageFlags = {
+                'en': '🇺🇸 EN',
+                'id': '🇮🇩 ID',
+                'zh-cn': '🇨🇳 简',
+                'zh-tw': '🇹🇼 繁'
+            };
+            
+            document.getElementById('current-language').textContent = languageFlags[lang];
+            
+            // Update active language option
+            document.querySelectorAll('.language-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Translate all elements
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+            
+            // Close dropdown
+            document.getElementById('language-dropdown').classList.remove('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const languageSelector = document.querySelector('.language-selector');
+            if (!languageSelector.contains(event.target)) {
+                document.getElementById('language-dropdown').classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
