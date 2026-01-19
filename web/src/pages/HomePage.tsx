@@ -1,29 +1,26 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import LanguageSelector from '../components/LanguageSelector'
 
 export default function HomePage() {
-  const { t } = useTranslation()
   const [currentSlide, setCurrentSlide] = useState(0)
 
   const heroImages = [
     {
       url: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1920&q=90&auto=format&fit=crop',
-      titleKey: 'home.hero1Title',
-      subtitleKey: 'home.hero1Subtitle',
+      title: 'Empower Communities',
+      subtitle: 'Transform lives through compassionate action',
       learnMoreLink: '/empower-communities'
     },
     {
       url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1920&q=90&auto=format&fit=crop',
-      titleKey: 'home.hero2Title',
-      subtitleKey: 'home.hero2Subtitle',
+      title: 'Make a Difference',
+      subtitle: 'Every hour of kindness creates lasting impact',
       learnMoreLink: '/make-difference'
     },
     {
       url: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=1920&q=90&auto=format&fit=crop',
-      titleKey: 'home.hero3Title',
-      subtitleKey: 'home.hero3Subtitle',
+      title: 'Join the Movement',
+      subtitle: 'Be part of a global network of changemakers',
       learnMoreLink: '/join-movement'
     }
   ]
@@ -38,31 +35,31 @@ export default function HomePage() {
   const features = [
     {
       icon: '🎯',
-      titleKey: 'home.discoverMissions',
-      descKey: 'home.discoverMissionsDesc'
+      title: 'Discover Missions',
+      description: 'Connect with meaningful causes aligned with your values and passions'
     },
     {
       icon: '⏱️',
-      titleKey: 'home.trackImpact',
-      descKey: 'home.trackImpactDesc'
+      title: 'Track Impact',
+      description: 'Log volunteer hours and visualize your contribution to the community'
     },
     {
       icon: '🏆',
-      titleKey: 'home.earnRecognition',
-      descKey: 'home.earnRecognitionDesc'
+      title: 'Earn Recognition',
+      description: 'Celebrate achievements with badges, ranks, and exclusive rewards'
     },
     {
       icon: '🤝',
-      titleKey: 'home.buildCommunity',
-      descKey: 'home.buildCommunityDesc'
+      title: 'Build Community',
+      description: 'Join a network of volunteers, NGOs, and organizations making change'
     }
   ]
 
   const stats = [
-    { value: '10,000+', labelKey: 'home.activeVolunteers' },
-    { value: '250+', labelKey: 'home.partnerNGOs' },
-    { value: '100K+', labelKey: 'home.hoursLogged' },
-    { value: '50+', labelKey: 'home.citiesWorldwide' }
+    { value: '10,000+', label: 'Active Volunteers' },
+    { value: '250+', label: 'Partner NGOs' },
+    { value: '100K+', label: 'Hours Logged' },
+    { value: '50+', label: 'Cities Worldwide' }
   ]
 
   return (
@@ -77,17 +74,14 @@ export default function HomePage() {
             <span className="text-2xl font-light tracking-wide text-gray-800">KindWorld</span>
           </div>
           <div className="flex items-center space-x-6">
-            <div className="hidden md:block">
-              <LanguageSelector />
-            </div>
             <Link to="/signin" className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium">
-              {t('home.signIn')}
+              Sign In
             </Link>
             <Link
               to="/signin"
               className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300 text-sm font-medium"
             >
-              {t('home.joinNow')}
+              Join Now
             </Link>
           </div>
         </div>
@@ -130,23 +124,23 @@ export default function HomePage() {
                   }`}
                 >
                   <h1 className="text-6xl md:text-7xl font-light text-white mb-6 leading-tight">
-                    {t(image.titleKey)}
+                    {image.title}
                   </h1>
                   <p className="text-xl md:text-2xl text-white/90 mb-8 font-light leading-relaxed">
-                    {t(image.subtitleKey)}
+                    {image.subtitle}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Link
                       to="/signin"
                       className="px-10 py-4 bg-white text-gray-900 rounded-full hover:bg-gray-100 transition-all duration-300 text-center font-medium shadow-xl hover:shadow-2xl hover:scale-105 transform"
                     >
-                      {t('home.startJourney')}
+                      Start Your Journey
                     </Link>
                     <Link
                       to={image.learnMoreLink}
                       className="px-10 py-4 border-2 border-white text-white rounded-full hover:bg-white hover:text-gray-900 transition-all duration-300 font-medium text-center"
                     >
-                      {t('home.learnMore')}
+                      Learn More
                     </Link>
                   </div>
                 </div>
@@ -180,7 +174,7 @@ export default function HomePage() {
                   <div className="text-4xl md:text-5xl font-light bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
                     {stat.value}
                   </div>
-                  <div className="text-gray-600 text-sm font-medium">{t(stat.labelKey)}</div>
+                  <div className="text-gray-600 text-sm font-medium">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -193,10 +187,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-4">
-              {t('home.howItWorks')}
+              How It Works
             </h2>
             <p className="text-xl text-gray-600 font-light max-w-2xl mx-auto">
-              {t('home.howItWorksSubtitle')}
+              A seamless platform designed to amplify your impact
             </p>
           </div>
 
@@ -210,10 +204,10 @@ export default function HomePage() {
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-medium text-gray-900 mb-3">
-                  {t(feature.titleKey)}
+                  {feature.title}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  {t(feature.descKey)}
+                  {feature.description}
                 </p>
               </div>
             ))}
@@ -226,67 +220,67 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-light mb-4">
-              {t('home.whoCanJoin')}
+              Who Can Join
             </h2>
             <p className="text-xl text-blue-100 font-light max-w-2xl mx-auto">
-              {t('home.whoCanJoinSubtitle')}
+              KindWorld welcomes everyone committed to making a difference
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300">
               <div className="text-4xl mb-4">👤</div>
-              <h3 className="text-2xl font-medium mb-3">{t('home.volunteersTitle')}</h3>
+              <h3 className="text-2xl font-medium mb-3">Volunteers</h3>
               <p className="text-blue-100 leading-relaxed mb-4">
-                {t('home.volunteersDesc')}
+                Find meaningful missions, track your hours, earn badges, and connect with like-minded changemakers
               </p>
               <ul className="space-y-2 text-blue-100">
                 <li className="flex items-center">
-                  <span className="mr-2">✓</span> {t('home.discoverLocal')}
+                  <span className="mr-2">✓</span> Discover local causes
                 </li>
                 <li className="flex items-center">
-                  <span className="mr-2">✓</span> {t('home.trackMetrics')}
+                  <span className="mr-2">✓</span> Track impact metrics
                 </li>
                 <li className="flex items-center">
-                  <span className="mr-2">✓</span> {t('home.redeemRewards')}
+                  <span className="mr-2">✓</span> Redeem rewards
                 </li>
               </ul>
             </div>
 
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300">
               <div className="text-4xl mb-4">🏢</div>
-              <h3 className="text-2xl font-medium mb-3">{t('home.ngosTitle')}</h3>
+              <h3 className="text-2xl font-medium mb-3">NGOs & Organizations</h3>
               <p className="text-blue-100 leading-relaxed mb-4">
-                {t('home.ngosDesc')}
+                Post missions, manage volunteers, and amplify your social impact with data-driven insights
               </p>
               <ul className="space-y-2 text-blue-100">
                 <li className="flex items-center">
-                  <span className="mr-2">✓</span> {t('home.createMissions')}
+                  <span className="mr-2">✓</span> Create missions
                 </li>
                 <li className="flex items-center">
-                  <span className="mr-2">✓</span> {t('home.manageVolunteers')}
+                  <span className="mr-2">✓</span> Manage volunteers
                 </li>
                 <li className="flex items-center">
-                  <span className="mr-2">✓</span> {t('home.trackOutcomes')}
+                  <span className="mr-2">✓</span> Track outcomes
                 </li>
               </ul>
             </div>
 
             <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300">
               <div className="text-4xl mb-4">⚙️</div>
-              <h3 className="text-2xl font-medium mb-3">{t('home.adminsTitle')}</h3>
+              <h3 className="text-2xl font-medium mb-3">Administrators</h3>
               <p className="text-blue-100 leading-relaxed mb-4">
-                {t('home.adminsDesc')}
+                Oversee platform operations, moderate content, and ensure quality across all missions
               </p>
               <ul className="space-y-2 text-blue-100">
                 <li className="flex items-center">
-                  <span className="mr-2">✓</span> {t('home.platformOversight')}
+                  <span className="mr-2">✓</span> Platform oversight
                 </li>
                 <li className="flex items-center">
-                  <span className="mr-2">✓</span> {t('home.contentModeration')}
+                  <span className="mr-2">✓</span> Content moderation
                 </li>
                 <li className="flex items-center">
-                  <span className="mr-2">✓</span> {t('home.analyticsDashboard')}
+                  <span className="mr-2">✓</span> Analytics dashboard
                 </li>
               </ul>
             </div>
@@ -298,19 +292,19 @@ export default function HomePage() {
       <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6">
-            {t('home.readyToMakeImpact')}
+            Ready to Make an Impact?
           </h2>
           <p className="text-xl text-gray-600 mb-10 font-light leading-relaxed">
-            {t('home.readySubtitle')}
+            Join thousands of volunteers and organizations creating positive change in communities worldwide
           </p>
           <Link
             to="/signin"
             className="inline-block px-12 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full hover:shadow-2xl hover:scale-105 transition-all duration-300 text-lg font-medium"
           >
-            {t('home.joinKindWorld')}
+            Join KindWorld Now
           </Link>
           <p className="mt-6 text-gray-500">
-            {t('home.alreadyHaveAccount')} <Link to="/signin" className="text-blue-600 hover:text-indigo-600 font-medium">{t('home.signInHere')}</Link>
+            Already have an account? <Link to="/signin" className="text-blue-600 hover:text-indigo-600 font-medium">Sign in here</Link>
           </p>
         </div>
       </section>
@@ -325,16 +319,16 @@ export default function HomePage() {
             <span className="text-xl font-light text-white">KindWorld</span>
           </div>
           <p className="text-sm mb-6">
-            {t('home.empoweringCommunities')}
+            Empowering communities through compassionate action
           </p>
           <div className="flex justify-center space-x-8 text-sm">
-            <a href="#" className="hover:text-white transition-colors">{t('home.about')}</a>
-            <a href="#" className="hover:text-white transition-colors">{t('home.privacy')}</a>
-            <a href="#" className="hover:text-white transition-colors">{t('home.terms')}</a>
-            <a href="#" className="hover:text-white transition-colors">{t('home.contact')}</a>
+            <a href="#" className="hover:text-white transition-colors">About</a>
+            <a href="#" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#" className="hover:text-white transition-colors">Terms</a>
+            <a href="#" className="hover:text-white transition-colors">Contact</a>
           </div>
           <p className="text-xs mt-8">
-            © 2026 KindWorld. {t('home.allRightsReserved')}.
+            © 2026 KindWorld. All rights reserved.
           </p>
         </div>
       </footer>
