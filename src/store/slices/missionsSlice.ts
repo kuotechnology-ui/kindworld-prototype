@@ -7,7 +7,6 @@ import { SortOption } from '../../components/SortModal';
 interface MissionsState {
   missions: Mission[];
   favorites: Set<string>;
-  registeredMissionIds: string[];
   loading: boolean;
   error: string | null;
   hasMore: boolean;
@@ -19,7 +18,6 @@ interface MissionsState {
 const initialState: MissionsState = {
   missions: [],
   favorites: new Set(),
-  registeredMissionIds: [],
   loading: false,
   error: null,
   hasMore: true,
@@ -193,26 +191,6 @@ const missionsSlice = createSlice({
     clearError: state => {
       state.error = null;
     },
-    registerForMission: (state, action: PayloadAction<string>) => {
-      const missionId = action.payload;
-      if (!state.registeredMissionIds.includes(missionId)) {
-        state.registeredMissionIds.push(missionId);
-        // Update participant count in the mission
-        const mission = state.missions.find(m => m.id === missionId);
-        if (mission) {
-          mission.currentParticipants = (mission.currentParticipants || 0) + 1;
-        }
-      }
-    },
-    unregisterFromMission: (state, action: PayloadAction<string>) => {
-      const missionId = action.payload;
-      state.registeredMissionIds = state.registeredMissionIds.filter(id => id !== missionId);
-      // Update participant count in the mission
-      const mission = state.missions.find(m => m.id === missionId);
-      if (mission && mission.currentParticipants > 0) {
-        mission.currentParticipants -= 1;
-      }
-    },
   },
   extraReducers: builder => {
     builder
@@ -269,7 +247,7 @@ const missionsSlice = createSlice({
   },
 });
 
-export const { setFilters, setSortBy, clearMissions, clearError, registerForMission, unregisterFromMission } =
+export const { setFilters, setSortBy, clearMissions, clearError } =
   missionsSlice.actions;
 
 export default missionsSlice.reducer;
