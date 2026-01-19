@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,19 +8,36 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
+  Modal,
+  TextInput,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { useMissions } from '../hooks';
 import { Button } from '../components';
+import { useAuth } from '../hooks/useAuth';
 
 const MissionDetailScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { missionId } = route.params as { missionId: string };
-  const { missions, loading, getMissionById } = useMissions();
+  const { missions, loading, getMissionById, registerForMission, isRegisteredForMission } = useMissions();
+  const { user } = useAuth();
+
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [registrationForm, setRegistrationForm] = useState({
+    fullName: user?.displayName || '',
+    email: user?.email || '',
+    phone: '',
+    emergencyContact: '',
+    emergencyPhone: '',
+  });
 
   const mission = missions.find(m => m.id === missionId);
+  const isRegistered = isRegisteredForMission(missionId);
 
   useEffect(() => {
     if (!mission) {
@@ -35,8 +52,31 @@ const MissionDetailScreen: React.FC = () => {
   };
 
   const handleJoinMission = () => {
-    // TODO: Implement join mission logic
-    console.log('Join mission:', missionId);
+    if (isRegistered) {
+      return;
+    }
+    setShowRegistrationModal(true);
+  };
+
+  const handleSubmitRegistration = () => {
+    // Validate form
+    if (!registrationForm.fullName || !registrationForm.email || !registrationForm.phone) {
+      Alert.alert('Missing Information', 'Please fill in all required fields.');
+      return;
+    }
+    if (!registrationForm.emergencyContact || !registrationForm.emergencyPhone) {
+      Alert.alert('Missing Information', 'Please provide emergency contact information.');
+      return;
+    }
+
+    // Register for the mission
+    registerForMission(missionId);
+    setShowRegistrationModal(false);
+    Alert.alert(
+      'Registration Successful',
+      'You have been registered for this mission!',
+      [{ text: 'OK', onPress: () => navigation.goBack() }]
+    );
   };
 
   if (loading || !mission) {
@@ -123,16 +163,128 @@ const MissionDetailScreen: React.FC = () => {
 
       {/* Join Button */}
       <View style={styles.footer}>
-        <Button
-          title="Join Mission"
-          onPress={handleJoinMission}
-          disabled={
-            mission.maxParticipants
-              ? mission.currentParticipants >= mission.maxParticipants
-              : false
-          }
-        />
+        {isRegistered ? (
+          <View style={styles.registeredButton}>
+            <Text style={styles.registeredButtonText}>✓ Registered</Text>
+          </View>
+        ) : (
+          <Button
+            title="Join Mission"
+            onPress={handleJoinMission}
+            disabled={
+              mission.maxParticipants
+                ? mission.currentParticipants >= mission.maxParticipants
+                : false
+            }
+          />
+        )}
       </View>
+
+      {/* Registration Modal */}
+      <Modal
+        visible={showRegistrationModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowRegistrationModal(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <SafeAreaView style={styles.modalContainer}>
+            {/* Modal Header */}
+            <View style={styles.modalHeader}>
+              <TouchableOpacity
+                onPress={() => setShowRegistrationModal(false)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Text style={styles.modalCloseText}>Cancel</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitle}>Register for Mission</Text>
+              <View style={{ width: 50 }} />
+            </View>
+
+            <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+              {/* Mission Info Banner */}
+              <View style={styles.missionBanner}>
+                <Text style={styles.missionBannerTitle}>{mission.title}</Text>
+                <Text style={styles.missionBannerDate}>{formatDate(mission.date)}</Text>
+              </View>
+
+              {/* Personal Information */}
+              <Text style={styles.formSectionTitle}>Personal Information</Text>
+
+              <Text style={styles.inputLabel}>Full Name *</Text>
+              <TextInput
+                style={styles.input}
+                value={registrationForm.fullName}
+                onChangeText={(text) => setRegistrationForm({ ...registrationForm, fullName: text })}
+                placeholder="Your full name"
+                placeholderTextColor={colors.textSecondary}
+              />
+
+              <Text style={styles.inputLabel}>Email Address *</Text>
+              <TextInput
+                style={styles.input}
+                value={registrationForm.email}
+                onChangeText={(text) => setRegistrationForm({ ...registrationForm, email: text })}
+                placeholder="your.email@example.com"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+
+              <Text style={styles.inputLabel}>Phone Number *</Text>
+              <TextInput
+                style={styles.input}
+                value={registrationForm.phone}
+                onChangeText={(text) => setRegistrationForm({ ...registrationForm, phone: text })}
+                placeholder="+65 1234 5678"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="phone-pad"
+              />
+
+              {/* Emergency Contact */}
+              <Text style={styles.formSectionTitle}>Emergency Contact</Text>
+
+              <Text style={styles.inputLabel}>Contact Name *</Text>
+              <TextInput
+                style={styles.input}
+                value={registrationForm.emergencyContact}
+                onChangeText={(text) => setRegistrationForm({ ...registrationForm, emergencyContact: text })}
+                placeholder="Emergency contact name"
+                placeholderTextColor={colors.textSecondary}
+              />
+
+              <Text style={styles.inputLabel}>Contact Phone *</Text>
+              <TextInput
+                style={styles.input}
+                value={registrationForm.emergencyPhone}
+                onChangeText={(text) => setRegistrationForm({ ...registrationForm, emergencyPhone: text })}
+                placeholder="+65 1234 5678"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="phone-pad"
+              />
+
+              {/* Confirmation Note */}
+              <View style={styles.confirmationNote}>
+                <Text style={styles.confirmationText}>
+                  By registering, I confirm that I will attend this mission on the scheduled date and time.
+                </Text>
+              </View>
+
+              {/* Submit Button */}
+              <Button
+                title="Register Now"
+                onPress={handleSubmitRegistration}
+                style={styles.submitButton}
+              />
+
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          </SafeAreaView>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -236,6 +388,98 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderTopWidth: 1,
     borderTopColor: colors.gray200,
+  },
+  registeredButton: {
+    backgroundColor: colors.success || '#10B981',
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    opacity: 0.9,
+  },
+  registeredButtonText: {
+    ...typography.button,
+    color: colors.white,
+    fontWeight: '600',
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.gray200,
+  },
+  modalCloseText: {
+    ...typography.body1,
+    color: colors.accent,
+  },
+  modalTitle: {
+    ...typography.h3,
+    color: colors.textPrimary,
+  },
+  modalContent: {
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+  },
+  missionBanner: {
+    backgroundColor: colors.accent + '10',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.accent,
+  },
+  missionBannerTitle: {
+    ...typography.h3,
+    fontSize: 16,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  missionBannerDate: {
+    ...typography.body2,
+    color: colors.textSecondary,
+  },
+  formSectionTitle: {
+    ...typography.h3,
+    fontSize: 16,
+    color: colors.textPrimary,
+    marginTop: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  inputLabel: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  input: {
+    borderWidth: 2,
+    borderColor: colors.gray200,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.md,
+    ...typography.body1,
+    color: colors.textPrimary,
+  },
+  confirmationNote: {
+    backgroundColor: colors.gray100 || '#F3F4F6',
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    marginTop: spacing.md,
+  },
+  confirmationText: {
+    ...typography.body2,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  submitButton: {
+    marginTop: spacing.lg,
   },
 });
 

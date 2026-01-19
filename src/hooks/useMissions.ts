@@ -8,6 +8,8 @@ import {
   setFilters,
   setSortBy,
   clearMissions,
+  registerForMission,
+  unregisterFromMission,
 } from '../store/slices/missionsSlice';
 import { FilterOptions } from '../components/FilterModal';
 import { SortOption } from '../components/SortModal';
@@ -17,6 +19,7 @@ export const useMissions = () => {
   const {
     missions,
     favorites,
+    registeredMissionIds,
     loading,
     error,
     hasMore,
@@ -79,9 +82,34 @@ export const useMissions = () => {
     [dispatch]
   );
 
+  // Register for mission
+  const handleRegisterForMission = useCallback(
+    (missionId: string) => {
+      dispatch(registerForMission(missionId));
+    },
+    [dispatch]
+  );
+
+  // Unregister from mission
+  const handleUnregisterFromMission = useCallback(
+    (missionId: string) => {
+      dispatch(unregisterFromMission(missionId));
+    },
+    [dispatch]
+  );
+
+  // Check if user is registered for a mission
+  const isRegisteredForMission = useCallback(
+    (missionId: string) => {
+      return registeredMissionIds.includes(missionId);
+    },
+    [registeredMissionIds]
+  );
+
   return {
     missions,
     favorites,
+    registeredMissionIds,
     loading,
     error,
     hasMore,
@@ -93,5 +121,8 @@ export const useMissions = () => {
     applySort,
     getMissionById,
     toggleFavorite: handleToggleFavorite,
+    registerForMission: handleRegisterForMission,
+    unregisterFromMission: handleUnregisterFromMission,
+    isRegisteredForMission,
   };
 };

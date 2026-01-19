@@ -17,9 +17,14 @@ import { monitoringService } from '../services/monitoringService';
 
 export const SignInScreen: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isSignUp, setIsSignUp] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const emailInputRef = useRef<RNTextInput>(null);
-  
+  const passwordInputRef = useRef<RNTextInput>(null);
+
   const {
     signInWithEmail,
     signUpWithEmail,
@@ -43,38 +48,59 @@ export const SignInScreen: React.FC = () => {
     if (error) {
       clearAuthError();
     }
-  }, [email]);
+  }, [email, password]);
 
   const validateEmail = (emailValue: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
+
     if (!emailValue.trim()) {
       setEmailError('Email is required');
       return false;
     }
-    
+
     if (!emailRegex.test(emailValue)) {
       setEmailError('Please enter a valid email address');
       return false;
     }
-    
+
     setEmailError('');
     return true;
   };
 
+  const validatePassword = (passwordValue: string): boolean => {
+    if (!passwordValue) {
+      setPasswordError('Password is required');
+      return false;
+    }
+
+    if (passwordValue.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return false;
+    }
+
+    setPasswordError('');
+    return true;
+  };
+
   const handleContinueWithEmail = async () => {
-    if (!validateEmail(email)) {
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+
+    if (!isEmailValid || !isPasswordValid) {
       return;
     }
 
     try {
-      // For simplicity, we'll use a default password for email sign-in
-      // In a real app, you'd have a separate password input or magic link
-      await signUpWithEmail(email, 'defaultPassword123');
-      await monitoringService.logSignUp('email');
+      if (isSignUp) {
+        await signUpWithEmail(email, password);
+        await monitoringService.logSignUp('email');
+      } else {
+        await signInWithEmail(email, password);
+        await monitoringService.logSignIn('email');
+      }
     } catch (err) {
       // Error is handled by Redux and displayed via error state
-      console.error('Email sign-in error:', err);
+      console.error('Email auth error:', err);
     }
   };
 
@@ -123,19 +149,21 @@ export const SignInScreen: React.FC = () => {
 
         {/* Header Section */}
         <View style={styles.headerContainer}>
-          <Text 
+          <Text
             style={styles.title}
             accessible={true}
             accessibilityRole="header"
           >
-            Create an account
+            {isSignUp ? 'Create an account' : 'Welcome back'}
           </Text>
-          <Text 
+          <Text
             style={styles.subtitle}
             accessible={true}
             accessibilityRole="text"
           >
-            Enter your email to sign up for this app
+            {isSignUp
+              ? 'Enter your email to sign up for this app'
+              : 'Sign in to continue to KindWorld'}
           </Text>
         </View>
 
@@ -146,28 +174,73 @@ export const SignInScreen: React.FC = () => {
             placeholder="name@example.com"
             value={email}
             onChangeText={setEmail}
-            error={emailError || (error ? error.userMessage : '')}
+            error={emailError}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="email"
             textContentType="emailAddress"
-            returnKeyType="done"
-            onSubmitEditing={handleContinueWithEmail}
+            returnKeyType="next"
+            onSubmitEditing={() => passwordInputRef.current?.focus()}
             accessibilityLabel="Email address"
             required={true}
           />
 
+          <View style={styles.passwordContainer}>
+            <Input
+              ref={passwordInputRef}
+              placeholder="Password (min 8 characters)"
+              value={password}
+              onChangeText={setPassword}
+              error={passwordError || (error ? error.userMessage : '')}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete={isSignUp ? 'new-password' : 'password'}
+              textContentType={isSignUp ? 'newPassword' : 'password'}
+              returnKeyType="done"
+              onSubmitEditing={handleContinueWithEmail}
+              accessibilityLabel="Password"
+              required={true}
+            />
+            <TouchableOpacity
+              style={styles.passwordToggle}
+              onPress={() => setShowPassword(!showPassword)}
+              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+            >
+              <Text style={styles.passwordToggleText}>
+                {showPassword ? '👁️' : '👁️‍🗨️'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <Button
-            title="Continue"
+            title={isSignUp ? 'Sign Up' : 'Sign In'}
             onPress={handleContinueWithEmail}
             variant="primary"
             loading={isLoading}
             disabled={isLoading}
             style={styles.continueButton}
-            accessibilityLabel="Continue with email"
-            accessibilityHint="Sign up or sign in with your email address"
+            accessibilityLabel={isSignUp ? 'Sign up with email' : 'Sign in with email'}
+            accessibilityHint={isSignUp ? 'Create your account' : 'Sign in to your account'}
           />
+
+          {/* Toggle between Sign In and Sign Up */}
+          <TouchableOpacity
+            style={styles.toggleAuthMode}
+            onPress={() => {
+              setIsSignUp(!isSignUp);
+              setEmailError('');
+              setPasswordError('');
+            }}
+          >
+            <Text style={styles.toggleAuthText}>
+              {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+              <Text style={styles.toggleAuthLink}>
+                {isSignUp ? 'Sign In' : 'Sign Up'}
+              </Text>
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Divider */}
@@ -282,8 +355,33 @@ const styles = StyleSheet.create({
   formContainer: {
     marginBottom: spacing.lg,
   },
+  passwordContainer: {
+    position: 'relative',
+  },
+  passwordToggle: {
+    position: 'absolute',
+    right: spacing.md,
+    top: 14,
+    padding: spacing.xs,
+  },
+  passwordToggleText: {
+    fontSize: 18,
+  },
   continueButton: {
     marginTop: spacing.sm,
+  },
+  toggleAuthMode: {
+    alignItems: 'center',
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  toggleAuthText: {
+    ...typography.body2,
+    color: colors.textSecondary,
+  },
+  toggleAuthLink: {
+    color: colors.accent,
+    fontWeight: '600',
   },
   dividerContainer: {
     flexDirection: 'row',
