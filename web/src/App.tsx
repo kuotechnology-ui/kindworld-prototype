@@ -2,7 +2,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAppSelector } from './hooks/redux'
 import Layout from './components/Layout'
 import AuthDebug from './components/AuthDebug'
-import LandingPage from './pages/LandingPage'
+// LandingPage removed - using KindWorldApp instead
+import HomePage from './pages/HomePage'
 import SignInPage from './pages/SignInPage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
 import DashboardPage from './pages/DashboardPage'
@@ -26,7 +27,7 @@ function App() {
     return (
       <>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route path="/verification-request" element={<VerificationRequestPage />} />

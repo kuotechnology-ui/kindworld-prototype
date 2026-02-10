@@ -60,16 +60,16 @@ export default function SignInPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">KindWorld</h1>
-          <p className="text-gray-600">Transform Kindness into Impact</p>
+          <p className="text-gray-600">{t('auth.subtitle')}</p>
         </div>
 
         <div className="card p-8">
-          <h2 className="text-2xl font-semibold mb-2">Sign in to KindWorld</h2>
-          <p className="text-gray-600 mb-6">Choose your account type and sign in with Gmail</p>
+          <h2 className="text-2xl font-semibold mb-2">{t('auth.title')}</h2>
+          <p className="text-gray-600 mb-6">{t('auth.chooseAccount')}</p>
 
           {/* Role Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">Choose your account type:</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">{t('auth.chooseAccount')}</label>
             <div className="grid grid-cols-1 gap-3">
               <button
                 onClick={() => setSelectedRole('user')}
@@ -79,10 +79,10 @@ export default function SignInPage() {
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="font-semibold">🎓 Sign-in by Student</div>
-                <div className="text-sm text-gray-600">I'm a student who wants to volunteer and track my hours</div>
+                <div className="font-semibold">🎓 {t('auth.roleStudent')}</div>
+                <div className="text-sm text-gray-600">{t('auth.roleStudentDesc')}</div>
               </button>
-              
+
               <button
                 onClick={() => setSelectedRole('company')}
                 className={`p-4 border-2 rounded-lg text-left transition-all ${
@@ -91,10 +91,10 @@ export default function SignInPage() {
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="font-semibold">🏢 Sign-in by Company</div>
-                <div className="text-sm text-gray-600">I represent a company that supports volunteer programs</div>
+                <div className="font-semibold">🏢 {t('auth.roleCompany')}</div>
+                <div className="text-sm text-gray-600">{t('auth.roleCompanyDesc')}</div>
               </button>
-              
+
               <button
                 onClick={() => setSelectedRole('ngo')}
                 className={`p-4 border-2 rounded-lg text-left transition-all ${
@@ -103,8 +103,8 @@ export default function SignInPage() {
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <div className="font-semibold">🌍 Sign-in by NGO</div>
-                <div className="text-sm text-gray-600">I'm an NGO that creates missions and verifies volunteer work</div>
+                <div className="font-semibold">🌍 {t('auth.roleNGO')}</div>
+                <div className="text-sm text-gray-600">{t('auth.roleNGODesc')}</div>
               </button>
             </div>
           </div>
@@ -122,7 +122,7 @@ export default function SignInPage() {
             {isSigningIn ? (
               <>
                 <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                Signing in...
+                {t('auth.signingIn')}
               </>
             ) : (
               <>
@@ -144,7 +144,7 @@ export default function SignInPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Sign in to KindWorld with Gmail
+                {t('auth.signInWith')}
               </>
             )}
           </button>

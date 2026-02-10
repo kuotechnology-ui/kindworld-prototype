@@ -4,6 +4,16 @@ import { useTranslation } from '../hooks/useTranslation'
 export default function MissionsPage() {
   const { t } = useTranslation()
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedRegion, setSelectedRegion] = useState('all')
+
+  const regions = [
+    { code: 'all', name: t('missions.allRegions') || 'All Regions' },
+    { code: 'SEA', name: 'Southeast Asia' },
+    { code: 'EA', name: 'East Asia' },
+    { code: 'EU', name: 'Europe' },
+    { code: 'NA', name: 'North America' },
+    { code: 'OC', name: 'Oceania' }
+  ]
 
   const missions = [
     {
@@ -19,7 +29,8 @@ export default function MissionsPage() {
       points: 200,
       image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=200&fit=crop',
       organizer: 'Ocean Conservation NGO',
-      difficulty: 'Easy'
+      difficulty: 'Easy',
+      region: 'NA'
     },
     {
       id: 2,
@@ -34,7 +45,8 @@ export default function MissionsPage() {
       points: 150,
       image: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&h=200&fit=crop',
       organizer: 'City Food Bank',
-      difficulty: 'Medium'
+      difficulty: 'Medium',
+      region: 'SEA'
     },
     {
       id: 3,
@@ -49,7 +61,8 @@ export default function MissionsPage() {
       points: 250,
       image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&h=200&fit=crop',
       organizer: 'Green Earth Foundation',
-      difficulty: 'Hard'
+      difficulty: 'Hard',
+      region: 'EU'
     },
     {
       id: 4,
@@ -64,7 +77,8 @@ export default function MissionsPage() {
       points: 100,
       image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=200&fit=crop',
       organizer: 'Elder Care Alliance',
-      difficulty: 'Easy'
+      difficulty: 'Easy',
+      region: 'EA'
     },
     {
       id: 5,
@@ -79,7 +93,8 @@ export default function MissionsPage() {
       points: 180,
       image: 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=400&h=200&fit=crop',
       organizer: 'Education First NGO',
-      difficulty: 'Medium'
+      difficulty: 'Medium',
+      region: 'SEA'
     },
     {
       id: 6,
@@ -94,22 +109,25 @@ export default function MissionsPage() {
       points: 200,
       image: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=200&fit=crop',
       organizer: 'Animal Rescue Society',
-      difficulty: 'Easy'
+      difficulty: 'Easy',
+      region: 'OC'
     }
   ]
 
   const categories = [
-    { id: 'all', name: 'All Missions', icon: '🌟' },
-    { id: 'environment', name: 'Environment', icon: '🌱' },
-    { id: 'community', name: 'Community', icon: '🤝' },
-    { id: 'healthcare', name: 'Healthcare', icon: '🏥' },
-    { id: 'education', name: 'Education', icon: '📚' },
-    { id: 'animals', name: 'Animals', icon: '🐾' }
+    { id: 'all', name: t('missions.all'), icon: '🌟' },
+    { id: 'environment', name: t('missions.environment'), icon: '🌱' },
+    { id: 'community', name: t('missions.community'), icon: '🤝' },
+    { id: 'healthcare', name: t('missions.healthcare'), icon: '🏥' },
+    { id: 'education', name: t('missions.education'), icon: '📚' },
+    { id: 'animals', name: t('missions.animals'), icon: '🐾' }
   ]
 
-  const filteredMissions = selectedCategory === 'all' 
-    ? missions 
-    : missions.filter(mission => mission.category === selectedCategory)
+  const filteredMissions = missions.filter(mission => {
+    const categoryMatch = selectedCategory === 'all' || mission.category === selectedCategory
+    const regionMatch = selectedRegion === 'all' || mission.region === selectedRegion
+    return categoryMatch && regionMatch
+  })
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -124,14 +142,15 @@ export default function MissionsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Available Missions</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('missions.title')}</h1>
         <p className="text-gray-600">
-          Join volunteer missions and make a positive impact in your community
+          {t('missions.subtitle')}
         </p>
       </div>
 
-      {/* Category Filter */}
-      <div className="mb-8">
+      {/* Filters */}
+      <div className="mb-8 space-y-4">
+        {/* Category Filter */}
         <div className="flex flex-wrap gap-3">
           {categories.map((category) => (
             <button
@@ -147,6 +166,22 @@ export default function MissionsPage() {
               <span>{category.name}</span>
             </button>
           ))}
+        </div>
+
+        {/* Region Filter */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-600">🌍 {t('missions.region') || 'Region'}:</span>
+          <select
+            value={selectedRegion}
+            onChange={(e) => setSelectedRegion(e.target.value)}
+            className="px-4 py-2 border-2 border-gray-200 rounded-lg bg-white focus:border-accent outline-none transition-colors"
+          >
+            {regions.map((region) => (
+              <option key={region.code} value={region.code}>
+                {region.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

@@ -35,6 +35,10 @@ export default function Header() {
     { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
     { code: 'zh-cn', name: '简体中文', flag: '🇨🇳' },
     { code: 'zh-tw', name: '繁體中文', flag: '🇹🇼' },
+    { code: 'th', name: 'ภาษาไทย', flag: '🇹🇭' },
+    { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
+    { code: 'ko', name: '한국어', flag: '🇰🇷' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
   ]
 
   const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0]
