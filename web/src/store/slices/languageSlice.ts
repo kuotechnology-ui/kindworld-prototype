@@ -90,7 +90,19 @@ const translations: Record<string, Record<string, string>> = {
     'auth.roleCompany': 'Sign-in by Company',
     'auth.roleCompanyDesc': 'I represent a company that supports volunteer programs',
     'auth.roleNGO': 'Sign-in by NGO',
-    'auth.roleNGODesc': "I'm an NGO that creates missions and verifies volunteer work"
+    'auth.roleNGODesc': "I'm an NGO that creates missions and verifies volunteer work",
+    'auth.demoMode': 'Demo Mode',
+    'auth.demoInstruction': 'Click the button above to sign in as a',
+    'auth.successTitle': 'Authentication Successful! 🎉',
+    'auth.redirecting': 'Redirecting to your',
+    'auth.dashboard': 'dashboard',
+    'auth.student': 'student',
+    'auth.company': 'company',
+    'auth.ngo': 'NGO',
+    'auth.termsAgree': 'By continuing, you agree to our',
+    'auth.termsOfService': 'Terms of Service',
+    'auth.and': 'and',
+    'auth.privacyPolicy': 'Privacy Policy'
   },
   id: {
     // Navigation
@@ -176,7 +188,19 @@ const translations: Record<string, Record<string, string>> = {
     'auth.roleCompany': 'Masuk sebagai Perusahaan',
     'auth.roleCompanyDesc': 'Saya mewakili perusahaan yang mendukung program relawan',
     'auth.roleNGO': 'Masuk sebagai NGO',
-    'auth.roleNGODesc': 'Saya adalah NGO yang membuat misi dan memverifikasi pekerjaan relawan'
+    'auth.roleNGODesc': 'Saya adalah NGO yang membuat misi dan memverifikasi pekerjaan relawan',
+    'auth.demoMode': 'Mode Demo',
+    'auth.demoInstruction': 'Klik tombol di atas untuk masuk sebagai',
+    'auth.successTitle': 'Autentikasi Berhasil! 🎉',
+    'auth.redirecting': 'Mengarahkan ke',
+    'auth.dashboard': 'dasbor',
+    'auth.student': 'pelajar',
+    'auth.company': 'perusahaan',
+    'auth.ngo': 'NGO',
+    'auth.termsAgree': 'Dengan melanjutkan, Anda menyetujui',
+    'auth.termsOfService': 'Ketentuan Layanan',
+    'auth.and': 'dan',
+    'auth.privacyPolicy': 'Kebijakan Privasi'
   },
   'zh-cn': {
     // Navigation
@@ -262,7 +286,19 @@ const translations: Record<string, Record<string, string>> = {
     'auth.roleCompany': '公司登录',
     'auth.roleCompanyDesc': '我代表支持志愿者项目的公司',
     'auth.roleNGO': 'NGO登录',
-    'auth.roleNGODesc': '我是一个创建任务并验证志愿者工作的NGO'
+    'auth.roleNGODesc': '我是一个创建任务并验证志愿者工作的NGO',
+    'auth.demoMode': '演示模式',
+    'auth.demoInstruction': '点击上方按钮以登录为',
+    'auth.successTitle': '验证成功！🎉',
+    'auth.redirecting': '正在跳转到',
+    'auth.dashboard': '仪表板',
+    'auth.student': '学生',
+    'auth.company': '公司',
+    'auth.ngo': 'NGO',
+    'auth.termsAgree': '继续即表示您同意我们的',
+    'auth.termsOfService': '服务条款',
+    'auth.and': '和',
+    'auth.privacyPolicy': '隐私政策'
   },
   'zh-tw': {
     // Navigation
@@ -348,7 +384,19 @@ const translations: Record<string, Record<string, string>> = {
     'auth.roleCompany': '公司登入',
     'auth.roleCompanyDesc': '我代表支持志願者項目的公司',
     'auth.roleNGO': 'NGO登入',
-    'auth.roleNGODesc': '我是一個創建任務並驗證志願者工作的NGO'
+    'auth.roleNGODesc': '我是一個創建任務並驗證志願者工作的NGO',
+    'auth.demoMode': '演示模式',
+    'auth.demoInstruction': '點擊上方按鈕以登入為',
+    'auth.successTitle': '驗證成功！🎉',
+    'auth.redirecting': '正在跳轉到',
+    'auth.dashboard': '儀表板',
+    'auth.student': '學生',
+    'auth.company': '公司',
+    'auth.ngo': 'NGO',
+    'auth.termsAgree': '繼續即表示您同意我們的',
+    'auth.termsOfService': '服務條款',
+    'auth.and': '和',
+    'auth.privacyPolicy': '隱私政策'
   },
   th: {
     // Navigation
@@ -434,7 +482,19 @@ const translations: Record<string, Record<string, string>> = {
     'auth.roleCompany': 'เข้าสู่ระบบเป็นบริษัท',
     'auth.roleCompanyDesc': 'ฉันเป็นตัวแทนบริษัทที่สนับสนุนโปรแกรมอาสาสมัคร',
     'auth.roleNGO': 'เข้าสู่ระบบเป็น NGO',
-    'auth.roleNGODesc': 'ฉันเป็น NGO ที่สร้างภารกิจและตรวจสอบงานอาสาสมัคร'
+    'auth.roleNGODesc': 'ฉันเป็น NGO ที่สร้างภารกิจและตรวจสอบงานอาสาสมัคร',
+    'auth.demoMode': 'โหมดทดลอง',
+    'auth.demoInstruction': 'คลิกปุ่มด้านบนเพื่อเข้าสู่ระบบเป็น',
+    'auth.successTitle': 'ยืนยันตัวตนสำเร็จ! 🎉',
+    'auth.redirecting': 'กำลังนำไปยัง',
+    'auth.dashboard': 'แดชบอร์ด',
+    'auth.student': 'นักศึกษา',
+    'auth.company': 'บริษัท',
+    'auth.ngo': 'NGO',
+    'auth.termsAgree': 'ด้วยการดำเนินการต่อ คุณตกลงยอมรับ',
+    'auth.termsOfService': 'ข้อกำหนดการใช้บริการ',
+    'auth.and': 'และ',
+    'auth.privacyPolicy': 'นโยบายความเป็นส่วนตัว'
   },
   vi: {
     // Navigation
@@ -520,7 +580,19 @@ const translations: Record<string, Record<string, string>> = {
     'auth.roleCompany': 'Đăng nhập là Công ty',
     'auth.roleCompanyDesc': 'Tôi đại diện cho công ty hỗ trợ các chương trình tình nguyện',
     'auth.roleNGO': 'Đăng nhập là NGO',
-    'auth.roleNGODesc': 'Tôi là NGO tạo nhiệm vụ và xác minh công việc tình nguyện'
+    'auth.roleNGODesc': 'Tôi là NGO tạo nhiệm vụ và xác minh công việc tình nguyện',
+    'auth.demoMode': 'Chế độ Demo',
+    'auth.demoInstruction': 'Nhấp vào nút trên để đăng nhập với tư cách',
+    'auth.successTitle': 'Xác thực thành công! 🎉',
+    'auth.redirecting': 'Đang chuyển hướng đến',
+    'auth.dashboard': 'bảng điều khiển',
+    'auth.student': 'sinh viên',
+    'auth.company': 'công ty',
+    'auth.ngo': 'NGO',
+    'auth.termsAgree': 'Bằng cách tiếp tục, bạn đồng ý với',
+    'auth.termsOfService': 'Điều khoản Dịch vụ',
+    'auth.and': 'và',
+    'auth.privacyPolicy': 'Chính sách Bảo mật'
   },
   ko: {
     // Navigation
@@ -606,7 +678,19 @@ const translations: Record<string, Record<string, string>> = {
     'auth.roleCompany': '회사로 로그인',
     'auth.roleCompanyDesc': '봉사 프로그램을 지원하는 회사를 대표합니다',
     'auth.roleNGO': 'NGO로 로그인',
-    'auth.roleNGODesc': '미션을 만들고 봉사 활동을 검증하는 NGO입니다'
+    'auth.roleNGODesc': '미션을 만들고 봉사 활동을 검증하는 NGO입니다',
+    'auth.demoMode': '데모 모드',
+    'auth.demoInstruction': '위 버튼을 클릭하여 로그인하세요',
+    'auth.successTitle': '인증 성공! 🎉',
+    'auth.redirecting': '이동 중',
+    'auth.dashboard': '대시보드',
+    'auth.student': '학생',
+    'auth.company': '기업',
+    'auth.ngo': 'NGO',
+    'auth.termsAgree': '계속 진행하면 다음에 동의하는 것입니다',
+    'auth.termsOfService': '서비스 이용약관',
+    'auth.and': '및',
+    'auth.privacyPolicy': '개인정보 처리방침'
   },
   de: {
     // Navigation
@@ -692,7 +776,19 @@ const translations: Record<string, Record<string, string>> = {
     'auth.roleCompany': 'Als Unternehmen anmelden',
     'auth.roleCompanyDesc': 'Ich vertrete ein Unternehmen, das Freiwilligenprogramme unterstützt',
     'auth.roleNGO': 'Als NGO anmelden',
-    'auth.roleNGODesc': 'Ich bin eine NGO, die Missionen erstellt und Freiwilligenarbeit verifiziert'
+    'auth.roleNGODesc': 'Ich bin eine NGO, die Missionen erstellt und Freiwilligenarbeit verifiziert',
+    'auth.demoMode': 'Demo-Modus',
+    'auth.demoInstruction': 'Klicken Sie oben auf die Schaltfläche, um sich anzumelden als',
+    'auth.successTitle': 'Authentifizierung erfolgreich! 🎉',
+    'auth.redirecting': 'Weiterleitung zu Ihrem',
+    'auth.dashboard': 'Dashboard',
+    'auth.student': 'Student',
+    'auth.company': 'Unternehmen',
+    'auth.ngo': 'NGO',
+    'auth.termsAgree': 'Durch Fortfahren stimmen Sie unseren',
+    'auth.termsOfService': 'Nutzungsbedingungen',
+    'auth.and': 'und',
+    'auth.privacyPolicy': 'Datenschutzrichtlinie'
   }
 }
 

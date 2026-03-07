@@ -68,9 +68,7 @@ export default function HomePage() {
       <nav className="absolute top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-              <span className="text-white text-xl font-bold">K</span>
-            </div>
+            <img src="/kindworld-logo.jpg" alt="KindWorld" className="w-10 h-10 rounded-xl object-cover" />
             <span className="text-2xl font-semibold tracking-tight text-gray-900">KindWorld</span>
           </div>
           <div className="flex items-center space-x-6">
@@ -335,9 +333,7 @@ export default function HomePage() {
       <footer className="bg-gray-900 text-gray-400 py-12 px-6">
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-bold">K</span>
-            </div>
+            <img src="/kindworld-logo.jpg" alt="KindWorld" className="w-8 h-8 rounded-lg object-cover" />
             <span className="text-xl font-semibold text-white">KindWorld</span>
           </div>
           <p className="text-sm mb-6">

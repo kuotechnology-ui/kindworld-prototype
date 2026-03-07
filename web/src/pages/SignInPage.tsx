@@ -151,8 +151,8 @@ export default function SignInPage() {
 
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <div className="text-sm text-blue-800">
-              <strong>✨ Demo Mode:</strong> Click the button above to sign in as a{' '}
-              {selectedRole === 'user' ? 'student' : selectedRole === 'company' ? 'company' : 'NGO'}.
+              <strong>✨ {t('auth.demoMode')}:</strong> {t('auth.demoInstruction')}{' '}
+              {selectedRole === 'user' ? t('auth.student') : selectedRole === 'company' ? t('auth.company') : t('auth.ngo')}.
             </div>
           </div>
 
@@ -166,9 +166,9 @@ export default function SignInPage() {
                   </svg>
                 </div>
                 <div>
-                  <div className="font-semibold text-green-800">Authentication Successful! 🎉</div>
+                  <div className="font-semibold text-green-800">{t('auth.successTitle')}</div>
                   <div className="text-green-700 text-sm">
-                    Redirecting to your {selectedRole === 'user' ? 'student' : selectedRole} dashboard...
+                    {t('auth.redirecting')} {selectedRole === 'user' ? t('auth.student') : selectedRole === 'company' ? t('auth.company') : t('auth.ngo')} {t('auth.dashboard')}...
                   </div>
                 </div>
               </div>
@@ -176,13 +176,13 @@ export default function SignInPage() {
           )}
 
           <p className="text-xs text-gray-500 text-center mt-6">
-            By continuing, you agree to our{' '}
+            {t('auth.termsAgree')}{' '}
             <a href="/terms" className="text-accent hover:underline">
-              Terms of Service
+              {t('auth.termsOfService')}
             </a>{' '}
-            and{' '}
+            {t('auth.and')}{' '}
             <a href="/privacy" className="text-accent hover:underline">
-              Privacy Policy
+              {t('auth.privacyPolicy')}
             </a>
           </p>
         </div>
