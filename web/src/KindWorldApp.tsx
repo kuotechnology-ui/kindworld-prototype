@@ -869,7 +869,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     daysAgo: 'd ago',
     certVolRecognitionProg: 'Volunteer Recognition Program', certOfVolServiceLabel: 'Certificate of Volunteer Service', certIssuedTo: 'Certificate issued to', certHasCompleted: 'has completed', certVolHoursOf: 'volunteer hours with', certDateIssuedLabel: 'Date Issued', certCertIdLabel: 'Certificate ID', certSaveAsPDFBtn: '⬇ Save as PDF',
     inactiveStatus: 'Inactive', certActivate: '▶ Activate', requiredLabel: 'required', createdLabel: 'Created', volunteerRequestsEmpty: 'Volunteer requests will appear here once they apply.',
-    myMissionsTitle: 'My Missions', myMissionsUpcoming: 'Upcoming', myMissionsCompleted: 'Completed'
+    myMissionsTitle: 'My Missions', myMissionsUpcoming: 'Upcoming', myMissionsCompleted: 'Completed',
+    certIssuedByLabel: 'Issued by', certAuthCertLabel: 'Authorized digital certificate', certEligibleBadge: 'Eligible', certHoursRequired: 'hours required', certVolunteersEarned: 'volunteers earned', certClaimBtn: 'Claim Certificate', certChangeLogo: 'Change Logo', statsConfidential: 'Confidential — For Personal Use', downloadNgoReportBtn: 'Download NGO Report', ngoImpactReportTitle: 'NGO Impact Report', ngoVerifiedPartner: 'Verified NGO Partner', ngoVolunteerActivitiesTitle: 'Volunteer Activities', ngoApprovedHoursTitle: 'Approved Volunteer Hours', ngoCertProgramsTitle: 'Certificate Programs', statsConfidentialNGO: 'Confidential — For Internal Use', ngoTotalVolunteers: 'Total Volunteers', ngoActivitiesCreated: 'Activities Created', ngoHoursApproved: 'Hours Approved', ngoCertsIssuedCount: 'Certificates Issued', ngoNoActivitiesYet: 'No activities created yet', ngoNoApprovedHoursYet: 'No approved hours yet', ngoNoCertProgramsYet: 'No certificate programs created', ngoImpactReportGenerated: 'NGO Impact Report generated!', sdg1Desc: 'End poverty in all its forms everywhere. Over 700 million people live in extreme poverty. Volunteering helps build community resilience and connects people to essential resources.', sdg2Desc: 'End hunger and achieve food security. Nearly 733 million people faced hunger in 2023. Community food programs and sustainable farming create lasting change.', sdg3Desc: 'Ensure healthy lives and promote well-being for all ages. Volunteers expand access to healthcare and support vulnerable communities worldwide.', sdg4Desc: 'Ensure quality education and promote lifelong learning for all. Over 244 million children are out of school. Education is the most powerful tool to change the world.', sdg10Desc: 'Reduce inequality within and among countries. Equitable communities require active participation and inclusive programs that leave no one behind.', sdg11Desc: 'Make cities inclusive, safe, resilient and sustainable. By 2050, 70% of humanity will live in cities — sustainable urban development shapes our shared future.', sdg13Desc: 'Take urgent action to combat climate change. Climate change threatens every ecosystem on Earth. Environmental action starts locally and grows globally.', sdg17Desc: 'Revitalize global partnerships for sustainable development. No goal is achieved alone — collaboration across sectors creates lasting impact.', sdgLearnMore: 'Learn more on UN.org', sdgKindWorldHelps: 'KindWorld connects volunteers with missions that directly advance this goal, creating real impact in local communities.'
   },
   id: {
     title: 'KindWorld',
@@ -1435,7 +1436,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: 'Akan Datang', statusCompleted: 'Selesai', statusSuspended: 'Ditangguhkan', exportCSV: 'Ekspor CSV', exportedCSV: 'CSV berhasil diekspor', endTimeLabel: 'Waktu Selesai', missionImageUrl: 'URL Gambar Sampul', missionImagePlaceholder: 'https://example.com/image.jpg (opsional)', allCategories: 'Semua Kategori', clearFilters: 'Hapus Filter',
     certVolRecognitionProg: 'Program Penghargaan Relawan', certOfVolServiceLabel: 'Sertifikat Layanan Sukarela', certIssuedTo: 'Sertifikat ini diberikan kepada', certHasCompleted: 'telah menyelesaikan', certVolHoursOf: 'jam sukarela bersama', certDateIssuedLabel: 'Tanggal Terbit', certCertIdLabel: 'ID Sertifikat', certSaveAsPDFBtn: '⬇ Simpan sebagai PDF',
     inactiveStatus: 'Tidak Aktif', certActivate: '▶ Aktifkan', requiredLabel: 'diperlukan', createdLabel: 'Dibuat', volunteerRequestsEmpty: 'Permintaan relawan akan muncul di sini setelah mereka mendaftar.',
-    myMissionsTitle: 'Misi Saya', myMissionsUpcoming: 'Mendatang', myMissionsCompleted: 'Selesai'
+    myMissionsTitle: 'Misi Saya', myMissionsUpcoming: 'Mendatang', myMissionsCompleted: 'Selesai',
+    certIssuedByLabel: 'Diterbitkan oleh', certAuthCertLabel: 'Sertifikat digital resmi', certEligibleBadge: 'Memenuhi Syarat', certHoursRequired: 'jam diperlukan', certVolunteersEarned: 'relawan mendapatkan', certClaimBtn: 'Klaim Sertifikat', certChangeLogo: 'Ganti Logo', statsConfidential: 'Rahasia — Untuk Penggunaan Pribadi', downloadNgoReportBtn: 'Unduh Laporan NGO', ngoImpactReportTitle: 'Laporan Dampak NGO', ngoVerifiedPartner: 'Mitra NGO Terverifikasi', ngoVolunteerActivitiesTitle: 'Kegiatan Sukarela', ngoApprovedHoursTitle: 'Jam Sukarela yang Disetujui', ngoCertProgramsTitle: 'Program Sertifikat', statsConfidentialNGO: 'Rahasia — Untuk Penggunaan Internal', ngoTotalVolunteers: 'Total Relawan', ngoActivitiesCreated: 'Kegiatan Dibuat', ngoHoursApproved: 'Jam Disetujui', ngoCertsIssuedCount: 'Sertifikat Diterbitkan', ngoNoActivitiesYet: 'Belum ada kegiatan yang dibuat', ngoNoApprovedHoursYet: 'Belum ada jam yang disetujui', ngoNoCertProgramsYet: 'Belum ada program sertifikat', ngoImpactReportGenerated: 'Laporan Dampak NGO berhasil dibuat!', sdg1Desc: 'Mengakhiri kemiskinan dalam segala bentuknya. Lebih dari 700 juta orang masih hidup dalam kemiskinan ekstrem. Relawan membantu membangun ketahanan komunitas dan menghubungkan orang dengan sumber daya penting.', sdg2Desc: 'Mengakhiri kelaparan dan mencapai ketahanan pangan. Hampir 733 juta orang menghadapi kelaparan pada 2023. Program pangan komunitas dan pertanian berkelanjutan menciptakan perubahan nyata.', sdg3Desc: 'Memastikan kehidupan sehat dan meningkatkan kesejahteraan untuk semua usia. Relawan memperluas akses layanan kesehatan dan mendukung komunitas rentan di seluruh dunia.', sdg4Desc: 'Memastikan pendidikan berkualitas dan mendorong pembelajaran sepanjang hayat. Lebih dari 244 juta anak tidak bersekolah. Pendidikan adalah alat paling kuat untuk mengubah dunia.', sdg10Desc: 'Mengurangi ketimpangan di dalam dan antar negara. Komunitas yang adil membutuhkan partisipasi aktif dan program inklusif agar tidak ada yang tertinggal.', sdg11Desc: 'Menjadikan kota inklusif, aman, tangguh, dan berkelanjutan. Pada 2050, 70% manusia akan tinggal di kota — pembangunan perkotaan berkelanjutan membentuk masa depan kita.', sdg13Desc: 'Mengambil tindakan mendesak untuk memerangi perubahan iklim. Perubahan iklim mengancam setiap ekosistem di Bumi. Aksi lingkungan dimulai secara lokal dan berkembang global.', sdg17Desc: 'Menghidupkan kembali kemitraan global untuk pembangunan berkelanjutan. Tidak ada tujuan yang dicapai sendiri — kolaborasi lintas sektor menciptakan dampak nyata.', sdgLearnMore: 'Pelajari lebih lanjut di UN.org', sdgKindWorldHelps: 'KindWorld menghubungkan relawan dengan misi yang langsung mendukung tujuan ini, menciptakan dampak nyata di komunitas lokal.'
   },
   'zh-cn': {
     title: 'KindWorld',
@@ -2000,7 +2002,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: '即将开始', statusCompleted: '已完成', statusSuspended: '已停办', exportCSV: '导出CSV', exportedCSV: 'CSV导出成功', endTimeLabel: '结束时间', missionImageUrl: '封面图片网址', missionImagePlaceholder: 'https://example.com/image.jpg（可选）', allCategories: '所有类别', clearFilters: '清除筛选',
     certVolRecognitionProg: '志愿者认可计划', certOfVolServiceLabel: '志愿服务证书', certIssuedTo: '此证书颁予', certHasCompleted: '已完成', certVolHoursOf: '小时志愿服务，服务于', certDateIssuedLabel: '颁发日期', certCertIdLabel: '证书编号', certSaveAsPDFBtn: '⬇ 保存为PDF',
     inactiveStatus: '未启用', certActivate: '▶ 启用', requiredLabel: '所需', createdLabel: '创建于', volunteerRequestsEmpty: '志愿者申请后将在这里显示。',
-    myMissionsTitle: '我的任务', myMissionsUpcoming: '即将到来', myMissionsCompleted: '已完成'
+    myMissionsTitle: '我的任务', myMissionsUpcoming: '即将到来', myMissionsCompleted: '已完成',
+    certIssuedByLabel: '颁发者', certAuthCertLabel: '授权数字证书', certEligibleBadge: '符合条件', certHoursRequired: '小时要求', certVolunteersEarned: '名志愿者已获得', certClaimBtn: '领取证书', certChangeLogo: '更换标志', statsConfidential: '机密 — 仅供个人使用', downloadNgoReportBtn: '下载NGO报告', ngoImpactReportTitle: 'NGO影响报告', ngoVerifiedPartner: '已认证NGO合作伙伴', ngoVolunteerActivitiesTitle: '志愿活动', ngoApprovedHoursTitle: '已批准志愿服务时间', ngoCertProgramsTitle: '证书项目', statsConfidentialNGO: '机密 — 仅供内部使用', ngoTotalVolunteers: '总志愿者', ngoActivitiesCreated: '创建的活动', ngoHoursApproved: '已批准小时', ngoCertsIssuedCount: '已颁发证书', ngoNoActivitiesYet: '尚未创建任何活动', ngoNoApprovedHoursYet: '尚未批准任何小时', ngoNoCertProgramsYet: '尚未创建证书项目', ngoImpactReportGenerated: 'NGO影响报告已生成！', sdg1Desc: '在全球消除一切形式的贫困。超过7亿人仍生活在极端贫困中。志愿服务帮助建设社区韧性，连接人们与基本资源。', sdg2Desc: '消除饥饿，实现粮食安全。2023年近7.33亿人面临饥饿。社区粮食计划和可持续农业创造持久改变。', sdg3Desc: '确保所有年龄段的健康生活和福祉。志愿者扩大医疗服务覆盖面，支持全球弱势群体。', sdg4Desc: '确保优质教育，促进全民终身学习。超过2.44亿儿童未能上学。教育是改变世界最有力的工具。', sdg10Desc: '减少国家内部和国家间的不平等。公平的社区需要积极参与和包容性计划，不让任何人掉队。', sdg11Desc: '让城市具有包容性、安全、韧性和可持续性。到2050年，70%的人类将生活在城市中——可持续城市发展塑造我们共同的未来。', sdg13Desc: '采取紧急行动应对气候变化。气候变化威胁地球上的每个生态系统。环保行动从本地开始，影响全球。', sdg17Desc: '重振全球可持续发展伙伴关系。没有任何目标能单独实现——跨部门协作创造持久影响。', sdgLearnMore: '在UN.org了解更多', sdgKindWorldHelps: 'KindWorld将志愿者与直接推进此目标的任务相连接，在当地社区创造真实影响。'
   },
   'zh-tw': {
     title: 'KindWorld',
@@ -2565,7 +2568,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: '即將開始', statusCompleted: '已完成', statusSuspended: '已停辦', exportCSV: '匯出CSV', exportedCSV: 'CSV匯出成功', endTimeLabel: '結束時間', missionImageUrl: '封面圖片網址', missionImagePlaceholder: 'https://example.com/image.jpg（選填）', allCategories: '所有類別', clearFilters: '清除篩選條件',
     certVolRecognitionProg: '志願服務認可計畫', certOfVolServiceLabel: '志願服務證書', certIssuedTo: '此證書頒予', certHasCompleted: '已完成', certVolHoursOf: '小時志願服務，服務於', certDateIssuedLabel: '頒發日期', certCertIdLabel: '證書編號', certSaveAsPDFBtn: '⬇ 儲存為PDF',
     inactiveStatus: '未啟用', certActivate: '▶ 啟用', requiredLabel: '所需', createdLabel: '建立於', volunteerRequestsEmpty: '志願者申請後將在這裡顯示。',
-    myMissionsTitle: '我的任務', myMissionsUpcoming: '即將到來', myMissionsCompleted: '已完成'
+    myMissionsTitle: '我的任務', myMissionsUpcoming: '即將到來', myMissionsCompleted: '已完成',
+    certIssuedByLabel: '頒發者', certAuthCertLabel: '授權數位證書', certEligibleBadge: '符合條件', certHoursRequired: '小時要求', certVolunteersEarned: '名志願者已獲得', certClaimBtn: '領取證書', certChangeLogo: '更換標誌', statsConfidential: '機密 — 僅供個人使用', downloadNgoReportBtn: '下載NGO報告', ngoImpactReportTitle: 'NGO影響報告', ngoVerifiedPartner: '已認證NGO合作夥伴', ngoVolunteerActivitiesTitle: '志願活動', ngoApprovedHoursTitle: '已批准志願服務時間', ngoCertProgramsTitle: '證書計畫', statsConfidentialNGO: '機密 — 僅供內部使用', ngoTotalVolunteers: '總志願者', ngoActivitiesCreated: '創建的活動', ngoHoursApproved: '已批准小時', ngoCertsIssuedCount: '已頒發證書', ngoNoActivitiesYet: '尚未創建任何活動', ngoNoApprovedHoursYet: '尚未批准任何小時', ngoNoCertProgramsYet: '尚未創建證書計畫', ngoImpactReportGenerated: 'NGO影響報告已生成！', sdg1Desc: '在全球消除一切形式的貧困。超過7億人仍生活在極端貧困中。志願服務幫助建設社區韌性，連結人們與基本資源。', sdg2Desc: '消除飢餓，實現糧食安全。2023年近7.33億人面臨飢餓。社區糧食計畫和永續農業創造持久改變。', sdg3Desc: '確保所有年齡層的健康生活和福祉。志工擴大醫療服務覆蓋面，支持全球弱勢群體。', sdg4Desc: '確保優質教育，促進全民終身學習。超過2.44億兒童未能就學。教育是改變世界最有力的工具。', sdg10Desc: '減少國家內部和國家間的不平等。公平的社區需要積極參與和包容性計畫，不讓任何人落後。', sdg11Desc: '讓城市具有包容性、安全、韌性和永續性。到2050年，70%的人類將生活在城市中——永續城市發展塑造我們共同的未來。', sdg13Desc: '採取緊急行動應對氣候變遷。氣候變遷威脅地球上的每個生態系統。環保行動從本地開始，影響全球。', sdg17Desc: '重振全球永續發展夥伴關係。沒有任何目標能單獨實現——跨部門合作創造持久影響。', sdgLearnMore: '在UN.org了解更多', sdgKindWorldHelps: 'KindWorld將志工與直接推進此目標的任務相連結，在當地社區創造真實影響。'
   },
   es: {
     title: 'KindWorld',
@@ -3109,7 +3113,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: 'Próximamente', statusCompleted: 'Completado', statusSuspended: 'Suspendido', exportCSV: 'Exportar CSV', exportedCSV: 'CSV exportado con éxito', endTimeLabel: 'Hora de Fin', missionImageUrl: 'URL de Imagen de Portada', missionImagePlaceholder: 'https://example.com/image.jpg (opcional)', allCategories: 'Todas las Categorías', clearFilters: 'Limpiar Filtros',
     certVolRecognitionProg: 'Programa de Reconocimiento de Voluntarios', certOfVolServiceLabel: 'Certificado de Servicio Voluntario', certIssuedTo: 'Certificado otorgado a', certHasCompleted: 'ha completado', certVolHoursOf: 'horas de voluntariado con', certDateIssuedLabel: 'Fecha de Emisión', certCertIdLabel: 'ID del Certificado', certSaveAsPDFBtn: '⬇ Guardar como PDF',
     inactiveStatus: 'Inactivo', certActivate: '▶ Activar', requiredLabel: 'requeridas', createdLabel: 'Creado', volunteerRequestsEmpty: 'Las solicitudes de voluntarios aparecerán aquí una vez que apliquen.',
-    myMissionsTitle: 'Mis Misiones', myMissionsUpcoming: 'Próximas', myMissionsCompleted: 'Completadas'
+    myMissionsTitle: 'Mis Misiones', myMissionsUpcoming: 'Próximas', myMissionsCompleted: 'Completadas',
+    certIssuedByLabel: 'Emitido por', certAuthCertLabel: 'Certificado digital autorizado', certEligibleBadge: 'Elegible', certHoursRequired: 'horas requeridas', certVolunteersEarned: 'voluntarios lo obtuvieron', certClaimBtn: 'Reclamar Certificado', certChangeLogo: 'Cambiar Logo', statsConfidential: 'Confidencial — Uso Personal', downloadNgoReportBtn: 'Descargar Informe ONG', ngoImpactReportTitle: 'Informe de Impacto ONG', ngoVerifiedPartner: 'Socio ONG Verificado', ngoVolunteerActivitiesTitle: 'Actividades de Voluntariado', ngoApprovedHoursTitle: 'Horas de Voluntariado Aprobadas', ngoCertProgramsTitle: 'Programas de Certificado', statsConfidentialNGO: 'Confidencial — Uso Interno', ngoTotalVolunteers: 'Total Voluntarios', ngoActivitiesCreated: 'Actividades Creadas', ngoHoursApproved: 'Horas Aprobadas', ngoCertsIssuedCount: 'Certificados Emitidos', ngoNoActivitiesYet: 'No se han creado actividades aún', ngoNoApprovedHoursYet: 'No hay horas aprobadas aún', ngoNoCertProgramsYet: 'No se han creado programas de certificado', ngoImpactReportGenerated: '¡Informe de Impacto ONG generado!', sdg1Desc: 'Poner fin a la pobreza en todas sus formas. Más de 700 millones de personas viven en pobreza extrema. El voluntariado ayuda a construir resiliencia comunitaria y conectar a las personas con recursos esenciales.', sdg2Desc: 'Poner fin al hambre y lograr la seguridad alimentaria. Cerca de 733 millones de personas padecieron hambre en 2023. Los programas comunitarios de alimentos crean cambios duraderos.', sdg3Desc: 'Garantizar vidas saludables y promover el bienestar para todas las edades. Los voluntarios amplían el acceso a servicios de salud y apoyan a comunidades vulnerables.', sdg4Desc: 'Garantizar educación de calidad y promover el aprendizaje permanente. Más de 244 millones de niños están fuera de la escuela. La educación es la herramienta más poderosa para cambiar el mundo.', sdg10Desc: 'Reducir la desigualdad dentro y entre los países. Las comunidades equitativas requieren participación activa y programas inclusivos que no dejen a nadie atrás.', sdg11Desc: 'Lograr que las ciudades sean inclusivas, seguras y sostenibles. Para 2050, el 70% de la humanidad vivirá en ciudades — el desarrollo urbano sostenible define nuestro futuro.', sdg13Desc: 'Adoptar medidas urgentes para combatir el cambio climático. El cambio climático amenaza todos los ecosistemas de la Tierra. La acción ambiental comienza localmente y crece globalmente.', sdg17Desc: 'Revitalizar las alianzas mundiales para el desarrollo sostenible. Ningún objetivo se logra solo — la colaboración entre sectores crea impacto duradero.', sdgLearnMore: 'Aprende más en UN.org', sdgKindWorldHelps: 'KindWorld conecta voluntarios con misiones que impulsan directamente este objetivo, creando impacto real en comunidades locales.'
   },
   fr: {
     title: 'KindWorld',
@@ -3653,7 +3658,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: 'À venir', statusCompleted: 'Terminé', statusSuspended: 'Suspendu', exportCSV: 'Exporter CSV', exportedCSV: 'CSV exporté avec succès', endTimeLabel: 'Heure de fin', missionImageUrl: "URL de l'image de couverture", missionImagePlaceholder: 'https://example.com/image.jpg (facultatif)', allCategories: 'Toutes les catégories', clearFilters: 'Effacer les filtres',
     certVolRecognitionProg: 'Programme de Reconnaissance des Bénévoles', certOfVolServiceLabel: 'Certificat de Bénévolat', certIssuedTo: 'Certificat décerné à', certHasCompleted: 'a accompli', certVolHoursOf: 'heures de bénévolat avec', certDateIssuedLabel: "Date d'émission", certCertIdLabel: 'N° de Certificat', certSaveAsPDFBtn: '⬇ Enregistrer en PDF',
     inactiveStatus: 'Inactif', certActivate: '▶ Activer', requiredLabel: 'requises', createdLabel: 'Créé', volunteerRequestsEmpty: 'Les demandes de bénévoles apparaîtront ici une fois qu\'ils auront postulé.',
-    myMissionsTitle: 'Mes Missions', myMissionsUpcoming: 'À venir', myMissionsCompleted: 'Terminées'
+    myMissionsTitle: 'Mes Missions', myMissionsUpcoming: 'À venir', myMissionsCompleted: 'Terminées',
+    certIssuedByLabel: 'Émis par', certAuthCertLabel: 'Certificat numérique autorisé', certEligibleBadge: 'Éligible', certHoursRequired: 'heures requises', certVolunteersEarned: 'bénévoles ont obtenu', certClaimBtn: 'Réclamer le Certificat', certChangeLogo: 'Changer le Logo', statsConfidential: 'Confidentiel — Usage Personnel', downloadNgoReportBtn: 'Télécharger le Rapport ONG', ngoImpactReportTitle: "Rapport d'Impact ONG", ngoVerifiedPartner: 'Partenaire ONG Vérifié', ngoVolunteerActivitiesTitle: 'Activités Bénévoles', ngoApprovedHoursTitle: 'Heures de Bénévolat Approuvées', ngoCertProgramsTitle: 'Programmes de Certificats', statsConfidentialNGO: 'Confidentiel — Usage Interne', ngoTotalVolunteers: 'Total Bénévoles', ngoActivitiesCreated: 'Activités Créées', ngoHoursApproved: 'Heures Approuvées', ngoCertsIssuedCount: 'Certificats Émis', ngoNoActivitiesYet: "Aucune activité créée pour l'instant", ngoNoApprovedHoursYet: "Aucune heure approuvée pour l'instant", ngoNoCertProgramsYet: 'Aucun programme de certificat créé', ngoImpactReportGenerated: "Rapport d'Impact ONG généré!", sdg1Desc: "Éliminer la pauvreté sous toutes ses formes. Plus de 700 millions de personnes vivent encore dans une pauvreté extrême. Le bénévolat aide à renforcer la résilience des communautés et à connecter les personnes aux ressources essentielles.", sdg2Desc: "Éliminer la faim et assurer la sécurité alimentaire. Près de 733 millions de personnes ont souffert de la faim en 2023. Les programmes alimentaires communautaires et l'agriculture durable créent un changement durable.", sdg3Desc: "Garantir des vies saines et promouvoir le bien-être pour tous. Les bénévoles élargissent l'accès aux soins de santé et soutiennent les communautés vulnérables dans le monde entier.", sdg4Desc: "Garantir une éducation de qualité et promouvoir l'apprentissage tout au long de la vie. Plus de 244 millions d'enfants sont hors de l'école. L'éducation est l'outil le plus puissant pour changer le monde.", sdg10Desc: "Réduire les inégalités dans et entre les pays. Des communautés équitables nécessitent une participation active et des programmes inclusifs qui ne laissent personne de côté.", sdg11Desc: "Rendre les villes inclusives, sûres et durables. D'ici 2050, 70% de l'humanité vivra dans des villes — le développement urbain durable façonne notre avenir commun.", sdg13Desc: "Prendre des mesures urgentes pour lutter contre les changements climatiques. Le changement climatique menace tous les écosystèmes de la Terre. L'action environnementale commence localement et se développe à l'échelle mondiale.", sdg17Desc: "Revitaliser les partenariats mondiaux pour le développement durable. Aucun objectif n'est atteint seul — la collaboration entre secteurs crée un impact durable.", sdgLearnMore: "En savoir plus sur UN.org", sdgKindWorldHelps: "KindWorld connecte les bénévoles avec des missions qui font directement avancer cet objectif, créant un impact réel dans les communautés locales."
   },
   pt: {
     title: 'KindWorld',
@@ -4197,7 +4203,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: 'Em breve', statusCompleted: 'Concluído', statusSuspended: 'Suspenso', exportCSV: 'Exportar CSV', exportedCSV: 'CSV exportado com sucesso', endTimeLabel: 'Hora de Término', missionImageUrl: 'URL da Imagem de Capa', missionImagePlaceholder: 'https://example.com/image.jpg (opcional)', allCategories: 'Todas as Categorias', clearFilters: 'Limpar Filtros',
     certVolRecognitionProg: 'Programa de Reconhecimento de Voluntários', certOfVolServiceLabel: 'Certificado de Serviço Voluntário', certIssuedTo: 'Certificado emitido a', certHasCompleted: 'completou', certVolHoursOf: 'horas de voluntariado com', certDateIssuedLabel: 'Data de Emissão', certCertIdLabel: 'ID do Certificado', certSaveAsPDFBtn: '⬇ Guardar como PDF',
     inactiveStatus: 'Inativo', certActivate: '▶ Ativar', requiredLabel: 'necessárias', createdLabel: 'Criado', volunteerRequestsEmpty: 'Pedidos de voluntários aparecerão aqui quando se candidatarem.',
-    myMissionsTitle: 'Minhas Missões', myMissionsUpcoming: 'Próximas', myMissionsCompleted: 'Concluídas'
+    myMissionsTitle: 'Minhas Missões', myMissionsUpcoming: 'Próximas', myMissionsCompleted: 'Concluídas',
+    certIssuedByLabel: 'Emitido por', certAuthCertLabel: 'Certificado digital autorizado', certEligibleBadge: 'Elegível', certHoursRequired: 'horas necessárias', certVolunteersEarned: 'voluntários conquistaram', certClaimBtn: 'Resgatar Certificado', certChangeLogo: 'Alterar Logo', statsConfidential: 'Confidencial — Uso Pessoal', downloadNgoReportBtn: 'Baixar Relatório ONG', ngoImpactReportTitle: 'Relatório de Impacto ONG', ngoVerifiedPartner: 'Parceiro ONG Verificado', ngoVolunteerActivitiesTitle: 'Atividades de Voluntariado', ngoApprovedHoursTitle: 'Horas de Voluntariado Aprovadas', ngoCertProgramsTitle: 'Programas de Certificado', statsConfidentialNGO: 'Confidencial — Uso Interno', ngoTotalVolunteers: 'Total Voluntários', ngoActivitiesCreated: 'Atividades Criadas', ngoHoursApproved: 'Horas Aprovadas', ngoCertsIssuedCount: 'Certificados Emitidos', ngoNoActivitiesYet: 'Nenhuma atividade criada ainda', ngoNoApprovedHoursYet: 'Nenhuma hora aprovada ainda', ngoNoCertProgramsYet: 'Nenhum programa de certificado criado', ngoImpactReportGenerated: 'Relatório de Impacto ONG gerado!', sdg1Desc: 'Acabar com a pobreza em todas as suas formas. Mais de 700 milhões de pessoas ainda vivem em extrema pobreza. O voluntariado ajuda a construir resiliência comunitária e conectar pessoas a recursos essenciais.', sdg2Desc: 'Acabar com a fome e garantir a segurança alimentar. Cerca de 733 milhões de pessoas enfrentaram a fome em 2023. Programas comunitários de alimentos e agricultura sustentável criam mudanças duradouras.', sdg3Desc: 'Garantir vidas saudáveis e promover o bem-estar para todas as idades. Voluntários ampliam o acesso a serviços de saúde e apoiam comunidades vulneráveis em todo o mundo.', sdg4Desc: 'Garantir educação de qualidade e promover a aprendizagem ao longo da vida. Mais de 244 milhões de crianças estão fora da escola. A educação é a ferramenta mais poderosa para mudar o mundo.', sdg10Desc: 'Reduzir as desigualdades dentro e entre os países. Comunidades equitativas requerem participação ativa e programas inclusivos que não deixem ninguém para trás.', sdg11Desc: 'Tornar as cidades inclusivas, seguras e sustentáveis. Até 2050, 70% da humanidade viverá em cidades — o desenvolvimento urbano sustentável molda nosso futuro comum.', sdg13Desc: 'Tomar medidas urgentes para combater as alterações climáticas. A ação ambiental começa localmente e cresce globalmente.', sdg17Desc: 'Revitalizar as parcerias globais para o desenvolvimento sustentável. Nenhum objetivo é alcançado sozinho — a colaboração entre setores cria impacto duradouro.', sdgLearnMore: 'Saiba mais em UN.org', sdgKindWorldHelps: 'KindWorld conecta voluntários com missões que diretamente avançam este objetivo, criando impacto real nas comunidades locais.'
   },
   ja: {
     title: 'KindWorld',
@@ -4741,7 +4748,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: '開催予定', statusCompleted: '完了', statusSuspended: '停止中', exportCSV: 'CSVエクスポート', exportedCSV: 'CSVエクスポート完了', endTimeLabel: '終了時間', missionImageUrl: 'カバー画像URL', missionImagePlaceholder: 'https://example.com/image.jpg（任意）', allCategories: 'すべてのカテゴリ', clearFilters: 'フィルタークリア',
     certVolRecognitionProg: 'ボランティア認定プログラム', certOfVolServiceLabel: 'ボランティア活動証明書', certIssuedTo: '証明書受賞者', certHasCompleted: 'が達成した', certVolHoursOf: '時間のボランティア活動（対象組織：', certDateIssuedLabel: '発行日', certCertIdLabel: '証明書番号', certSaveAsPDFBtn: '⬇ PDFとして保存',
     inactiveStatus: '無効', certActivate: '▶ 有効化', requiredLabel: '時間必要', createdLabel: '作成日', volunteerRequestsEmpty: 'ボランティアが申請するとここに表示されます。',
-    myMissionsTitle: '自分のミッション', myMissionsUpcoming: '予定', myMissionsCompleted: '完了'
+    myMissionsTitle: '自分のミッション', myMissionsUpcoming: '予定', myMissionsCompleted: '完了',
+    certIssuedByLabel: '発行者', certAuthCertLabel: '公式デジタル証明書', certEligibleBadge: '受け取り可能', certHoursRequired: '時間必要', certVolunteersEarned: '人のボランティアが取得', certClaimBtn: '証明書を受け取る', certChangeLogo: 'ロゴを変更', statsConfidential: '機密 — 個人使用', downloadNgoReportBtn: 'NGOレポートをダウンロード', ngoImpactReportTitle: 'NGO影響レポート', ngoVerifiedPartner: '認証済みNGOパートナー', ngoVolunteerActivitiesTitle: 'ボランティア活動', ngoApprovedHoursTitle: '承認済みボランティア時間', ngoCertProgramsTitle: '証明書プログラム', statsConfidentialNGO: '機密 — 内部使用', ngoTotalVolunteers: '総ボランティア数', ngoActivitiesCreated: '作成した活動数', ngoHoursApproved: '承認済み時間', ngoCertsIssuedCount: '発行済み証明書', ngoNoActivitiesYet: 'まだ活動が作成されていません', ngoNoApprovedHoursYet: 'まだ承認済み時間がありません', ngoNoCertProgramsYet: '証明書プログラムはまだ作成されていません', ngoImpactReportGenerated: 'NGO影響レポートが生成されました！', sdg1Desc: 'あらゆる形の貧困を世界中で終わらせる。7億人以上が今も極度の貧困の中で暮らしています。ボランティア活動はコミュニティのレジリエンスを高め、人々と必要なリソースをつなぎます。', sdg2Desc: '飢餓を終わらせ、食料安全保障を達成する。2023年には約7億3300万人が飢餓に直面しました。地域の食料プログラムと持続可能な農業が変化をもたらします。', sdg3Desc: 'すべての年齢のすべての人の健康と福祉を確保する。ボランティアは医療サービスへのアクセスを拡大し、脆弱なコミュニティを支援します。', sdg4Desc: 'すべての人に質の高い教育を確保し、生涯学習を推進する。2億4400万人以上の子どもたちが学校に通えていません。教育は世界を変える最も強力なツールです。', sdg10Desc: '国内および国間の不平等を削減する。公平なコミュニティには、誰も取り残さないための積極的な参加と包括的プログラムが必要です。', sdg11Desc: '都市と人間の居住地を安全で持続可能にする。2050年までに人類の70%が都市に住む予定です。持続可能な都市開発が私たちの共有の未来を形成します。', sdg13Desc: '気候変動に具体的な対策を取る。気候変動は地球上のすべての生態系を脅かしています。環境への行動はローカルから始まり、グローバルに広がります。', sdg17Desc: '持続可能な開発に向けてグローバルパートナーシップを活性化する。どの目標も単独では達成できません。分野を超えた協力が持続的な影響を生み出します。', sdgLearnMore: 'UN.orgで詳しく見る', sdgKindWorldHelps: 'KindWorldは、この目標を直接推進するミッションにボランティアをつなぎ、地域コミュニティで実質的な影響を生み出します。'
   },
   th: {
     title: 'KindWorld',
@@ -5285,7 +5293,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: 'กำลังจะมา', statusCompleted: 'เสร็จสิ้น', statusSuspended: 'ถูกระงับ', exportCSV: 'ส่งออก CSV', exportedCSV: 'ส่งออก CSV สำเร็จ', endTimeLabel: 'เวลาสิ้นสุด', missionImageUrl: 'URL รูปภาพหน้าปก', missionImagePlaceholder: 'https://example.com/image.jpg (ไม่บังคับ)', allCategories: 'ทุกหมวดหมู่', clearFilters: 'ล้างตัวกรอง',
     certVolRecognitionProg: 'โครงการยกย่องอาสาสมัคร', certOfVolServiceLabel: 'ใบรับรองการบริการอาสาสมัคร', certIssuedTo: 'มอบใบรับรองแก่', certHasCompleted: 'ได้เสร็จสิ้น', certVolHoursOf: 'ชั่วโมงการบริการอาสาสมัคร กับ', certDateIssuedLabel: 'วันที่ออก', certCertIdLabel: 'รหัสใบรับรอง', certSaveAsPDFBtn: '⬇ บันทึกเป็น PDF',
     inactiveStatus: 'ไม่ใช้งาน', certActivate: '▶ เปิดใช้งาน', requiredLabel: 'ที่ต้องการ', createdLabel: 'สร้างเมื่อ', volunteerRequestsEmpty: 'คำขอของอาสาสมัครจะปรากฏที่นี่หลังจากที่พวกเขาสมัคร',
-    myMissionsTitle: 'ภารกิจของฉัน', myMissionsUpcoming: 'กำลังจะมา', myMissionsCompleted: 'เสร็จแล้ว'
+    myMissionsTitle: 'ภารกิจของฉัน', myMissionsUpcoming: 'กำลังจะมา', myMissionsCompleted: 'เสร็จแล้ว',
+    certIssuedByLabel: 'ออกโดย', certAuthCertLabel: 'ใบรับรองดิจิทัลที่ได้รับอนุมัติ', certEligibleBadge: 'มีสิทธิ์', certHoursRequired: 'ชั่วโมงที่ต้องการ', certVolunteersEarned: 'อาสาสมัครได้รับ', certClaimBtn: 'รับใบรับรอง', certChangeLogo: 'เปลี่ยนโลโก้', statsConfidential: 'ลับ — สำหรับการใช้งานส่วนตัว', downloadNgoReportBtn: 'ดาวน์โหลดรายงาน NGO', ngoImpactReportTitle: 'รายงานผลกระทบ NGO', ngoVerifiedPartner: 'พันธมิตร NGO ที่ตรวจสอบแล้ว', ngoVolunteerActivitiesTitle: 'กิจกรรมอาสาสมัคร', ngoApprovedHoursTitle: 'ชั่วโมงอาสาสมัครที่อนุมัติ', ngoCertProgramsTitle: 'โปรแกรมใบรับรอง', statsConfidentialNGO: 'ลับ — สำหรับการใช้งานภายใน', ngoTotalVolunteers: 'อาสาสมัครทั้งหมด', ngoActivitiesCreated: 'กิจกรรมที่สร้าง', ngoHoursApproved: 'ชั่วโมงที่อนุมัติ', ngoCertsIssuedCount: 'ใบรับรองที่ออก', ngoNoActivitiesYet: 'ยังไม่มีกิจกรรมที่สร้าง', ngoNoApprovedHoursYet: 'ยังไม่มีชั่วโมงที่อนุมัติ', ngoNoCertProgramsYet: 'ยังไม่มีโปรแกรมใบรับรองที่สร้าง', ngoImpactReportGenerated: 'รายงานผลกระทบ NGO ถูกสร้างแล้ว!', sdg1Desc: 'ยุติความยากจนในทุกรูปแบบทั่วโลก มากกว่า 700 ล้านคนยังคงใช้ชีวิตในความยากจนขั้นรุนแรง การอาสาสมัครช่วยสร้างความยืดหยุ่นของชุมชนและเชื่อมโยงผู้คนกับทรัพยากรที่จำเป็น', sdg2Desc: 'ยุติความหิวโหยและบรรลุความมั่นคงด้านอาหาร ในปี 2566 เกือบ 733 ล้านคนเผชิญกับความหิวโหย โครงการอาหารชุมชนและเกษตรกรรมยั่งยืนสร้างการเปลี่ยนแปลงที่ยั่งยืน', sdg3Desc: 'รับประกันชีวิตที่มีสุขภาพดีและส่งเสริมความเป็นอยู่ที่ดีสำหรับทุกวัย อาสาสมัครขยายการเข้าถึงบริการสุขภาพและสนับสนุนชุมชนที่เปราะบาง', sdg4Desc: 'รับประกันการศึกษาที่มีคุณภาพและส่งเสริมการเรียนรู้ตลอดชีวิตสำหรับทุกคน เด็กกว่า 244 ล้านคนอยู่นอกระบบการศึกษา การศึกษาคือเครื่องมือที่ทรงพลังที่สุดในการเปลี่ยนแปลงโลก', sdg10Desc: 'ลดความไม่เท่าเทียมภายในและระหว่างประเทศ ชุมชนที่เป็นธรรมต้องการการมีส่วนร่วมและโครงการที่ครอบคลุมซึ่งไม่ทิ้งใครไว้ข้างหลัง', sdg11Desc: 'ทำให้เมืองมีความครอบคลุม ปลอดภัย และยั่งยืน ภายในปี 2593 70% ของมนุษยชาติจะอาศัยอยู่ในเมือง การพัฒนาเมืองอย่างยั่งยืนกำหนดอนาคตร่วมกันของเรา', sdg13Desc: 'ดำเนินการอย่างเร่งด่วนเพื่อต่อสู้กับการเปลี่ยนแปลงสภาพภูมิอากาศ การเปลี่ยนแปลงสภาพภูมิอากาศคุกคามทุกระบบนิเวศบนโลก การดำเนินการด้านสิ่งแวดล้อมเริ่มต้นในท้องถิ่นและขยายไปทั่วโลก', sdg17Desc: 'ฟื้นฟูหุ้นส่วนระดับโลกเพื่อการพัฒนาที่ยั่งยืน ไม่มีเป้าหมายใดที่บรรลุได้ด้วยตนเอง การทำงานร่วมกันข้ามภาคส่วนสร้างผลกระทบที่ยั่งยืน', sdgLearnMore: 'เรียนรู้เพิ่มเติมที่ UN.org', sdgKindWorldHelps: 'KindWorld เชื่อมโยงอาสาสมัครกับภารกิจที่ส่งเสริมเป้าหมายนี้โดยตรง สร้างผลกระทบที่แท้จริงในชุมชนท้องถิ่น'
   },
   vi: {
     title: 'KindWorld',
@@ -5829,7 +5838,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: 'Sắp tới', statusCompleted: 'Đã hoàn thành', statusSuspended: 'Bị đình chỉ', exportCSV: 'Xuất CSV', exportedCSV: 'Xuất CSV thành công', endTimeLabel: 'Giờ Kết Thúc', missionImageUrl: 'URL Ảnh Bìa', missionImagePlaceholder: 'https://example.com/image.jpg (tùy chọn)', allCategories: 'Tất cả Danh mục', clearFilters: 'Xóa Bộ Lọc',
     certVolRecognitionProg: 'Chương trình Công nhận Tình nguyện viên', certOfVolServiceLabel: 'Chứng nhận Dịch vụ Tình nguyện', certIssuedTo: 'Chứng chỉ trao cho', certHasCompleted: 'đã hoàn thành', certVolHoursOf: 'giờ tình nguyện tại', certDateIssuedLabel: 'Ngày Cấp', certCertIdLabel: 'Mã Chứng chỉ', certSaveAsPDFBtn: '⬇ Lưu thành PDF',
     inactiveStatus: 'Không hoạt động', certActivate: '▶ Kích hoạt', requiredLabel: 'bắt buộc', createdLabel: 'Ngày tạo', volunteerRequestsEmpty: 'Yêu cầu của tình nguyện viên sẽ xuất hiện ở đây sau khi họ đăng ký.',
-    myMissionsTitle: 'Nhiệm Vụ Của Tôi', myMissionsUpcoming: 'Sắp tới', myMissionsCompleted: 'Đã hoàn thành'
+    myMissionsTitle: 'Nhiệm Vụ Của Tôi', myMissionsUpcoming: 'Sắp tới', myMissionsCompleted: 'Đã hoàn thành',
+    certIssuedByLabel: 'Cấp bởi', certAuthCertLabel: 'Chứng chỉ số hợp lệ', certEligibleBadge: 'Đủ điều kiện', certHoursRequired: 'giờ yêu cầu', certVolunteersEarned: 'tình nguyện viên đã đạt', certClaimBtn: 'Nhận Chứng chỉ', certChangeLogo: 'Thay Logo', statsConfidential: 'Bảo mật — Dùng Cá Nhân', downloadNgoReportBtn: 'Tải Báo Cáo Tổ Chức', ngoImpactReportTitle: 'Báo Cáo Tác Động Tổ Chức', ngoVerifiedPartner: 'Đối tác Tổ chức Xác minh', ngoVolunteerActivitiesTitle: 'Hoạt động Tình Nguyện', ngoApprovedHoursTitle: 'Giờ Tình Nguyện Được Duyệt', ngoCertProgramsTitle: 'Chương trình Chứng chỉ', statsConfidentialNGO: 'Bảo mật — Dùng Nội bộ', ngoTotalVolunteers: 'Tổng Tình Nguyện Viên', ngoActivitiesCreated: 'Hoạt động Đã tạo', ngoHoursApproved: 'Giờ Được Duyệt', ngoCertsIssuedCount: 'Chứng chỉ Đã Cấp', ngoNoActivitiesYet: 'Chưa có hoạt động nào được tạo', ngoNoApprovedHoursYet: 'Chưa có giờ nào được duyệt', ngoNoCertProgramsYet: 'Chưa có chương trình chứng chỉ nào được tạo', ngoImpactReportGenerated: 'Báo cáo Tác động Tổ chức đã được tạo!', sdg1Desc: 'Chấm dứt nghèo đói dưới mọi hình thức trên toàn thế giới. Hơn 700 triệu người vẫn sống trong cảnh nghèo cùng cực. Tình nguyện giúp xây dựng sức bền cộng đồng và kết nối mọi người với tài nguyên thiết yếu.', sdg2Desc: 'Chấm dứt nạn đói và đảm bảo an ninh lương thực. Gần 733 triệu người phải đối mặt với nạn đói năm 2023. Các chương trình thực phẩm cộng đồng và nông nghiệp bền vững tạo ra thay đổi lâu dài.', sdg3Desc: 'Đảm bảo cuộc sống lành mạnh và thúc đẩy phúc lợi cho mọi lứa tuổi. Tình nguyện viên mở rộng khả năng tiếp cận dịch vụ y tế và hỗ trợ các cộng đồng dễ bị tổn thương.', sdg4Desc: 'Đảm bảo giáo dục chất lượng và thúc đẩy học tập suốt đời cho tất cả mọi người. Hơn 244 triệu trẻ em không được đến trường. Giáo dục là công cụ mạnh mẽ nhất để thay đổi thế giới.', sdg10Desc: 'Giảm bất bình đẳng trong và giữa các quốc gia. Cộng đồng công bằng đòi hỏi sự tham gia tích cực và các chương trình toàn diện không để ai bị bỏ lại phía sau.', sdg11Desc: 'Làm cho các thành phố mang tính toàn diện, an toàn và bền vững. Đến năm 2050, 70% nhân loại sẽ sống ở các thành phố — phát triển đô thị bền vững định hình tương lai chung của chúng ta.', sdg13Desc: 'Hành động khẩn cấp để chống lại biến đổi khí hậu. Biến đổi khí hậu đe dọa mọi hệ sinh thái trên Trái Đất. Hành động môi trường bắt đầu từ địa phương và lan rộng toàn cầu.', sdg17Desc: 'Hồi sinh quan hệ đối tác toàn cầu vì sự phát triển bền vững. Không có mục tiêu nào đạt được một mình — sự hợp tác liên ngành tạo ra tác động lâu dài.', sdgLearnMore: 'Tìm hiểu thêm tại UN.org', sdgKindWorldHelps: 'KindWorld kết nối tình nguyện viên với các nhiệm vụ trực tiếp thúc đẩy mục tiêu này, tạo ra tác động thực sự trong các cộng đồng địa phương.'
   },
   ko: {
     title: 'KindWorld',
@@ -6373,7 +6383,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: '예정됨', statusCompleted: '완료됨', statusSuspended: '정지됨', exportCSV: 'CSV 내보내기', exportedCSV: 'CSV 내보내기 성공', endTimeLabel: '종료 시간', missionImageUrl: '커버 이미지 URL', missionImagePlaceholder: 'https://example.com/image.jpg (선택사항)', allCategories: '모든 카테고리', clearFilters: '필터 초기화',
     certVolRecognitionProg: '봉사자 인정 프로그램', certOfVolServiceLabel: '봉사 활동 증명서', certIssuedTo: '수여 대상자', certHasCompleted: '이 달성한', certVolHoursOf: '시간의 봉사 활동 (소속 기관:', certDateIssuedLabel: '발급일', certCertIdLabel: '증명서 ID', certSaveAsPDFBtn: '⬇ PDF로 저장',
     inactiveStatus: '비활성', certActivate: '▶ 활성화', requiredLabel: '필요', createdLabel: '생성일', volunteerRequestsEmpty: '봉사자 신청이 들어오면 여기에 표시됩니다.',
-    myMissionsTitle: '내 미션', myMissionsUpcoming: '예정', myMissionsCompleted: '완료'
+    myMissionsTitle: '내 미션', myMissionsUpcoming: '예정', myMissionsCompleted: '완료',
+    certIssuedByLabel: '발급:', certAuthCertLabel: '공인 디지털 증명서', certEligibleBadge: '자격 있음', certHoursRequired: '시간 필요', certVolunteersEarned: '봉사자 달성', certClaimBtn: '증명서 수령', certChangeLogo: '로고 변경', statsConfidential: '기밀 — 개인용', downloadNgoReportBtn: 'NGO 보고서 다운로드', ngoImpactReportTitle: 'NGO 영향 보고서', ngoVerifiedPartner: '인증된 NGO 파트너', ngoVolunteerActivitiesTitle: '봉사 활동', ngoApprovedHoursTitle: '승인된 봉사 시간', ngoCertProgramsTitle: '증명서 프로그램', statsConfidentialNGO: '기밀 — 내부용', ngoTotalVolunteers: '총 봉사자', ngoActivitiesCreated: '생성된 활동', ngoHoursApproved: '승인된 시간', ngoCertsIssuedCount: '발급된 증명서', ngoNoActivitiesYet: '아직 생성된 활동이 없습니다', ngoNoApprovedHoursYet: '아직 승인된 시간이 없습니다', ngoNoCertProgramsYet: '아직 생성된 증명서 프로그램이 없습니다', ngoImpactReportGenerated: 'NGO 영향 보고서가 생성되었습니다!', sdg1Desc: '모든 형태의 빈곤을 전 세계적으로 종식시키기. 7억 명 이상이 여전히 극심한 빈곤 속에 살고 있습니다. 자원봉사는 지역사회 회복력을 강화하고 사람들을 필수 자원과 연결하는 데 도움을 줍니다.', sdg2Desc: '기아를 종식하고 식량 안보를 달성하기. 2023년 약 7억 3,300만 명이 기아에 직면했습니다. 지역사회 식품 프로그램과 지속 가능한 농업이 지속적인 변화를 만들어냅니다.', sdg3Desc: '모든 연령대의 건강한 삶을 보장하고 웰빙을 증진하기. 자원봉사자들은 의료 서비스 접근성을 확대하고 취약한 지역사회를 지원합니다.', sdg4Desc: '모두를 위한 양질의 교육을 보장하고 평생 학습을 증진하기. 2억 4,400만 명 이상의 어린이가 학교에 다니지 못합니다. 교육은 세상을 바꾸는 가장 강력한 도구입니다.', sdg10Desc: '국내 및 국가 간 불평등을 줄이기. 공평한 지역사회는 아무도 뒤처지지 않도록 하는 적극적인 참여와 포용적 프로그램이 필요합니다.', sdg11Desc: '도시를 포용적이고 안전하며 지속 가능하게 만들기. 2050년까지 인류의 70%가 도시에서 살 것입니다 — 지속 가능한 도시 개발이 우리의 공동 미래를 형성합니다.', sdg13Desc: '기후 변화에 맞서 긴급 조치를 취하기. 기후 변화는 지구상의 모든 생태계를 위협합니다. 환경 행동은 지역에서 시작하여 전 세계로 확장됩니다.', sdg17Desc: '지속 가능한 발전을 위한 글로벌 파트너십을 강화하기. 어떤 목표도 혼자서는 달성할 수 없습니다 — 분야를 초월한 협력이 지속적인 영향을 만들어냅니다.', sdgLearnMore: 'UN.org에서 자세히 알아보기', sdgKindWorldHelps: 'KindWorld는 이 목표를 직접 촉진하는 미션에 자원봉사자를 연결하여 지역 커뮤니티에서 실질적인 영향을 만들어냅니다.'
   },
   de: {
     title: 'KindWorld',
@@ -6917,7 +6928,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     statusUpcoming: 'Bevorstehend', statusCompleted: 'Abgeschlossen', statusSuspended: 'Ausgesetzt', exportCSV: 'CSV exportieren', exportedCSV: 'CSV erfolgreich exportiert', endTimeLabel: 'Endzeit', missionImageUrl: 'Titelbild-URL', missionImagePlaceholder: 'https://example.com/image.jpg (optional)', allCategories: 'Alle Kategorien', clearFilters: 'Filter zurücksetzen',
     certVolRecognitionProg: 'Freiwilligen-Anerkennungsprogramm', certOfVolServiceLabel: 'Freiwilligendienst-Zertifikat', certIssuedTo: 'Zertifikat verliehen an', certHasCompleted: 'hat absolviert', certVolHoursOf: 'Freiwilligenstunden bei', certDateIssuedLabel: 'Ausstellungsdatum', certCertIdLabel: 'Zertifikats-ID', certSaveAsPDFBtn: '⬇ Als PDF speichern',
     inactiveStatus: 'Inaktiv', certActivate: '▶ Aktivieren', requiredLabel: 'erforderlich', createdLabel: 'Erstellt am', volunteerRequestsEmpty: 'Bewerbungen von Freiwilligen erscheinen hier, sobald sie sich bewerben.',
-    myMissionsTitle: 'Meine Missionen', myMissionsUpcoming: 'Bevorstehend', myMissionsCompleted: 'Abgeschlossen'
+    myMissionsTitle: 'Meine Missionen', myMissionsUpcoming: 'Bevorstehend', myMissionsCompleted: 'Abgeschlossen',
+    certIssuedByLabel: 'Ausgestellt von', certAuthCertLabel: 'Autorisiertes digitales Zertifikat', certEligibleBadge: 'Berechtigt', certHoursRequired: 'Stunden benötigt', certVolunteersEarned: 'Freiwillige haben erworben', certClaimBtn: 'Zertifikat beanspruchen', certChangeLogo: 'Logo ändern', statsConfidential: 'Vertraulich — Nur für den persönlichen Gebrauch', downloadNgoReportBtn: 'NGO-Bericht herunterladen', ngoImpactReportTitle: 'NGO-Auswirkungsbericht', ngoVerifiedPartner: 'Verifizierter NGO-Partner', ngoVolunteerActivitiesTitle: 'Freiwilligenaktivitäten', ngoApprovedHoursTitle: 'Genehmigte Freiwilligenstunden', ngoCertProgramsTitle: 'Zertifikatsprogramme', statsConfidentialNGO: 'Vertraulich — Nur für den internen Gebrauch', ngoTotalVolunteers: 'Gesamte Freiwillige', ngoActivitiesCreated: 'Erstellte Aktivitäten', ngoHoursApproved: 'Genehmigte Stunden', ngoCertsIssuedCount: 'Ausgestellte Zertifikate', ngoNoActivitiesYet: 'Noch keine Aktivitäten erstellt', ngoNoApprovedHoursYet: 'Noch keine genehmigten Stunden', ngoNoCertProgramsYet: 'Keine Zertifikatsprogramme erstellt', ngoImpactReportGenerated: 'NGO-Auswirkungsbericht erstellt!', sdg1Desc: 'Armut in all ihren Formen überall beenden. Mehr als 700 Millionen Menschen leben noch in extremer Armut. Ehrenamtliches Engagement stärkt die Resilienz von Gemeinschaften und verbindet Menschen mit wichtigen Ressourcen.', sdg2Desc: 'Den Hunger beenden und Ernährungssicherheit erreichen. Fast 733 Millionen Menschen litten 2023 an Hunger. Kommunale Lebensmittelprogramme und nachhaltige Landwirtschaft schaffen dauerhaften Wandel.', sdg3Desc: 'Gesundes Leben und Wohlbefinden für alle in jedem Alter gewährleisten. Freiwillige erweitern den Zugang zu Gesundheitsdiensten und unterstützen gefährdete Gemeinschaften.', sdg4Desc: 'Hochwertige Bildung und lebenslanges Lernen für alle gewährleisten. Mehr als 244 Millionen Kinder gehen nicht zur Schule. Bildung ist das wirkungsvollste Mittel zur Weltveränderung.', sdg10Desc: 'Ungleichheit innerhalb von und zwischen Ländern verringern. Gerechte Gemeinschaften erfordern aktive Beteiligung und inklusive Programme, die niemanden zurücklassen.', sdg11Desc: 'Städte und menschliche Siedlungen inklusiv, sicher und nachhaltig machen. Bis 2050 werden 70% der Menschheit in Städten leben — nachhaltige Stadtentwicklung gestaltet unsere gemeinsame Zukunft.', sdg13Desc: 'Dringende Maßnahmen zur Bekämpfung des Klimawandels ergreifen. Der Klimawandel bedroht alle Ökosysteme der Erde. Umweltmaßnahmen beginnen lokal und wachsen global.', sdg17Desc: 'Globale Partnerschaften für nachhaltige Entwicklung neu beleben. Kein Ziel wird alleine erreicht — sektorübergreifende Zusammenarbeit schafft nachhaltigen Wandel.', sdgLearnMore: 'Mehr auf UN.org erfahren', sdgKindWorldHelps: 'KindWorld verbindet Freiwillige mit Missionen, die dieses Ziel direkt vorantreiben, und schafft echte Wirkung in lokalen Gemeinschaften.'
   }
 }
 
@@ -6952,6 +6964,10 @@ export default function KindWorldApp() {
     @keyframes shimmer {
       0% { background-position: -200% 0; }
       100% { background-position: 200% 0; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.82); }
+      to { opacity: 1; transform: scale(1); }
     }
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -7230,6 +7246,7 @@ export default function KindWorldApp() {
   const [notifications, setNotifications] = useState<string[]>([])
   const [showCreateActivity, setShowCreateActivity] = useState(false)
   const [showCertificateManager, setShowCertificateManager] = useState(false)
+  const [selectedSdgNum, setSelectedSdgNum] = useState<number | null>(null)
   const [certPrograms, setCertPrograms] = useState<CertProgram[]>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_cert_programs') || '[]') } catch { return [] }
   })
@@ -7725,7 +7742,7 @@ export default function KindWorldApp() {
     <div class="doc-ft">
       <div class="doc-ft-brand">KINDWORLD</div>
       <div>${t('generatedOn')} ${today}</div>
-      <div>Confidential — For Personal Use</div>
+      <div>${t('statsConfidential')}</div>
     </div>
   </div>
 </body>
@@ -7776,7 +7793,7 @@ export default function KindWorldApp() {
             <td style="padding:13px 16px;border-bottom:1px solid #f1f5f9;color:#64748b">${esc(m.location)}</td>
           </tr>`
         }).join('')
-      : `<tr><td colspan="6" style="padding:32px;text-align:center;color:#94a3b8;font-style:italic">No activities created yet</td></tr>`
+      : `<tr><td colspan="6" style="padding:32px;text-align:center;color:#94a3b8;font-style:italic">${t('ngoNoActivitiesYet')}</td></tr>`
 
     const maskName = (name: string): string => {
       if (!name || name.length <= 2) return esc(name || '—')
@@ -7793,7 +7810,7 @@ export default function KindWorldApp() {
           </td>
           <td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;color:#64748b">${s.submittedAt ? new Date(s.submittedAt).toLocaleDateString() : '—'}</td>
         </tr>`).join('')
-      : `<tr><td colspan="4" style="padding:32px;text-align:center;color:#94a3b8;font-style:italic">No approved hours yet</td></tr>`
+      : `<tr><td colspan="4" style="padding:32px;text-align:center;color:#94a3b8;font-style:italic">${t('ngoNoApprovedHoursYet')}</td></tr>`
 
     const certProgramRows = ngoPrograms.length > 0
       ? ngoPrograms.map(p => {
@@ -7808,7 +7825,7 @@ export default function KindWorldApp() {
             <td style="padding:12px 16px;border-bottom:1px solid #f1f5f9;text-align:center;color:#16a34a;font-weight:700">${progReqs.filter(r => r.status === 'approved').length}</td>
           </tr>`
         }).join('')
-      : `<tr><td colspan="5" style="padding:32px;text-align:center;color:#94a3b8;font-style:italic">No certificate programs created</td></tr>`
+      : `<tr><td colspan="5" style="padding:32px;text-align:center;color:#94a3b8;font-style:italic">${t('ngoNoCertProgramsYet')}</td></tr>`
 
     const themeVars = Object.entries(themes[userTheme]?.vars || themes.violet.vars).map(([k, v]) => `${k}: ${v}`).join('; ')
 
@@ -7866,23 +7883,23 @@ export default function KindWorldApp() {
 </head>
 <body>
   <div class="no-print" style="text-align:center;padding:24px 20px 0">
-    <button class="print-btn" onclick="window.print()">🖨️ Download NGO Report (PDF)</button>
+    <button class="print-btn" onclick="window.print()">🖨️ ${t('downloadNgoReportBtn')} (PDF)</button>
   </div>
   <div class="doc">
     <div class="lh">
       <div class="lh-l">
         <div class="lh-globe">🌍</div>
         <div class="lh-brand">KINDWORLD</div>
-        <div class="lh-tag">NGO Impact Report</div>
+        <div class="lh-tag">${t('ngoImpactReportTitle')}</div>
       </div>
       <div class="lh-r">
         <div>
-          <div class="lh-rtype">Organisation Impact Report</div>
+          <div class="lh-rtype">${t('ngoImpactReportTitle')}</div>
           <div class="lh-org">${esc(user.name)}</div>
           <div class="lh-email">${esc(user.email)}</div>
           <div class="lh-chips">
-            <span class="chip">✅ Verified NGO Partner</span>
-            <span class="chip">📅 Member since ${esc(user.joinDate || 'N/A')}</span>
+            <span class="chip">✅ ${t('ngoVerifiedPartner')}</span>
+            <span class="chip">📅 ${t('memberSince')}: ${esc(user.joinDate || 'N/A')}</span>
           </div>
         </div>
         <div class="lh-date-area">
@@ -7895,10 +7912,10 @@ export default function KindWorldApp() {
 
     <div class="strip">
       ${[
-        { icon: '👥', value: totalVolunteers, label: 'Total Volunteers' },
-        { icon: '📋', value: ngoMissions.length, label: 'Activities Created' },
-        { icon: '⏱️', value: totalApprovedHours + 'h', label: 'Hours Approved' },
-        { icon: '🏆', value: certsIssued, label: 'Certificates Issued' }
+        { icon: '👥', value: totalVolunteers, label: t('ngoTotalVolunteers') },
+        { icon: '📋', value: ngoMissions.length, label: t('ngoActivitiesCreated') },
+        { icon: '⏱️', value: totalApprovedHours + 'h', label: t('ngoHoursApproved') },
+        { icon: '🏆', value: certsIssued, label: t('ngoCertsIssuedCount') }
       ].map(s => `
         <div class="sb">
           <div class="sb-icon">${s.icon}</div>
@@ -7909,15 +7926,15 @@ export default function KindWorldApp() {
 
     <div class="sec">
       <div class="sh">
-        <div class="sh-t">📋 Volunteer Activities</div>
+        <div class="sh-t">📋 ${t('ngoVolunteerActivitiesTitle')}</div>
         <div class="sh-c">${ngoMissions.length}</div>
       </div>
       <table>
         <thead><tr>
-          <th>Activity</th><th>Date</th><th>Category</th>
-          <th style="text-align:center">Participants</th>
-          <th style="text-align:center">Hours Logged</th>
-          <th>Location</th>
+          <th>${t('rpMissionName')}</th><th>${t('dateLabel')}</th><th>${t('categoryLabel')}</th>
+          <th style="text-align:center">${t('rpParticipants')}</th>
+          <th style="text-align:center">${t('rpHoursCol')}</th>
+          <th>${t('locationLabel')}</th>
         </tr></thead>
         <tbody>${missionRows}</tbody>
       </table>
@@ -7925,28 +7942,28 @@ export default function KindWorldApp() {
 
     <div class="sec">
       <div class="sh">
-        <div class="sh-t">⏱️ Approved Volunteer Hours</div>
-        <div class="sh-c">${approvedSubs.length} submissions · ${totalApprovedHours}h</div>
+        <div class="sh-t">⏱️ ${t('ngoApprovedHoursTitle')}</div>
+        <div class="sh-c">${approvedSubs.length} · ${totalApprovedHours}h</div>
       </div>
-      ${pendingSubs.length > 0 ? `<div class="warn">⚠️ ${pendingSubs.length} pending hour submission(s) awaiting review</div>` : ''}
+      ${pendingSubs.length > 0 ? `<div class="warn">⚠️ ${pendingSubs.length} ${t('ngoPendingReview') || 'pending submission(s) awaiting review'}</div>` : ''}
       <table>
-        <thead><tr><th>Volunteer</th><th>Activity</th><th style="text-align:center">Hours</th><th>Date</th></tr></thead>
+        <thead><tr><th>${t('volunteerRole')}</th><th>${t('rpMissionName')}</th><th style="text-align:center">${t('rpHoursCol')}</th><th>${t('dateLabel')}</th></tr></thead>
         <tbody>${volunteerRows}</tbody>
       </table>
     </div>
 
     <div class="sec">
       <div class="sh">
-        <div class="sh-t">🏆 Certificate Programs</div>
-        <div class="sh-c">${ngoPrograms.length} programs · ${certsIssued} issued</div>
+        <div class="sh-t">🏆 ${t('ngoCertProgramsTitle')}</div>
+        <div class="sh-c">${ngoPrograms.length} · ${certsIssued} ${t('ngoIssuedCol') || 'issued'}</div>
       </div>
       <table>
         <thead><tr>
-          <th>Program</th>
-          <th style="text-align:center">Req. Hours</th>
-          <th style="text-align:center">Status</th>
-          <th style="text-align:center">Pending</th>
-          <th style="text-align:center">Issued</th>
+          <th>${t('certProgramNameLabel')}</th>
+          <th style="text-align:center">${t('certRequiredHoursLabel')}</th>
+          <th style="text-align:center">${t('certProgramActive')}</th>
+          <th style="text-align:center">${t('hoursPending')}</th>
+          <th style="text-align:center">${t('certEarned')}</th>
         </tr></thead>
         <tbody>${certProgramRows}</tbody>
       </table>
@@ -7954,8 +7971,8 @@ export default function KindWorldApp() {
 
     <div class="doc-ft">
       <div class="doc-ft-brand">KINDWORLD</div>
-      <div>NGO Impact Report · ${today}</div>
-      <div>Confidential — For Internal Use</div>
+      <div>${t('ngoImpactReportTitle')} · ${today}</div>
+      <div>${t('statsConfidentialNGO')}</div>
     </div>
   </div>
 </body>
@@ -7967,7 +7984,7 @@ export default function KindWorldApp() {
       printWindow.document.close()
       printWindow.focus()
     }
-    setNotifications(prev => [...prev, `📊 NGO Impact Report generated!`])
+    setNotifications(prev => [...prev, `📊 ${t('ngoImpactReportGenerated')}`])
   }
 
   const joinMission = (missionId: number) => {
@@ -9494,47 +9511,180 @@ export default function KindWorldApp() {
 
         {/* SDG Alignment Section */}
         <AnimatedSection>
-        <section style={{ padding: '96px 24px', background: 'var(--tpbg)' }}>
-          <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-              <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: '300', color: '#1f2937', marginBottom: '16px' }}>
+        <section style={{ padding: '120px 24px', background: '#f9fafb', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 0, left: '8%', right: '8%', height: '1px', background: 'linear-gradient(90deg, transparent, #e5e7eb 30%, #e5e7eb 70%, transparent)' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: '8%', right: '8%', height: '1px', background: 'linear-gradient(90deg, transparent, #e5e7eb 30%, #e5e7eb 70%, transparent)' }} />
+
+          <div style={{ maxWidth: '1040px', margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+              <p style={{ fontSize: '11px', fontWeight: '500', letterSpacing: '4px', color: '#9ca3af', textTransform: 'uppercase', margin: '0 0 24px' }}>
+                United Nations · Global Goals
+              </p>
+              <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: '300', color: '#111827', margin: '0 0 18px', lineHeight: 1.2, letterSpacing: '-0.5px' }}>
                 {t('sdgTitle')}
               </h2>
-              <p style={{ fontSize: '18px', color: '#4b5563', fontWeight: '300', maxWidth: '672px', margin: '0 auto' }}>
+              <p style={{ fontSize: '16px', color: '#6b7280', fontWeight: '300', maxWidth: '480px', margin: '0 auto', lineHeight: 1.75 }}>
                 {t('sdgSubtitle')}
               </p>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '16px' }}>
-              {[
-                { num: 1, nameKey: 'noPoverty', color: '#e5243b' },
-                { num: 2, nameKey: 'zeroHunger', color: '#dda63a' },
-                { num: 3, nameKey: 'goodHealth', color: '#4c9f38' },
-                { num: 4, nameKey: 'qualityEducation', color: '#c5192d' },
-                { num: 10, nameKey: 'reducedInequalities', color: '#dd1367' },
-                { num: 11, nameKey: 'sustainableCities', color: '#fd9d24' },
-                { num: 13, nameKey: 'climateAction', color: '#3f7e44' },
-                { num: 17, nameKey: 'partnerships', color: '#19486a' }
-              ].map((sdg, index) => (
-                <div key={index} style={{
-                  background: sdg.color,
-                  color: 'white',
-                  padding: '16px 24px',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'transform 0.2s ease'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                  <span style={{ fontSize: '20px', fontWeight: '700' }}>{sdg.num}</span>
-                  <span>{t(sdg.nameKey)}</span>
+
+            {(() => {
+              const sdgs = [
+                { num: 1,  nameKey: 'noPoverty',           color: '#e5243b', descKey: 'sdg1Desc'  },
+                { num: 2,  nameKey: 'zeroHunger',          color: '#dda63a', descKey: 'sdg2Desc'  },
+                { num: 3,  nameKey: 'goodHealth',          color: '#4c9f38', descKey: 'sdg3Desc'  },
+                { num: 4,  nameKey: 'qualityEducation',    color: '#c5192d', descKey: 'sdg4Desc'  },
+                { num: 10, nameKey: 'reducedInequalities', color: '#dd1367', descKey: 'sdg10Desc' },
+                { num: 11, nameKey: 'sustainableCities',   color: '#fd9d24', descKey: 'sdg11Desc' },
+                { num: 13, nameKey: 'climateAction',       color: '#3f7e44', descKey: 'sdg13Desc' },
+                { num: 17, nameKey: 'partnerships',        color: '#19486a', descKey: 'sdg17Desc' },
+              ]
+              const active = sdgs.find(s => s.num === selectedSdgNum) || null
+
+              return <>
+                {/* Grid — 2 px gap = visible hairline grid */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                  gap: '2px',
+                  background: '#dde1e7',
+                  border: '2px solid #dde1e7',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  marginBottom: '28px',
+                }}>
+                  {sdgs.map((sdg, index) => (
+                    <div
+                      key={index}
+                      onClick={() => setSelectedSdgNum(sdg.num)}
+                      style={{
+                        background: `${sdg.color}10`,
+                        padding: '32px 28px 28px',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        transition: 'background 0.25s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        minHeight: '172px',
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = `${sdg.color}22` }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = `${sdg.color}10` }}
+                    >
+                      {/* 4 px solid colour bar at top */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: sdg.color }} />
+
+                      {/* Large thin number in SDG colour */}
+                      <div style={{ fontSize: '54px', fontWeight: '200', color: sdg.color, lineHeight: 1, letterSpacing: '-3px', marginBottom: '16px' }}>
+                        {String(sdg.num).padStart(2, '0')}
+                      </div>
+
+                      {/* Goal name — dark for readability, small SDG-coloured dot accent */}
+                      <div style={{ marginTop: 'auto' }}>
+                        <div style={{ width: '16px', height: '2px', background: sdg.color, marginBottom: '8px', opacity: 0.7 }} />
+                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#1f2937', letterSpacing: '1.5px', textTransform: 'uppercase', lineHeight: 1.55 }}>
+                          {t(sdg.nameKey)}
+                        </div>
+                      </div>
+
+                      {/* Arrow */}
+                      <div style={{ position: 'absolute', bottom: '18px', right: '20px', fontSize: '14px', color: sdg.color, opacity: 0.55, fontWeight: '400' }}>
+                        →
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+
+                {/* Hint */}
+                <p style={{ textAlign: 'center', fontSize: '10px', fontWeight: '500', color: '#d1d5db', letterSpacing: '3px', textTransform: 'uppercase', margin: 0 }}>
+                  {language === 'en' ? 'Select a goal to explore' : language === 'id' ? 'Pilih tujuan untuk dijelajahi' : language === 'zh-cn' ? '选择目标以了解更多' : language === 'zh-tw' ? '選擇目標以了解更多' : language === 'es' ? 'Selecciona un objetivo' : language === 'fr' ? 'Sélectionner un objectif' : language === 'pt' ? 'Selecione um objetivo' : language === 'ja' ? '目標を選択して詳細を確認' : language === 'th' ? 'เลือกเป้าหมายเพื่อสำรวจ' : language === 'vi' ? 'Chọn một mục tiêu để khám phá' : language === 'ko' ? '목표를 선택하여 탐색' : language === 'de' ? 'Ziel auswählen' : 'Select a goal to explore'}
+                </p>
+
+                {/* Modal */}
+                {active && (
+                  <div
+                    onClick={() => setSelectedSdgNum(null)}
+                    style={{
+                      position: 'fixed', inset: 0, zIndex: 9999,
+                      background: 'rgba(15,20,30,0.55)',
+                      backdropFilter: 'blur(16px)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: '24px',
+                      animation: 'fadeIn 0.18s ease',
+                    }}
+                  >
+                    <div
+                      onClick={e => e.stopPropagation()}
+                      style={{
+                        background: '#ffffff',
+                        maxWidth: '580px',
+                        width: '100%',
+                        boxShadow: '0 32px 80px rgba(0,0,0,0.18), 0 0 0 1px #e5e7eb',
+                        animation: 'scaleIn 0.28s cubic-bezier(0.34,1.56,0.64,1)',
+                        overflow: 'hidden',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      {/* Coloured header zone */}
+                      <div style={{ background: `${active.color}12`, padding: '40px 52px 36px', position: 'relative', borderBottom: `1px solid ${active.color}20` }}>
+                        {/* 4 px top bar */}
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: active.color }} />
+
+                        {/* Close */}
+                        <button
+                          onClick={() => setSelectedSdgNum(null)}
+                          style={{ position: 'absolute', top: '20px', right: '24px', background: `${active.color}18`, border: 'none', borderRadius: '50%', width: '32px', height: '32px', fontSize: '16px', color: active.color, cursor: 'pointer', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = `${active.color}30` }}
+                          onMouseLeave={e => { e.currentTarget.style.background = `${active.color}18` }}
+                        >✕</button>
+
+                        {/* Eyebrow */}
+                        <p style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '3px', color: active.color, textTransform: 'uppercase', margin: '0 0 12px', opacity: 0.75 }}>
+                          UN · Sustainable Development Goal
+                        </p>
+
+                        {/* Large thin number */}
+                        <div style={{ fontSize: '88px', fontWeight: '200', color: active.color, lineHeight: 1, letterSpacing: '-5px', margin: '0 0 6px' }}>
+                          {String(active.num).padStart(2, '0')}
+                        </div>
+
+                        {/* Goal name */}
+                        <h3 style={{ fontSize: '22px', fontWeight: '700', color: '#111827', margin: 0, lineHeight: 1.25, letterSpacing: '-0.3px' }}>
+                          {t(active.nameKey)}
+                        </h3>
+                      </div>
+
+                      {/* Body */}
+                      <div style={{ padding: '36px 52px 48px' }}>
+                        {/* Description */}
+                        <p style={{ color: '#4b5563', fontSize: '15px', lineHeight: '1.85', margin: '0 0 32px' }}>
+                          {t(active.descKey)}
+                        </p>
+
+                        {/* KindWorld — left-ruled note */}
+                        <div style={{ borderLeft: `3px solid ${active.color}`, paddingLeft: '18px', margin: '0 0 36px' }}>
+                          <p style={{ fontSize: '10px', fontWeight: '700', color: active.color, letterSpacing: '2.5px', textTransform: 'uppercase', margin: '0 0 7px' }}>KindWorld</p>
+                          <p style={{ color: '#6b7280', fontSize: '14px', lineHeight: '1.75', margin: 0 }}>{t('sdgKindWorldHelps')}</p>
+                        </div>
+
+                        {/* UN link */}
+                        <a
+                          href="https://sdgs.un.org/goals"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '2.5px', textTransform: 'uppercase', color: '#9ca3af', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = active.color }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#9ca3af' }}
+                        >
+                          {t('sdgLearnMore')} →
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            })()}
           </div>
         </section>
         </AnimatedSection>
@@ -16383,7 +16533,7 @@ export default function KindWorldApp() {
                             </div>
                           ) : null}
                           <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: '#f5f3ff', border: '1.5px dashed #a5b4fc', borderRadius: '12px', fontSize: '13px', fontWeight: '600', color: '#6366f1', cursor: 'pointer', transition: 'all 0.2s' }}>
-                            📁 {newCertProgForm.logo ? 'Change Logo' : t('certUploadLogo')}
+                            📁 {newCertProgForm.logo ? t('certChangeLogo') : t('certUploadLogo')}
                             <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
                               const file = e.target.files?.[0]
                               if (!file) return
@@ -16704,6 +16854,8 @@ export default function KindWorldApp() {
                           const _certDateLbl = t('certDateIssuedLabel')
                           const _certIdLbl = t('certCertIdLabel')
                           const _certSavePDF = t('certSaveAsPDFBtn')
+                          const _certIssuedBy = t('certIssuedByLabel')
+                          const _certAuthLbl = t('certAuthCertLabel')
                           const certHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Certificate</title><style>
                             @page{size:A4 landscape;margin:0;}
                             @media print{body{margin:0;padding:0;display:block;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{box-shadow:none;}.no-print{display:none!important;}}
@@ -16763,9 +16915,9 @@ export default function KindWorldApp() {
                                 </div>
                               </div>
                               <div class="ftr">
-                                <div class="fk"><div class="fl">Issued by</div><div class="fv">KindWorld Platform</div></div>
-                                <div class="fk" style="text-align:center"><div class="fl">Authorized digital certificate</div><div class="fv">kindworld.app</div></div>
-                                <div class="fk" style="text-align:right"><div class="fl">Volunteer Recognition Program</div><div class="fv">${_ng}</div></div>
+                                <div class="fk"><div class="fl">${_certIssuedBy}</div><div class="fv">KindWorld Platform</div></div>
+                                <div class="fk" style="text-align:center"><div class="fl">${_certAuthLbl}</div><div class="fv">kindworld.app</div></div>
+                                <div class="fk" style="text-align:right"><div class="fl">${_certRecog}</div><div class="fv">${_ng}</div></div>
                               </div>
                             </div>
                             <button class="print-btn no-print" onclick="window.print()">${_certSavePDF}</button>
@@ -16875,7 +17027,7 @@ export default function KindWorldApp() {
                               background: '#28a745',
                               color: 'white'
                             }}>
-                              ✓ Eligible
+                              ✓ {t('certEligibleBadge')}
                             </span>
                           )}
                         </div>
@@ -16885,8 +17037,8 @@ export default function KindWorldApp() {
                             {cert.name}
                           </h4>
                           <div style={{ fontSize: '12px', color: '#718096', marginBottom: '16px' }}>
-                            <span>⏰ {cert.requiredHours} hours required</span>
-                            <span style={{ marginLeft: '12px' }}>🎖️ {cert.issuedCount} volunteers earned</span>
+                            <span>⏰ {cert.requiredHours} {t('certHoursRequired')}</span>
+                            <span style={{ marginLeft: '12px' }}>🎖️ {cert.issuedCount} {t('certVolunteersEarned')}</span>
                           </div>
 
                           {/* Progress Bar */}
@@ -16919,7 +17071,7 @@ export default function KindWorldApp() {
                             <button
                               onClick={() => {
                                 window.open(cert.previewUrl, '_blank')
-                                setNotifications(prev => [...prev, `🎉 Congratulations! You've claimed "${cert.name}"!`])
+                                setNotifications(prev => [...prev, `🎉 ${t('certClaimBtn')}: "${cert.name}"`])
                               }}
                               style={{
                                 width: '100%',
@@ -16937,7 +17089,7 @@ export default function KindWorldApp() {
                                 gap: '8px'
                               }}
                             >
-                              🏆 Claim Certificate
+                              🏆 {t('certClaimBtn')}
                             </button>
                           ) : (
                             <div style={{
@@ -17034,6 +17186,8 @@ export default function KindWorldApp() {
                                 const _certDateLbl2 = t('certDateIssuedLabel')
                                 const _certIdLbl2 = t('certCertIdLabel')
                                 const _certSavePDF2 = t('certSaveAsPDFBtn')
+                                const _certIssuedBy2 = t('certIssuedByLabel')
+                                const _certAuthLbl2 = t('certAuthCertLabel')
                                 const certHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Certificate</title><style>
                                   @page{size:A4 landscape;margin:0;}
                                   @media print{body{margin:0;padding:0;display:block;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{box-shadow:none;}.no-print{display:none!important;}}
@@ -17095,9 +17249,9 @@ export default function KindWorldApp() {
                                       </div>
                                     </div>
                                     <div class="ftr">
-                                      <div class="fk"><div class="fl">Issued by</div><div class="fv">KindWorld Platform</div></div>
-                                      <div class="fk" style="text-align:center"><div class="fl">Authorized digital certificate</div><div class="fv">kindworld.app</div></div>
-                                      <div class="fk" style="text-align:right"><div class="fl">NGO Partner</div><div class="fv">${_ng}</div></div>
+                                      <div class="fk"><div class="fl">${_certIssuedBy2}</div><div class="fv">KindWorld Platform</div></div>
+                                      <div class="fk" style="text-align:center"><div class="fl">${_certAuthLbl2}</div><div class="fv">kindworld.app</div></div>
+                                      <div class="fk" style="text-align:right"><div class="fl">${_certRecog2}</div><div class="fv">${_ng}</div></div>
                                     </div>
                                   </div>
                                   <button class="print-btn no-print" onclick="window.print()">${_certSavePDF2}</button>
@@ -18107,7 +18261,7 @@ export default function KindWorldApp() {
                     onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(5,150,105,0.35)' }}
                     style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', background: 'linear-gradient(135deg, #059669, #047857)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 15px rgba(5,150,105,0.35)', transition: 'all 0.3s ease' }}
                   >
-                    📊 Download NGO Impact Report
+                    📊 {t('downloadNgoReportBtn')}
                   </button>
                 </div>
               )}
