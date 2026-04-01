@@ -4,11 +4,9 @@ KindWorld is a mobile application that transforms everyday acts of kindness into
 
 ## Features
 
-- Earn Compassion Points by participating in volunteer missions
-- Redeem points for vouchers from partner retailers
 - Track your progress with leaderboards and badges
 - Browse and join missions aligned with your interests
-- CSR analytics for company sponsors
+- Analytics for company sponsors or NGOs
 - Admin tools for mission management
 
 ## Tech Stack
