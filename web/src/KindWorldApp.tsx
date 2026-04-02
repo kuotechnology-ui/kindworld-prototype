@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAppSelector, useAppDispatch } from './hooks/redux'
 import { setLanguage as setReduxLanguage } from './store/slices/languageSlice'
+import emailjs from '@emailjs/browser'
 
 interface User {
   id: string
@@ -15,6 +16,104 @@ interface User {
   completedMissions: number
   organizationsHelped: number
   rating: number
+  // Contact info
+  phone?: string
+  lineId?: string
+  whatsapp?: string
+  // Emergency contact
+  emergencyContactName?: string
+  emergencyContactPhone?: string
+  emergencyContactRelation?: string
+  // Volunteer health/logistics (stored in profile, used auto-populated in missions)
+  allergies?: string
+  medicalConditions?: string
+  dietaryRestrictions?: string
+  tshirtSize?: string
+  // Leaderboard privacy
+  showOnLeaderboard?: boolean
+  // NGO-specific profile
+  ngoOrgName?: string
+  ngoDescription?: string
+  ngoWebsite?: string
+  ngoLogo?: string
+  ngoProfileComplete?: boolean
+  ngoDocumentUrl?: string   // legal doc link
+  ngoPortfolioUrl?: string  // portfolio link
+  ngoDocumentNote?: string  // brief description of submitted docs
+  city?: string
+  country?: string
+  interests?: string[]
+}
+
+interface NoShowRecord {
+  id: string
+  volunteerEmail: string
+  volunteerName: string
+  ngoEmail: string
+  ngoName: string
+  missionId: number
+  missionTitle: string
+  reason: string
+  date: string  // ISO date string
+}
+
+interface VolunteerReview {
+  id: string
+  ngoEmail: string
+  ngoName: string
+  volunteerEmail: string
+  volunteerName: string
+  missionId: number
+  missionTitle: string
+  rating: number   // 1–5
+  comment: string
+  date: string
+}
+
+interface NgoReview {
+  id: string
+  volunteerEmail: string
+  volunteerName: string
+  ngoEmail: string
+  ngoName: string
+  missionId: number
+  missionTitle: string
+  rating: number
+  comment: string
+  date: string
+}
+
+interface DirectMessage {
+  id: string
+  fromEmail: string
+  fromName: string
+  fromRole: 'ngo' | 'admin'
+  toEmail: string
+  toName: string
+  subject: string
+  body: string
+  sentAt: string
+  read: boolean
+}
+
+interface FriendMessage {
+  id: string
+  fromEmail: string
+  fromName: string
+  toEmail: string
+  text: string
+  imageUrl?: string
+  sentAt: string
+}
+
+interface AdminEmail {
+  id: string
+  subject: string
+  body: string
+  targetGroup: 'all' | 'volunteers' | 'ngos'
+  scheduledAt: string
+  status: 'draft' | 'scheduled' | 'sent'
+  createdAt: string
 }
 
 interface Badge {
@@ -244,6 +343,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: 'Register now',
     firstName: 'First Name',
     lastName: 'Last Name',
+    orgNameField: 'Organization Name',
+    orgNamePlaceholder: 'e.g. Green Earth Foundation',
+    ngoRegisterSubtitle: 'Register your NGO and connect with volunteers worldwide',
+    ngoRegisterInfoNote: 'After registration, complete your NGO profile to begin the verification process.',
     emailAddress: 'Email Address',
     phoneNumber: 'Phone Number',
     country: 'Country',
@@ -390,6 +493,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: 'Special Skills',
     agreeToTerms: 'I agree to the terms and conditions',
     cancel: 'Cancel',
+    reviewVisibilityVol: 'This review is visible to the volunteer, other NGO admins, and platform admins — not to the general public.',
+    reviewVisibilityNgo: 'Your review will be visible to the NGO and platform admins.',
     confirmRegistration: 'Confirm Registration',
     // Landing page translations
     activeVolunteersLabel: 'Active Volunteers',
@@ -440,6 +545,30 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: 'Free to join',
     noCommitments: 'No commitments',
     startImpactImmediately: 'Start making impact immediately',
+    // Why KindWorld + Early Adopter sections
+    whyKindWorldTitle: 'Why KindWorld?',
+    whyKindWorldSubtitle: "We're not just another volunteer platform",
+    whyItem1Title: 'Verified Impact',
+    whyItem1Desc: 'Every hour you log is verified by NGOs — your impact is real and measurable.',
+    whyItem2Title: 'Recognition You Keep',
+    whyItem2Desc: 'Earn digital certificates and badges shareable on LinkedIn and your resume.',
+    whyItem3Title: 'Community-Driven',
+    whyItem3Desc: 'Connect with like-minded volunteers, NGOs, and changemakers from around the world.',
+    whyItem4Title: 'SDG-Aligned Missions',
+    whyItem4Desc: 'Every mission ties directly to the UN Sustainable Development Goals — your work matters globally.',
+    earlyAdopterTitle: 'Join as an Early Adopter',
+    earlyAdopterSubtitle: 'Be among the first to shape the future of volunteering',
+    earlyAdopterBadgeLabel: '🌟 Founding Member Badge',
+    earlyAdopterBadgeDesc: 'Get an exclusive badge displayed on your profile forever.',
+    earlyAdopterFeedbackLabel: '🗣️ Shape the Platform',
+    earlyAdopterFeedbackDesc: 'Your feedback directly influences what we build next.',
+    earlyAdopterCommunityLabel: '🤝 Priority Community Access',
+    earlyAdopterCommunityDesc: 'Early access to new features, missions, and NGO partnerships.',
+    earlyAdopterCTA: 'Join the Early Community',
+    earlyAdopterNote: 'Limited spots — join now before we open to the public.',
+    earlyAccessLabel: '🚀 Early Access',
+    sdgTapHint: 'Tap a goal to learn more',
+    sdgEyebrow: 'UN · Sustainable Development Goal',
     footerTagline: 'Empowering volunteers worldwide',
     footerCopyright: 'KindWorld. All rights reserved.',
     // NGO Dashboard specific translations
@@ -526,6 +655,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: 'Are you sure you want to remove this mission?',
     noUpcomingMissions: 'No upcoming missions',
     noPastMissions: 'No past missions yet',
+    searchMissions: 'Search missions...',
+    noCompletedMissions: 'No completed missions yet',
     noRegisteredNGOs: 'No registered NGOs yet',
     missionRemovedSuffix: 'has been removed from the platform',
     journeyStartsHere: 'Your journey starts here!',
@@ -562,6 +693,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: 'Pending Approval',
     ngoPendingLogout: 'Sign Out',
     ngoPendingSignedIn: 'Signed in as',
+    ngoOnboardingTitle: 'Complete Your NGO Profile',
+    ngoOnboardingSubtitle: 'Fill in the details below so our admin team can verify your organisation.',
+    ngoOnboardingDescLabel: 'Mission / Description',
+    ngoOnboardingDescPlaceholder: "Describe your organisation's mission, what you do, and the communities you serve…",
+    ngoOnboardingWebsiteLabel: 'Website URL',
+    ngoOnboardingLegalLabel: 'Legal Registration Document',
+    ngoOnboardingLegalHint: 'Paste a link to your organisation\'s official registration / incorporation documents (Google Drive, Dropbox, etc.)',
+    ngoOnboardingPortfolioLabel: 'Portfolio / Past Work',
+    ngoOnboardingPortfolioOptional: '(optional)',
+    ngoOnboardingPortfolioPlaceholder: 'Link to photos, reports, social media…',
+    ngoOnboardingRequiredFields: '⚠️ Please fill in all required fields before submitting.',
+    ngoOnboardingSubmitBtn: '🚀 Submit for Verification',
+    ngoOnboardingSubmitSuccess: '✅ Profile submitted for admin review! You will be notified once approved.',
+    ngoOnboardingReviewMsg: 'Your application has been submitted. Our admin team will review your documents and get back to you shortly.',
     ngoName: 'Organization Name',
     ngoEmail: 'Email',
     ngoDescription: 'Description',
@@ -695,6 +840,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     suspendUser: 'Suspend',
     unsuspendUser: 'Unsuspend',
     suspendConfirm: 'Suspend this user? They will not be able to log in.',
+    deleteUser: 'Delete',
+    deleteUserConfirm: 'Permanently delete this account? This cannot be undone.',
     exportCSV: 'Export CSV',
     exportedCSV: 'CSV exported successfully',
     startTimeLabel: 'Start Time',
@@ -798,7 +945,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     settingsAccount: 'Account',
     settingsAccountDesc: 'Manage your account data',
     settingsExportData: 'Export my data',
-    settingsExportDesc: 'Download a copy of your volunteer activity as PDF',
+    settingsExportDesc: 'Download a copy of your volunteer activity as PDF', exportMyDataTitle: 'My Volunteer Data', exportProfileSection: 'Profile', exportActivitySection: 'Activity', exportGeneratedBy: 'Generated by KindWorld',
     settingsSignOut: 'Sign out',
     settingsSignOutDesc: 'You will be returned to the landing page',
     // Leaderboard
@@ -870,7 +1017,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     certVolRecognitionProg: 'Volunteer Recognition Program', certOfVolServiceLabel: 'Certificate of Volunteer Service', certIssuedTo: 'Certificate issued to', certHasCompleted: 'has completed', certVolHoursOf: 'volunteer hours with', certDateIssuedLabel: 'Date Issued', certCertIdLabel: 'Certificate ID', certSaveAsPDFBtn: '⬇ Save as PDF',
     inactiveStatus: 'Inactive', certActivate: '▶ Activate', requiredLabel: 'required', createdLabel: 'Created', volunteerRequestsEmpty: 'Volunteer requests will appear here once they apply.',
     myMissionsTitle: 'My Missions', myMissionsUpcoming: 'Upcoming', myMissionsCompleted: 'Completed',
-    certIssuedByLabel: 'Issued by', certAuthCertLabel: 'Authorized digital certificate', certEligibleBadge: 'Eligible', certHoursRequired: 'hours required', certVolunteersEarned: 'volunteers earned', certClaimBtn: 'Claim Certificate', certChangeLogo: 'Change Logo', statsConfidential: 'Confidential — For Personal Use', downloadNgoReportBtn: 'Download NGO Report', ngoImpactReportTitle: 'NGO Impact Report', ngoVerifiedPartner: 'Verified NGO Partner', ngoVolunteerActivitiesTitle: 'Volunteer Activities', ngoApprovedHoursTitle: 'Approved Volunteer Hours', ngoCertProgramsTitle: 'Certificate Programs', statsConfidentialNGO: 'Confidential — For Internal Use', ngoTotalVolunteers: 'Total Volunteers', ngoActivitiesCreated: 'Activities Created', ngoHoursApproved: 'Hours Approved', ngoCertsIssuedCount: 'Certificates Issued', ngoNoActivitiesYet: 'No activities created yet', ngoNoApprovedHoursYet: 'No approved hours yet', ngoNoCertProgramsYet: 'No certificate programs created', ngoImpactReportGenerated: 'NGO Impact Report generated!', sdg1Desc: 'End poverty in all its forms everywhere. Over 700 million people live in extreme poverty. Volunteering helps build community resilience and connects people to essential resources.', sdg2Desc: 'End hunger and achieve food security. Nearly 733 million people faced hunger in 2023. Community food programs and sustainable farming create lasting change.', sdg3Desc: 'Ensure healthy lives and promote well-being for all ages. Volunteers expand access to healthcare and support vulnerable communities worldwide.', sdg4Desc: 'Ensure quality education and promote lifelong learning for all. Over 244 million children are out of school. Education is the most powerful tool to change the world.', sdg10Desc: 'Reduce inequality within and among countries. Equitable communities require active participation and inclusive programs that leave no one behind.', sdg11Desc: 'Make cities inclusive, safe, resilient and sustainable. By 2050, 70% of humanity will live in cities — sustainable urban development shapes our shared future.', sdg13Desc: 'Take urgent action to combat climate change. Climate change threatens every ecosystem on Earth. Environmental action starts locally and grows globally.', sdg17Desc: 'Revitalize global partnerships for sustainable development. No goal is achieved alone — collaboration across sectors creates lasting impact.', sdgLearnMore: 'Learn more on UN.org', sdgKindWorldHelps: 'KindWorld connects volunteers with missions that directly advance this goal, creating real impact in local communities.'
+    certIssuedByLabel: 'Issued by', certAuthCertLabel: 'Authorized digital certificate', certEligibleBadge: 'Eligible', certHoursRequired: 'hours required', certVolunteersEarned: 'volunteers earned', certClaimBtn: 'Claim Certificate', certChangeLogo: 'Change Logo', statsConfidential: 'Confidential — For Personal Use', downloadNgoReportBtn: 'Download NGO Report', ngoImpactReportTitle: 'NGO Impact Report', ngoVerifiedPartner: 'Verified NGO Partner', ngoVolunteerActivitiesTitle: 'Volunteer Activities', ngoApprovedHoursTitle: 'Approved Volunteer Hours', ngoCertProgramsTitle: 'Certificate Programs', statsConfidentialNGO: 'Confidential — For Internal Use', ngoTotalVolunteers: 'Total Volunteers', ngoActivitiesCreated: 'Activities Created', ngoHoursApproved: 'Hours Approved', ngoCertsIssuedCount: 'Certificates Issued', ngoNoActivitiesYet: 'No activities created yet', ngoNoApprovedHoursYet: 'No approved hours yet', ngoNoCertProgramsYet: 'No certificate programs created', ngoImpactReportGenerated: 'NGO Impact Report generated!', sdg1Desc: 'End poverty in all its forms everywhere. Over 700 million people live in extreme poverty. Volunteering helps build community resilience and connects people to essential resources.', sdg2Desc: 'End hunger and achieve food security. Nearly 733 million people faced hunger in 2023. Community food programs and sustainable farming create lasting change.', sdg3Desc: 'Ensure healthy lives and promote well-being for all ages. Volunteers expand access to healthcare and support vulnerable communities worldwide.', sdg4Desc: 'Ensure quality education and promote lifelong learning for all. Over 244 million children are out of school. Education is the most powerful tool to change the world.', sdg10Desc: 'Reduce inequality within and among countries. Equitable communities require active participation and inclusive programs that leave no one behind.', sdg11Desc: 'Make cities inclusive, safe, resilient and sustainable. By 2050, 70% of humanity will live in cities — sustainable urban development shapes our shared future.', sdg13Desc: 'Take urgent action to combat climate change. Climate change threatens every ecosystem on Earth. Environmental action starts locally and grows globally.', sdg17Desc: 'Revitalize global partnerships for sustainable development. No goal is achieved alone — collaboration across sectors creates lasting impact.', sdgLearnMore: 'Learn more on UN.org', sdgKindWorldHelps: 'KindWorld connects volunteers with missions that directly advance this goal, creating real impact in local communities.', profileChangePicture: 'Change profile picture', profileChangeLabel: 'Change', profileContactChannels: 'Contact Channels', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: 'Emergency Contact', profileRelationship: 'Relationship', profileHealthLogistics: 'Health & Logistics', profileHealthLogisticsHint: 'Saved once here — auto-filled when you register for missions.', profileAllergies: 'Allergies', profileAllergiesPlaceholder: 'e.g. Peanuts, Shellfish', profileMedicalConditions: 'Medical Conditions', profileMedicalConditionsPlaceholder: 'e.g. Asthma, Diabetes', profileDietaryRestrictions: 'Dietary Restrictions', profileDietaryRestrictionsPlaceholder: 'e.g. Vegetarian, Halal', profileTshirtSize: 'T-Shirt Size', profileTshirtSizePlaceholder: 'Select size', profileNgoSection: 'NGO Public Profile', profileNgoSectionHint: 'This information is shown to volunteers on mission cards.', profileNgoDescription: 'Organization Description', profileNgoDescriptionPlaceholder: "Tell volunteers about your organization's mission, impact, and what makes volunteering with you meaningful...", profileNgoWebsite: 'Website URL', profileNgoWebsitePlaceholder: 'https://yourorganization.org', profileNgoPortfolio: 'Portfolio / Work Showcase URL', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 Legal Documents for Verification', profileNgoLegalDocsHint: "Submit a link to your organization's legal registration documents (e.g., Google Drive, Dropbox). KindWorld admin will review these to verify your NGO status.", profileNgoDocLinkPlaceholder: 'Link to your legal documents...', profileNgoDocNotePlaceholder: "Brief note about the documents (e.g. 'Ministry of Law registration, Indonesia')", eventSummaryLabel: 'Event Summary', reviewsReceived: 'Reviews from NGOs', avgRatingLabel: 'Average rating', reviewsCount: 'review(s)', clickToToggleInterests: 'Click to select/deselect your interests', refreshMissions: 'Refresh'
   },
   id: {
     title: 'KindWorld',
@@ -929,6 +1076,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: 'Daftar sekarang',
     firstName: 'Nama Depan',
     lastName: 'Nama Belakang',
+    orgNameField: 'Nama Organisasi',
+    orgNamePlaceholder: 'mis. Yayasan Bumi Hijau',
+    ngoRegisterSubtitle: 'Daftarkan NGO Anda dan terhubung dengan relawan di seluruh dunia',
+    ngoRegisterInfoNote: 'Setelah pendaftaran, lengkapi profil NGO Anda untuk memulai proses verifikasi.',
     emailAddress: 'Alamat Email',
     phoneNumber: 'Nomor Telepon',
     country: 'Negara',
@@ -1025,24 +1176,24 @@ const localTranslations: Record<string, Record<string, string>> = {
     hours: 'Jam',
     missionsLabel: 'Kegiatan',
     volunteersLabel: 'Relawan',
-    lmOurStoryLabel: 'KISAH KAMI',
-    lmHeroTitle: 'Kisah di Balik KindWorld',
-    lmHeroSubtitle: 'Lahir dari keyakinan sederhana bahwa setiap anak muda berhak menemukan tujuan hidupnya — dan bahwa kesukarelaan dapat menerangi jalan.',
-    lmOriginTitle: 'Bagaimana Semuanya Dimulai',
+    lmOurStoryLabel: 'CERITA KAMI',
+    lmHeroTitle: 'Di Balik KindWorld',
+    lmHeroSubtitle: 'Lahir dari satu keyakinan sederhana: setiap anak muda berhak menemukan tujuan hidupnya — dan menjadi relawan bisa menjadi langkah pertama yang mengubah segalanya.',
+    lmOriginTitle: 'Bagaimana Semua Ini Dimulai',
     lmOriginDate: 'November 2025 · Hualien, Taiwan',
-    lmOriginP1: 'KindWorld lahir pada November 2025 di jantung Hualien, Taiwan — tempat yang dikenal dengan pegunungan yang menakjubkan, garis pantai Pasifik yang luas, dan komunitas yang hangat. Di sinilah pendiri kami bertanya: bagaimana kita bisa membantu kaum muda menemukan arah dan nilai kehidupan?',
-    lmOriginP2: 'Terlalu banyak anak muda yang merasa tersesat — tidak yakin akan tujuan mereka, terputus dari komunitas, dan mencari sesuatu yang bermakna. Kami percaya bahwa melalui kesukarelaan dan kebaikan, mereka dapat menemukan cara membuat perbedaan di dunia, dan juga siapa diri mereka sebenarnya.',
+    lmOriginP1: 'KindWorld lahir pada November 2025 di Hualien, Taiwan — kota yang dikelilingi gunung-gunung megah, hamparan pantai Pasifik yang tak bertepi, dan kehangatan warganya yang begitu tulus. Di tengah keindahan itu, pendiri kami tergerak oleh satu pertanyaan yang tak bisa diabaikan: bagaimana caranya membantu anak muda menemukan makna dan arah dalam hidup mereka?',
+    lmOriginP2: 'Begitu banyak anak muda yang merasa kehilangan arah — tidak tahu mau ke mana, merasa jauh dari orang-orang di sekitar, dan merindukan sesuatu yang lebih berarti. Kami percaya bahwa lewat aksi nyata sebagai relawan, mereka bisa membuat perbedaan di dunia — sekaligus menemukan siapa diri mereka yang sebenarnya. Dari keyakinan itulah, KindWorld lahir.',
     lmMissionTitle: 'Misi Kami',
     lmMissionPurpose: 'Temukan Tujuan',
-    lmMissionPurposeDesc: 'Kami membantu kaum muda menemukan makna melalui pengalaman sukarela nyata yang menghubungkan mereka dengan tujuan yang lebih besar.',
-    lmMissionGrowth: 'Pertumbuhan Pribadi',
-    lmMissionGrowthDesc: 'Setiap misi adalah kesempatan untuk belajar, tumbuh, dan mengembangkan keterampilan yang membentuk karakter.',
+    lmMissionPurposeDesc: 'Lewat pengalaman langsung di lapangan, kami membantu anak muda menemukan makna — terhubung dengan sesuatu yang jauh lebih besar dari sekadar diri sendiri.',
+    lmMissionGrowth: 'Kembangkan Diri',
+    lmMissionGrowthDesc: 'Setiap misi membawa pelajaran baru — membentuk karakter, mengasah kemampuan, dan menumbuhkan kepercayaan diri yang akan terus terbawa dalam kehidupan.',
     lmMissionCommunity: 'Bangun Komunitas',
-    lmMissionCommunityDesc: 'Kami menyatukan relawan, LSM, dan organisasi untuk membentuk jaringan yang dipersatukan oleh kasih sayang dan aksi.',
+    lmMissionCommunityDesc: 'Kami mempertemukan relawan, LSM, dan berbagai komunitas dalam satu jaringan — karena perubahan nyata selalu lahir dari kebersamaan.',
     lmVisionTitle: 'Visi Kami',
-    lmVisionDesc: 'Kami membayangkan dunia di mana setiap anak muda memiliki kesempatan menemukan arah hidupnya melalui pelayanan yang bermakna. Sebuah dunia di mana kebaikan bukan sekadar tindakan, melainkan cara hidup — di mana komunitas berkembang karena orang-orang memilih untuk hadir bagi satu sama lain. Dari Hualien ke seluruh dunia, kami membangun masa depan itu, satu relawan pada satu waktu.',
-    lmCtaTitle: 'Jadilah Bagian dari Kisah Kami',
-    lmCtaSubtitle: 'Baik Anda seorang pelajar yang mencari tujuan, relawan yang siap memberi, atau organisasi yang mencari pembantu yang bersemangat — ada tempat untuk Anda di KindWorld.',
+    lmVisionDesc: 'Kami membayangkan dunia di mana setiap anak muda punya kesempatan menemukan arah hidupnya lewat aksi yang benar-benar berarti. Dunia di mana berbuat baik bukan sekadar momen sesekali — tapi cara hidup. Di mana komunitas tumbuh karena orang-orang memilih untuk hadir bagi satu sama lain. Dari Hualien, kami memulai. Bersama Anda, kami terus melangkah — satu relawan, satu perubahan.',
+    lmCtaTitle: 'Jadilah Bagian dari Cerita Ini',
+    lmCtaSubtitle: 'Entah Anda pelajar yang sedang mencari arah, relawan yang siap terjun, atau organisasi yang butuh semangat baru — di KindWorld, selalu ada tempat untuk Anda.',
     lmCtaButton: 'Gabung KindWorld',
     // Missions page translations
     availableMissionsTitle: 'Kegiatan Tersedia',
@@ -1073,6 +1224,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: 'Keahlian Khusus',
     agreeToTerms: 'Saya menyetujui syarat dan ketentuan',
     cancel: 'Batal',
+    reviewVisibilityVol: 'Ulasan ini terlihat oleh relawan, admin NGO lain, dan admin platform — tidak untuk publik umum.',
+    reviewVisibilityNgo: 'Ulasan Anda akan terlihat oleh NGO dan admin platform.',
     confirmRegistration: 'Konfirmasi Pendaftaran',
     // Landing page translations
     activeVolunteersLabel: 'Relawan Aktif',
@@ -1092,7 +1245,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     buildNetworkDesc: 'Terhubung dengan relawan dan organisasi yang memiliki visi sama',
     founderLabel: 'PESAN PENDIRI',
     founderSectionTitle: 'Pesan dari Pendiri Kami',
-    founderQuote: 'Tujuan kami adalah membantu kaum muda menemukan arah dan nilai kehidupan.',
+    founderQuote: 'Kami ingin setiap anak muda tahu bahwa hidupnya berarti — dan bahwa tindakan sekecil apapun bisa mengubah dunia.',
     founderName: 'Tim KindWorld',
     founderRole: 'Pendiri',
     scrollLabel: 'GULIR',
@@ -1123,6 +1276,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: 'Gratis untuk bergabung',
     noCommitments: 'Tanpa komitmen',
     startImpactImmediately: 'Mulai membuat dampak segera',
+    whyKindWorldTitle: 'Mengapa KindWorld?',
+    whyKindWorldSubtitle: 'Kami bukan sekadar platform relawan biasa',
+    whyItem1Title: 'Dampak Terverifikasi',
+    whyItem1Desc: 'Setiap jam yang Anda catat diverifikasi oleh NGO — dampak Anda nyata dan terukur.',
+    whyItem2Title: 'Pengakuan yang Bertahan',
+    whyItem2Desc: 'Dapatkan sertifikat dan lencana digital yang bisa dibagikan di LinkedIn dan CV Anda.',
+    whyItem3Title: 'Berbasis Komunitas',
+    whyItem3Desc: 'Terhubung dengan relawan, NGO, dan agen perubahan dari seluruh dunia.',
+    whyItem4Title: 'Misi Berbasis SDGs',
+    whyItem4Desc: 'Setiap misi terhubung langsung dengan Tujuan Pembangunan Berkelanjutan PBB.',
+    earlyAdopterTitle: 'Bergabung sebagai Early Adopter',
+    earlyAdopterSubtitle: 'Jadilah yang pertama membentuk masa depan relawan',
+    earlyAdopterBadgeLabel: '🌟 Lencana Anggota Pendiri',
+    earlyAdopterBadgeDesc: 'Dapatkan lencana eksklusif yang tampil di profil Anda selamanya.',
+    earlyAdopterFeedbackLabel: '🗣️ Bentuk Platform',
+    earlyAdopterFeedbackDesc: 'Masukan Anda langsung mempengaruhi apa yang kami bangun selanjutnya.',
+    earlyAdopterCommunityLabel: '🤝 Akses Komunitas Prioritas',
+    earlyAdopterCommunityDesc: 'Akses awal ke fitur baru, misi, dan kemitraan NGO.',
+    earlyAdopterCTA: 'Bergabung dengan Komunitas Awal',
+    earlyAdopterNote: 'Tempat terbatas — bergabunglah sekarang sebelum kami membuka untuk publik.',
+    earlyAccessLabel: '🚀 Akses Awal',
+    sdgTapHint: 'Ketuk tujuan untuk pelajari lebih lanjut',
+    sdgEyebrow: 'PBB · Tujuan Pembangunan Berkelanjutan',
     footerTagline: 'Memberdayakan relawan di seluruh dunia',
     footerCopyright: 'KindWorld. Hak cipta dilindungi.',
     // NGO Dashboard specific translations
@@ -1209,6 +1385,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: 'Apakah Anda yakin ingin menghapus misi ini?',
     noUpcomingMissions: 'Tidak ada misi mendatang',
     noPastMissions: 'Belum ada misi yang lewat',
+    searchMissions: 'Cari misi...',
+    noCompletedMissions: 'Belum ada misi yang selesai',
     noRegisteredNGOs: 'Belum ada NGO terdaftar',
     missionRemovedSuffix: 'telah dihapus dari platform',
     journeyStartsHere: 'Perjalanan Anda dimulai di sini!',
@@ -1245,6 +1423,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: 'Menunggu Persetujuan',
     ngoPendingLogout: 'Keluar',
     ngoPendingSignedIn: 'Masuk sebagai',
+    ngoOnboardingTitle: 'Lengkapi Profil NGO Anda',
+    ngoOnboardingSubtitle: 'Isi detail di bawah ini agar tim admin kami dapat memverifikasi organisasi Anda.',
+    ngoOnboardingDescLabel: 'Misi / Deskripsi',
+    ngoOnboardingDescPlaceholder: 'Deskripsikan misi organisasi Anda, apa yang Anda lakukan, dan komunitas yang Anda layani…',
+    ngoOnboardingWebsiteLabel: 'URL Website',
+    ngoOnboardingLegalLabel: 'Dokumen Registrasi Resmi',
+    ngoOnboardingLegalHint: 'Tempel tautan ke dokumen registrasi/pendirian resmi organisasi Anda (Google Drive, Dropbox, dll.)',
+    ngoOnboardingPortfolioLabel: 'Portofolio / Karya Sebelumnya',
+    ngoOnboardingPortfolioOptional: '(opsional)',
+    ngoOnboardingPortfolioPlaceholder: 'Tautan ke foto, laporan, media sosial…',
+    ngoOnboardingRequiredFields: '⚠️ Harap isi semua kolom yang diperlukan sebelum mengirimkan.',
+    ngoOnboardingSubmitBtn: '🚀 Kirim untuk Verifikasi',
+    ngoOnboardingSubmitSuccess: '✅ Profil dikirim untuk ditinjau admin! Anda akan diberitahu setelah disetujui.',
+    ngoOnboardingReviewMsg: 'Aplikasi Anda telah dikirimkan. Tim admin kami akan meninjau dokumen Anda dan menghubungi Anda segera.',
     ngoName: 'Nama Organisasi',
     ngoEmail: 'Email',
     ngoDescription: 'Deskripsi',
@@ -1398,7 +1590,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     interestFoodSecurity: 'Ketahanan Pangan',
     requiredHoursLabel: 'Jam yang Diperlukan',
     yourProgressLabel: 'Kemajuan Anda',
-    signInFooterTagline: 'Memberdayakan komunitas melalui aksi kebaikan',
+    signInFooterTagline: 'Memberdayakan komunitas melalui aksi nyata yang penuh kepedulian',
     signInFooterCopyright: '© 2026 KindWorld. Hak cipta dilindungi.',
     noCertificatesUploadedYet: 'Belum ada sertifikat yang diunggah. Unggah sertifikat pertama Anda di atas!',
     noCertificatesAvailableYet: 'Belum ada sertifikat tersedia. Silakan periksa kembali nanti!',
@@ -1427,7 +1619,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Bahasa Pilihan',
     continueSetup: 'Lanjutkan',
     skipForNow: 'Lewati untuk saat ini',
-    settings: 'Pengaturan', settingsTitle: 'Pengaturan', settingsAppearance: 'Tampilan', settingsAppearanceDesc: 'Sesuaikan tampilan KindWorld', settingsLanguage: 'Bahasa & Wilayah', settingsLanguageDesc: 'Pilih bahasa pilihan Anda', settingsManageDesc: 'Kelola preferensi akun Anda', settingsNotifications: 'Notifikasi', settingsNotifDesc: 'Pilih apa yang ingin Anda dapatkan notifikasinya', settingsMissionUpdates: 'Pembaruan misi', settingsMissionUpdatesDesc: 'Dapatkan notifikasi saat misi yang Anda ikuti diperbarui atau dibatalkan', settingsAnnouncements: 'Pengumuman LSM', settingsAnnouncementsDesc: 'Terima pengumuman dari organisasi yang misinya telah Anda ikuti', settingsFriendReqNotif: 'Permintaan teman', settingsFriendReqNotifDesc: 'Beri tahu saya saat seseorang mengirim permintaan pertemanan', settingsHourAlert: 'Verifikasi jam', settingsHourAlertDesc: 'Pemberitahuan saat jam sukarelawan Anda disetujui atau ditolak', settingsWeeklyDigest: 'Rangkuman dampak mingguan', settingsWeeklyDigestDesc: 'Ringkasan mingguan aktivitas sukarelawan dan sorotan platform Anda', settingsPrivacy: 'Privasi', settingsPrivacyDesc: 'Kendalikan siapa yang dapat melihat informasi Anda', settingsPublicProfile: 'Profil publik', settingsPublicProfileDesc: 'Siapa saja di KindWorld dapat melihat profil dan statistik sukarelawan Anda', settingsShowLeaderboard: 'Tampilkan di papan peringkat', settingsShowLeaderboardDesc: 'Muncul di peringkat papan peringkat komunitas', settingsShareActivity: 'Bagikan aktivitas', settingsShareActivityDesc: 'Biarkan teman melihat saat Anda bergabung misi atau mendapat lencana', settingsAllowContact: 'Izinkan organisasi menghubungi saya', settingsAllowContactDesc: 'LSM dapat menghubungi Anda langsung untuk peluang sukarelawan yang relevan', settingsAccount: 'Akun', settingsAccountDesc: 'Kelola data akun Anda', settingsExportData: 'Ekspor data saya', settingsExportDesc: 'Unduh salinan aktivitas sukarelawan Anda sebagai PDF', settingsSignOut: 'Keluar', settingsSignOutDesc: 'Anda akan dikembalikan ke halaman utama',
+    settings: 'Pengaturan', settingsTitle: 'Pengaturan', settingsAppearance: 'Tampilan', settingsAppearanceDesc: 'Sesuaikan tampilan KindWorld', settingsLanguage: 'Bahasa & Wilayah', settingsLanguageDesc: 'Pilih bahasa pilihan Anda', settingsManageDesc: 'Kelola preferensi akun Anda', settingsNotifications: 'Notifikasi', settingsNotifDesc: 'Pilih apa yang ingin Anda dapatkan notifikasinya', settingsMissionUpdates: 'Pembaruan misi', settingsMissionUpdatesDesc: 'Dapatkan notifikasi saat misi yang Anda ikuti diperbarui atau dibatalkan', settingsAnnouncements: 'Pengumuman LSM', settingsAnnouncementsDesc: 'Terima pengumuman dari organisasi yang misinya telah Anda ikuti', settingsFriendReqNotif: 'Permintaan teman', settingsFriendReqNotifDesc: 'Beri tahu saya saat seseorang mengirim permintaan pertemanan', settingsHourAlert: 'Verifikasi jam', settingsHourAlertDesc: 'Pemberitahuan saat jam sukarelawan Anda disetujui atau ditolak', settingsWeeklyDigest: 'Rangkuman dampak mingguan', settingsWeeklyDigestDesc: 'Ringkasan mingguan aktivitas sukarelawan dan sorotan platform Anda', settingsPrivacy: 'Privasi', settingsPrivacyDesc: 'Kendalikan siapa yang dapat melihat informasi Anda', settingsPublicProfile: 'Profil publik', settingsPublicProfileDesc: 'Siapa saja di KindWorld dapat melihat profil dan statistik sukarelawan Anda', settingsShowLeaderboard: 'Tampilkan di papan peringkat', settingsShowLeaderboardDesc: 'Muncul di peringkat papan peringkat komunitas', settingsShareActivity: 'Bagikan aktivitas', settingsShareActivityDesc: 'Biarkan teman melihat saat Anda bergabung misi atau mendapat lencana', settingsAllowContact: 'Izinkan organisasi menghubungi saya', settingsAllowContactDesc: 'LSM dapat menghubungi Anda langsung untuk peluang sukarelawan yang relevan', settingsAccount: 'Akun', settingsAccountDesc: 'Kelola data akun Anda', settingsExportData: 'Ekspor data saya', settingsExportDesc: 'Unduh salinan aktivitas sukarelawan Anda sebagai PDF', exportMyDataTitle: 'Data Relawan Saya', exportProfileSection: 'Profil', exportActivitySection: 'Aktivitas', exportGeneratedBy: 'Dibuat oleh KindWorld', settingsSignOut: 'Keluar', settingsSignOutDesc: 'Anda akan dikembalikan ke halaman utama',
     leaderboard: 'Papan Peringkat', leaderboardTitle: 'Relawan Terbaik', leaderboardDesc: 'Menghargai anggota komunitas kami yang paling berdampak', topByHours: 'Teratas berdasarkan Jam', topByBadges: 'Teratas berdasarkan Lencana', yourRank: 'Peringkat Anda', rankLabel: 'Peringkat', notRankedYet: 'Selesaikan misi untuk muncul di papan peringkat!',
     notifications: 'Notifikasi', markAllRead: 'Tandai semua dibaca', noNotifications: 'Belum ada notifikasi', notificationsDesc: 'Pembaruan aktivitas Anda akan muncul di sini',
     userNotFound: 'Pengguna tidak ditemukan.', cannotAddSelf: 'Anda tidak dapat menambahkan diri sendiri.', alreadyFriends: 'Anda sudah berteman dengan pengguna ini.', yourProgress: 'Kemajuan Anda', hoursToNextBadge: 'Jam Relawan', missionsToNextBadge: 'Misi Diselesaikan', orgsToNextBadge: 'Organisasi Dibantu', centuryClubDesc: 'Capai 100 jam untuk mendapatkan lencana Century Club', missionMasterDesc: 'Selesaikan 10 misi untuk mendapatkan lencana Mission Master', communityBuilderDesc: 'Bantu 5 organisasi untuk mendapatkan lencana Community Builder',
@@ -1437,7 +1629,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     certVolRecognitionProg: 'Program Penghargaan Relawan', certOfVolServiceLabel: 'Sertifikat Layanan Sukarela', certIssuedTo: 'Sertifikat ini diberikan kepada', certHasCompleted: 'telah menyelesaikan', certVolHoursOf: 'jam sukarela bersama', certDateIssuedLabel: 'Tanggal Terbit', certCertIdLabel: 'ID Sertifikat', certSaveAsPDFBtn: '⬇ Simpan sebagai PDF',
     inactiveStatus: 'Tidak Aktif', certActivate: '▶ Aktifkan', requiredLabel: 'diperlukan', createdLabel: 'Dibuat', volunteerRequestsEmpty: 'Permintaan relawan akan muncul di sini setelah mereka mendaftar.',
     myMissionsTitle: 'Misi Saya', myMissionsUpcoming: 'Mendatang', myMissionsCompleted: 'Selesai',
-    certIssuedByLabel: 'Diterbitkan oleh', certAuthCertLabel: 'Sertifikat digital resmi', certEligibleBadge: 'Memenuhi Syarat', certHoursRequired: 'jam diperlukan', certVolunteersEarned: 'relawan mendapatkan', certClaimBtn: 'Klaim Sertifikat', certChangeLogo: 'Ganti Logo', statsConfidential: 'Rahasia — Untuk Penggunaan Pribadi', downloadNgoReportBtn: 'Unduh Laporan NGO', ngoImpactReportTitle: 'Laporan Dampak NGO', ngoVerifiedPartner: 'Mitra NGO Terverifikasi', ngoVolunteerActivitiesTitle: 'Kegiatan Sukarela', ngoApprovedHoursTitle: 'Jam Sukarela yang Disetujui', ngoCertProgramsTitle: 'Program Sertifikat', statsConfidentialNGO: 'Rahasia — Untuk Penggunaan Internal', ngoTotalVolunteers: 'Total Relawan', ngoActivitiesCreated: 'Kegiatan Dibuat', ngoHoursApproved: 'Jam Disetujui', ngoCertsIssuedCount: 'Sertifikat Diterbitkan', ngoNoActivitiesYet: 'Belum ada kegiatan yang dibuat', ngoNoApprovedHoursYet: 'Belum ada jam yang disetujui', ngoNoCertProgramsYet: 'Belum ada program sertifikat', ngoImpactReportGenerated: 'Laporan Dampak NGO berhasil dibuat!', sdg1Desc: 'Mengakhiri kemiskinan dalam segala bentuknya. Lebih dari 700 juta orang masih hidup dalam kemiskinan ekstrem. Relawan membantu membangun ketahanan komunitas dan menghubungkan orang dengan sumber daya penting.', sdg2Desc: 'Mengakhiri kelaparan dan mencapai ketahanan pangan. Hampir 733 juta orang menghadapi kelaparan pada 2023. Program pangan komunitas dan pertanian berkelanjutan menciptakan perubahan nyata.', sdg3Desc: 'Memastikan kehidupan sehat dan meningkatkan kesejahteraan untuk semua usia. Relawan memperluas akses layanan kesehatan dan mendukung komunitas rentan di seluruh dunia.', sdg4Desc: 'Memastikan pendidikan berkualitas dan mendorong pembelajaran sepanjang hayat. Lebih dari 244 juta anak tidak bersekolah. Pendidikan adalah alat paling kuat untuk mengubah dunia.', sdg10Desc: 'Mengurangi ketimpangan di dalam dan antar negara. Komunitas yang adil membutuhkan partisipasi aktif dan program inklusif agar tidak ada yang tertinggal.', sdg11Desc: 'Menjadikan kota inklusif, aman, tangguh, dan berkelanjutan. Pada 2050, 70% manusia akan tinggal di kota — pembangunan perkotaan berkelanjutan membentuk masa depan kita.', sdg13Desc: 'Mengambil tindakan mendesak untuk memerangi perubahan iklim. Perubahan iklim mengancam setiap ekosistem di Bumi. Aksi lingkungan dimulai secara lokal dan berkembang global.', sdg17Desc: 'Menghidupkan kembali kemitraan global untuk pembangunan berkelanjutan. Tidak ada tujuan yang dicapai sendiri — kolaborasi lintas sektor menciptakan dampak nyata.', sdgLearnMore: 'Pelajari lebih lanjut di UN.org', sdgKindWorldHelps: 'KindWorld menghubungkan relawan dengan misi yang langsung mendukung tujuan ini, menciptakan dampak nyata di komunitas lokal.'
+    certIssuedByLabel: 'Diterbitkan oleh', certAuthCertLabel: 'Sertifikat digital resmi', certEligibleBadge: 'Memenuhi Syarat', certHoursRequired: 'jam diperlukan', certVolunteersEarned: 'relawan mendapatkan', certClaimBtn: 'Klaim Sertifikat', certChangeLogo: 'Ganti Logo', statsConfidential: 'Rahasia — Untuk Penggunaan Pribadi', downloadNgoReportBtn: 'Unduh Laporan NGO', ngoImpactReportTitle: 'Laporan Dampak NGO', ngoVerifiedPartner: 'Mitra NGO Terverifikasi', ngoVolunteerActivitiesTitle: 'Kegiatan Sukarela', ngoApprovedHoursTitle: 'Jam Sukarela yang Disetujui', ngoCertProgramsTitle: 'Program Sertifikat', statsConfidentialNGO: 'Rahasia — Untuk Penggunaan Internal', ngoTotalVolunteers: 'Total Relawan', ngoActivitiesCreated: 'Kegiatan Dibuat', ngoHoursApproved: 'Jam Disetujui', ngoCertsIssuedCount: 'Sertifikat Diterbitkan', ngoNoActivitiesYet: 'Belum ada kegiatan yang dibuat', ngoNoApprovedHoursYet: 'Belum ada jam yang disetujui', ngoNoCertProgramsYet: 'Belum ada program sertifikat', ngoImpactReportGenerated: 'Laporan Dampak NGO berhasil dibuat!', sdg1Desc: 'Mengakhiri kemiskinan dalam segala bentuknya. Lebih dari 700 juta orang masih hidup dalam kemiskinan ekstrem. Relawan membantu membangun ketahanan komunitas dan menghubungkan orang dengan sumber daya penting.', sdg2Desc: 'Mengakhiri kelaparan dan mencapai ketahanan pangan. Hampir 733 juta orang menghadapi kelaparan pada 2023. Program pangan komunitas dan pertanian berkelanjutan menciptakan perubahan nyata.', sdg3Desc: 'Memastikan kehidupan sehat dan meningkatkan kesejahteraan untuk semua usia. Relawan memperluas akses layanan kesehatan dan mendukung komunitas rentan di seluruh dunia.', sdg4Desc: 'Memastikan pendidikan berkualitas dan mendorong pembelajaran sepanjang hayat. Lebih dari 244 juta anak tidak bersekolah. Pendidikan adalah alat paling kuat untuk mengubah dunia.', sdg10Desc: 'Mengurangi ketimpangan di dalam dan antar negara. Komunitas yang adil membutuhkan partisipasi aktif dan program inklusif agar tidak ada yang tertinggal.', sdg11Desc: 'Menjadikan kota inklusif, aman, tangguh, dan berkelanjutan. Pada 2050, 70% manusia akan tinggal di kota — pembangunan perkotaan berkelanjutan membentuk masa depan kita.', sdg13Desc: 'Mengambil tindakan mendesak untuk memerangi perubahan iklim. Perubahan iklim mengancam setiap ekosistem di Bumi. Aksi lingkungan dimulai secara lokal dan berkembang global.', sdg17Desc: 'Menghidupkan kembali kemitraan global untuk pembangunan berkelanjutan. Tidak ada tujuan yang dicapai sendiri — kolaborasi lintas sektor menciptakan dampak nyata.', sdgLearnMore: 'Pelajari lebih lanjut di UN.org', sdgKindWorldHelps: 'KindWorld menghubungkan relawan dengan misi yang langsung mendukung tujuan ini, menciptakan dampak nyata di komunitas lokal.', profileChangePicture: 'Ganti foto profil', profileChangeLabel: 'Ganti', profileContactChannels: 'Saluran Kontak', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: 'Kontak Darurat', profileRelationship: 'Hubungan', profileHealthLogistics: 'Kesehatan & Logistik', profileHealthLogisticsHint: 'Disimpan sekali di sini — otomatis terisi saat Anda mendaftar misi.', profileAllergies: 'Alergi', profileAllergiesPlaceholder: 'mis. Kacang, Kerang', profileMedicalConditions: 'Kondisi Medis', profileMedicalConditionsPlaceholder: 'mis. Asma, Diabetes', profileDietaryRestrictions: 'Pantangan Makanan', profileDietaryRestrictionsPlaceholder: 'mis. Vegetarian, Halal', profileTshirtSize: 'Ukuran Kaos', profileTshirtSizePlaceholder: 'Pilih ukuran', profileNgoSection: 'Profil Publik NGO', profileNgoSectionHint: 'Informasi ini ditampilkan kepada relawan di kartu misi.', profileNgoDescription: 'Deskripsi Organisasi', profileNgoDescriptionPlaceholder: 'Ceritakan kepada relawan tentang misi, dampak, dan apa yang membuat menjadi sukarelawan bersama Anda bermakna...', profileNgoWebsite: 'URL Situs Web', profileNgoWebsitePlaceholder: 'https://organisasianda.org', profileNgoPortfolio: 'URL Portofolio / Showcase', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 Dokumen Hukum untuk Verifikasi', profileNgoLegalDocsHint: 'Kirimkan tautan ke dokumen pendaftaran hukum organisasi Anda (mis. Google Drive, Dropbox). Admin KindWorld akan meninjau ini untuk memverifikasi status NGO Anda.', profileNgoDocLinkPlaceholder: 'Tautan ke dokumen hukum Anda...', profileNgoDocNotePlaceholder: "Catatan singkat tentang dokumen (mis. 'Kementerian Hukum, Indonesia')", eventSummaryLabel: 'Ringkasan Acara', reviewsReceived: 'Ulasan dari NGO', avgRatingLabel: 'Rating rata-rata', reviewsCount: 'ulasan', clickToToggleInterests: 'Klik untuk memilih/batal pilih minat Anda', refreshMissions: 'Perbarui'
   },
   'zh-cn': {
     title: 'KindWorld',
@@ -1496,6 +1688,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: '立即注册',
     firstName: '名',
     lastName: '姓',
+    orgNameField: '组织名称',
+    orgNamePlaceholder: '例如：绿色地球基金会',
+    ngoRegisterSubtitle: '注册您的非政府组织，与全球志愿者建立联系',
+    ngoRegisterInfoNote: '注册后，请完善NGO资料以开始审核流程。',
     emailAddress: '邮箱地址',
     phoneNumber: '电话号码',
     country: '国家',
@@ -1640,6 +1836,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: '特殊技能',
     agreeToTerms: '我同意条款和条件',
     cancel: '取消',
+    reviewVisibilityVol: '此评价对志愿者、其他NGO管理员和平台管理员可见——不对公众开放。',
+    reviewVisibilityNgo: '您的评价将对NGO和平台管理员可见。',
     confirmRegistration: '确认报名',
     // Landing page translations
     activeVolunteersLabel: '活跃志愿者',
@@ -1690,6 +1888,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: '免费加入',
     noCommitments: '无需承诺',
     startImpactImmediately: '立即开始创造影响',
+    whyKindWorldTitle: '为什么选择 KindWorld？',
+    whyKindWorldSubtitle: '我们不只是另一个志愿者平台',
+    whyItem1Title: '经过验证的影响',
+    whyItem1Desc: '您记录的每一个小时都由非政府组织验证——您的影响真实且可衡量。',
+    whyItem2Title: '持久的认可',
+    whyItem2Desc: '获得可分享到 LinkedIn 和简历的数字证书和徽章。',
+    whyItem3Title: '社区驱动',
+    whyItem3Desc: '与来自世界各地的志愿者、非政府组织和变革推动者建立联系。',
+    whyItem4Title: '与 SDG 对齐的任务',
+    whyItem4Desc: '每项任务都直接与联合国可持续发展目标挂钩——您的工作具有全球意义。',
+    earlyAdopterTitle: '成为早期用户',
+    earlyAdopterSubtitle: '成为第一批塑造志愿服务未来的人',
+    earlyAdopterBadgeLabel: '🌟 创始会员徽章',
+    earlyAdopterBadgeDesc: '获得永久显示在您个人资料上的专属徽章。',
+    earlyAdopterFeedbackLabel: '🗣️ 塑造平台',
+    earlyAdopterFeedbackDesc: '您的反馈直接影响我们接下来构建的内容。',
+    earlyAdopterCommunityLabel: '🤝 优先社区访问',
+    earlyAdopterCommunityDesc: '优先体验新功能、任务和非政府组织合作伙伴关系。',
+    earlyAdopterCTA: '加入早期社区',
+    earlyAdopterNote: '名额有限——在我们向公众开放之前立即加入。',
+    earlyAccessLabel: '🚀 早期访问',
+    sdgTapHint: '点击目标了解更多',
+    sdgEyebrow: '联合国 · 可持续发展目标',
     footerTagline: '赋能全球志愿者',
     footerCopyright: 'KindWorld. 保留所有权利。',
     // NGO Dashboard specific translations
@@ -1775,6 +1996,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: '您确定要删除此任务吗？',
     noUpcomingMissions: '暂无即将到来的任务',
     noPastMissions: '暂无过去的任务',
+    searchMissions: '搜索任务...',
+    noCompletedMissions: '暂无已完成的任务',
     noRegisteredNGOs: '暂无已注册的组织',
     missionRemovedSuffix: '已从平台移除',
     journeyStartsHere: '您的旅程从这里开始！',
@@ -1811,6 +2034,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: '待审批',
     ngoPendingLogout: '退出登录',
     ngoPendingSignedIn: '已登录为',
+    ngoOnboardingTitle: '完善您的NGO资料',
+    ngoOnboardingSubtitle: '请填写以下详情，以便我们的管理团队验证您的组织。',
+    ngoOnboardingDescLabel: '使命 / 描述',
+    ngoOnboardingDescPlaceholder: '描述您组织的使命、您所做的工作以及您服务的社区…',
+    ngoOnboardingWebsiteLabel: '网站链接',
+    ngoOnboardingLegalLabel: '法律注册文件',
+    ngoOnboardingLegalHint: '粘贴您组织的官方注册/成立文件链接（Google Drive、Dropbox等）',
+    ngoOnboardingPortfolioLabel: '作品集 / 过往工作',
+    ngoOnboardingPortfolioOptional: '（可选）',
+    ngoOnboardingPortfolioPlaceholder: '照片、报告、社交媒体链接…',
+    ngoOnboardingRequiredFields: '⚠️ 请在提交之前填写所有必填字段。',
+    ngoOnboardingSubmitBtn: '🚀 提交审核',
+    ngoOnboardingSubmitSuccess: '✅ 资料已提交管理员审核！批准后您将收到通知。',
+    ngoOnboardingReviewMsg: '您的申请已提交。我们的管理团队将审核您的文件并尽快与您联系。',
     ngoName: '组织名称',
     ngoEmail: '电子邮件',
     ngoDescription: '描述',
@@ -1993,7 +2230,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: '首选语言',
     continueSetup: '继续',
     skipForNow: '暂时跳过',
-    settings: '设置', settingsTitle: '设置', settingsAppearance: '外观', settingsAppearanceDesc: '个性化 KindWorld 的外观', settingsLanguage: '语言与地区', settingsLanguageDesc: '选择您的首选语言', settingsManageDesc: '管理您的账户偏好', settingsNotifications: '通知', settingsNotifDesc: '选择您希望接收哪些通知', settingsMissionUpdates: '任务更新', settingsMissionUpdatesDesc: '当您参与的任务更新或取消时获得通知', settingsAnnouncements: '机构公告', settingsAnnouncementsDesc: '接收您已加入其任务的组织的公告', settingsFriendReqNotif: '好友请求', settingsFriendReqNotifDesc: '当有人向我发送好友请求时通知我', settingsHourAlert: '小时验证', settingsHourAlertDesc: '当我提交的志愿服务时间被批准或拒绝时提醒', settingsWeeklyDigest: '每周影响摘要', settingsWeeklyDigestDesc: '您志愿活动和平台亮点的每周摘要', settingsPrivacy: '隐私', settingsPrivacyDesc: '控制谁可以看到您的信息', settingsPublicProfile: '公开个人资料', settingsPublicProfileDesc: 'KindWorld上的任何人都可以查看您的个人资料和志愿统计', settingsShowLeaderboard: '显示在排行榜', settingsShowLeaderboardDesc: '出现在社区排行榜排名中', settingsShareActivity: '分享活动', settingsShareActivityDesc: '让朋友在动态中看到您加入任务或获得徽章', settingsAllowContact: '允许机构联系我', settingsAllowContactDesc: '非政府组织可以直接联系您，提供相关志愿机会', settingsAccount: '账户', settingsAccountDesc: '管理您的账户数据', settingsExportData: '导出我的数据', settingsExportDesc: '以PDF格式下载您的志愿活动副本', settingsSignOut: '退出登录', settingsSignOutDesc: '您将被返回至主页',
+    settings: '设置', settingsTitle: '设置', settingsAppearance: '外观', settingsAppearanceDesc: '个性化 KindWorld 的外观', settingsLanguage: '语言与地区', settingsLanguageDesc: '选择您的首选语言', settingsManageDesc: '管理您的账户偏好', settingsNotifications: '通知', settingsNotifDesc: '选择您希望接收哪些通知', settingsMissionUpdates: '任务更新', settingsMissionUpdatesDesc: '当您参与的任务更新或取消时获得通知', settingsAnnouncements: '机构公告', settingsAnnouncementsDesc: '接收您已加入其任务的组织的公告', settingsFriendReqNotif: '好友请求', settingsFriendReqNotifDesc: '当有人向我发送好友请求时通知我', settingsHourAlert: '小时验证', settingsHourAlertDesc: '当我提交的志愿服务时间被批准或拒绝时提醒', settingsWeeklyDigest: '每周影响摘要', settingsWeeklyDigestDesc: '您志愿活动和平台亮点的每周摘要', settingsPrivacy: '隐私', settingsPrivacyDesc: '控制谁可以看到您的信息', settingsPublicProfile: '公开个人资料', settingsPublicProfileDesc: 'KindWorld上的任何人都可以查看您的个人资料和志愿统计', settingsShowLeaderboard: '显示在排行榜', settingsShowLeaderboardDesc: '出现在社区排行榜排名中', settingsShareActivity: '分享活动', settingsShareActivityDesc: '让朋友在动态中看到您加入任务或获得徽章', settingsAllowContact: '允许机构联系我', settingsAllowContactDesc: '非政府组织可以直接联系您，提供相关志愿机会', settingsAccount: '账户', settingsAccountDesc: '管理您的账户数据', settingsExportData: '导出我的数据', settingsExportDesc: '以PDF格式下载您的志愿活动副本', exportMyDataTitle: '我的志愿者数据', exportProfileSection: '个人资料', exportActivitySection: '活动记录', exportGeneratedBy: '由KindWorld生成', settingsSignOut: '退出登录', settingsSignOutDesc: '您将被返回至主页',
     leaderboard: '排行榜', leaderboardTitle: '顶尖志愿者', leaderboardDesc: '向最具影响力的社区成员致敬', topByHours: '按小时排名', topByBadges: '按徽章排名', yourRank: '您的排名', rankLabel: '排名', notRankedYet: '完成任务以出现在排行榜上！',
     notifications: '通知', markAllRead: '全部标记已读', noNotifications: '暂无通知', notificationsDesc: '您的活动更新将显示在这里',
     userNotFound: '用户未找到。', cannotAddSelf: '您不能添加自己为好友。', alreadyFriends: '您们已经是好友了。', yourProgress: '您的进度', hoursToNextBadge: '志愿者小时', missionsToNextBadge: '已完成任务', orgsToNextBadge: '帮助的组织', centuryClubDesc: '达到100小时获得世纪俱乐部徽章', missionMasterDesc: '完成10个任务获得任务大师徽章', communityBuilderDesc: '帮助5个组织获得社区建设者徽章',
@@ -2003,7 +2240,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     certVolRecognitionProg: '志愿者认可计划', certOfVolServiceLabel: '志愿服务证书', certIssuedTo: '此证书颁予', certHasCompleted: '已完成', certVolHoursOf: '小时志愿服务，服务于', certDateIssuedLabel: '颁发日期', certCertIdLabel: '证书编号', certSaveAsPDFBtn: '⬇ 保存为PDF',
     inactiveStatus: '未启用', certActivate: '▶ 启用', requiredLabel: '所需', createdLabel: '创建于', volunteerRequestsEmpty: '志愿者申请后将在这里显示。',
     myMissionsTitle: '我的任务', myMissionsUpcoming: '即将到来', myMissionsCompleted: '已完成',
-    certIssuedByLabel: '颁发者', certAuthCertLabel: '授权数字证书', certEligibleBadge: '符合条件', certHoursRequired: '小时要求', certVolunteersEarned: '名志愿者已获得', certClaimBtn: '领取证书', certChangeLogo: '更换标志', statsConfidential: '机密 — 仅供个人使用', downloadNgoReportBtn: '下载NGO报告', ngoImpactReportTitle: 'NGO影响报告', ngoVerifiedPartner: '已认证NGO合作伙伴', ngoVolunteerActivitiesTitle: '志愿活动', ngoApprovedHoursTitle: '已批准志愿服务时间', ngoCertProgramsTitle: '证书项目', statsConfidentialNGO: '机密 — 仅供内部使用', ngoTotalVolunteers: '总志愿者', ngoActivitiesCreated: '创建的活动', ngoHoursApproved: '已批准小时', ngoCertsIssuedCount: '已颁发证书', ngoNoActivitiesYet: '尚未创建任何活动', ngoNoApprovedHoursYet: '尚未批准任何小时', ngoNoCertProgramsYet: '尚未创建证书项目', ngoImpactReportGenerated: 'NGO影响报告已生成！', sdg1Desc: '在全球消除一切形式的贫困。超过7亿人仍生活在极端贫困中。志愿服务帮助建设社区韧性，连接人们与基本资源。', sdg2Desc: '消除饥饿，实现粮食安全。2023年近7.33亿人面临饥饿。社区粮食计划和可持续农业创造持久改变。', sdg3Desc: '确保所有年龄段的健康生活和福祉。志愿者扩大医疗服务覆盖面，支持全球弱势群体。', sdg4Desc: '确保优质教育，促进全民终身学习。超过2.44亿儿童未能上学。教育是改变世界最有力的工具。', sdg10Desc: '减少国家内部和国家间的不平等。公平的社区需要积极参与和包容性计划，不让任何人掉队。', sdg11Desc: '让城市具有包容性、安全、韧性和可持续性。到2050年，70%的人类将生活在城市中——可持续城市发展塑造我们共同的未来。', sdg13Desc: '采取紧急行动应对气候变化。气候变化威胁地球上的每个生态系统。环保行动从本地开始，影响全球。', sdg17Desc: '重振全球可持续发展伙伴关系。没有任何目标能单独实现——跨部门协作创造持久影响。', sdgLearnMore: '在UN.org了解更多', sdgKindWorldHelps: 'KindWorld将志愿者与直接推进此目标的任务相连接，在当地社区创造真实影响。'
+    certIssuedByLabel: '颁发者', certAuthCertLabel: '授权数字证书', certEligibleBadge: '符合条件', certHoursRequired: '小时要求', certVolunteersEarned: '名志愿者已获得', certClaimBtn: '领取证书', certChangeLogo: '更换标志', statsConfidential: '机密 — 仅供个人使用', downloadNgoReportBtn: '下载NGO报告', ngoImpactReportTitle: 'NGO影响报告', ngoVerifiedPartner: '已认证NGO合作伙伴', ngoVolunteerActivitiesTitle: '志愿活动', ngoApprovedHoursTitle: '已批准志愿服务时间', ngoCertProgramsTitle: '证书项目', statsConfidentialNGO: '机密 — 仅供内部使用', ngoTotalVolunteers: '总志愿者', ngoActivitiesCreated: '创建的活动', ngoHoursApproved: '已批准小时', ngoCertsIssuedCount: '已颁发证书', ngoNoActivitiesYet: '尚未创建任何活动', ngoNoApprovedHoursYet: '尚未批准任何小时', ngoNoCertProgramsYet: '尚未创建证书项目', ngoImpactReportGenerated: 'NGO影响报告已生成！', sdg1Desc: '在全球消除一切形式的贫困。超过7亿人仍生活在极端贫困中。志愿服务帮助建设社区韧性，连接人们与基本资源。', sdg2Desc: '消除饥饿，实现粮食安全。2023年近7.33亿人面临饥饿。社区粮食计划和可持续农业创造持久改变。', sdg3Desc: '确保所有年龄段的健康生活和福祉。志愿者扩大医疗服务覆盖面，支持全球弱势群体。', sdg4Desc: '确保优质教育，促进全民终身学习。超过2.44亿儿童未能上学。教育是改变世界最有力的工具。', sdg10Desc: '减少国家内部和国家间的不平等。公平的社区需要积极参与和包容性计划，不让任何人掉队。', sdg11Desc: '让城市具有包容性、安全、韧性和可持续性。到2050年，70%的人类将生活在城市中——可持续城市发展塑造我们共同的未来。', sdg13Desc: '采取紧急行动应对气候变化。气候变化威胁地球上的每个生态系统。环保行动从本地开始，影响全球。', sdg17Desc: '重振全球可持续发展伙伴关系。没有任何目标能单独实现——跨部门协作创造持久影响。', sdgLearnMore: '在UN.org了解更多', sdgKindWorldHelps: 'KindWorld将志愿者与直接推进此目标的任务相连接，在当地社区创造真实影响。', profileChangePicture: '更换头像', profileChangeLabel: '更换', profileContactChannels: '联系渠道', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: '紧急联系人', profileRelationship: '关系', profileHealthLogistics: '健康与后勤', profileHealthLogisticsHint: '在此保存一次 — 注册任务时自动填写。', profileAllergies: '过敏', profileAllergiesPlaceholder: '如：花生、贝类', profileMedicalConditions: '医疗状况', profileMedicalConditionsPlaceholder: '如：哮喘、糖尿病', profileDietaryRestrictions: '饮食限制', profileDietaryRestrictionsPlaceholder: '如：素食、清真', profileTshirtSize: 'T恤尺码', profileTshirtSizePlaceholder: '选择尺码', profileNgoSection: 'NGO公开资料', profileNgoSectionHint: '此信息显示在任务卡片上供志愿者查看。', profileNgoDescription: '组织描述', profileNgoDescriptionPlaceholder: '告诉志愿者您组织的使命、影响以及与您一起志愿服务的意义...', profileNgoWebsite: '网站URL', profileNgoWebsitePlaceholder: 'https://yourorganization.org', profileNgoPortfolio: '作品集 / 展示URL', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 验证用法律文件', profileNgoLegalDocsHint: '提交您的组织法律注册文件链接（如Google Drive、Dropbox）。KindWorld管理员将审查这些文件以验证您的NGO状态。', profileNgoDocLinkPlaceholder: '您的法律文件链接...', profileNgoDocNotePlaceholder: "关于文件的简短说明（如：'法律部注册，印度尼西亚'）", eventSummaryLabel: '活动总结', reviewsReceived: 'NGO评价', avgRatingLabel: '平均评分', reviewsCount: '条评论', clickToToggleInterests: '点击选择/取消选择您的兴趣', refreshMissions: '刷新'
   },
   'zh-tw': {
     title: 'KindWorld',
@@ -2022,8 +2259,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     volunteerHours: '志願服務小時',
     thisMonthHours: '本月',
     selectRole: '選擇您的角色：',
-    student: '學生 - 我想做志願者',
-    ngo: '非政府組織 - 我們創建任務',
+    student: '學生 - 我想成為志工',
+    ngo: '非政府組織 - 我們建立任務',
     admin: '管理員 - 我管理平台',
     welcomeBack: '歡迎回來',
     impactSummary: '這是您的志願服務影響摘要',
@@ -2040,29 +2277,33 @@ const localTranslations: Record<string, Record<string, string>> = {
     allTime: '全部',
     logout: '登出',
     // Hero slides
-    volunteerPlatform: '志願者平台',
-    heroTitle1: '賦能社區',
-    heroSubtitle1: '通過善行改變生活',
+    volunteerPlatform: '志工平台',
+    heroTitle1: '凝聚社區力量',
+    heroSubtitle1: '透過善行，改變生命',
     heroTitle2: '創造改變',
-    heroSubtitle2: '每一小時的善舉都能產生持久影響',
-    heroTitle3: '加入行動',
-    heroSubtitle3: '成為全球變革者網絡的一員',
+    heroSubtitle2: '每一小時的善意，都能留下深遠的影響',
+    heroTitle3: '加入我們',
+    heroSubtitle3: '成為全球行動者社群的一份子',
     // Auth
     welcomeBackTitle: '歡迎回來',
-    createAccount: '創建帳戶',
+    createAccount: '建立帳號',
     signInToContinue: '登入以繼續您的旅程',
     joinKindWorld: '加入KindWorld，創造改變',
-    emailOrUsername: '郵箱或用戶名',
+    emailOrUsername: '電子郵件或使用者名稱',
     password: '密碼',
     forgotPassword: '忘記密碼？',
     pleaseFillAllFields: '請輸入您的電子郵件和密碼',
     invalidCredentials: '電子郵件或密碼錯誤',
     rememberMe: '記住我',
-    noAccount: '還沒有帳戶？',
+    noAccount: '還沒有帳號？',
     registerNow: '立即註冊',
     firstName: '名',
     lastName: '姓',
-    emailAddress: '郵箱地址',
+    orgNameField: '組織名稱',
+    orgNamePlaceholder: '例如：綠色地球基金會',
+    ngoRegisterSubtitle: '註冊您的非政府組織，與全球志工建立聯繫',
+    ngoRegisterInfoNote: '註冊後，請完善NGO資料以開始審核流程。',
+    emailAddress: '電子郵件地址',
     phoneNumber: '電話號碼',
     country: '國家',
     cityResidency: '城市/居住地',
@@ -2074,22 +2315,22 @@ const localTranslations: Record<string, Record<string, string>> = {
     privacyPolicy: '隱私政策',
     orSignInWith: '或使用以下方式登入',
     orRegisterWith: '或使用以下方式註冊',
-    alreadyHaveAccount: '已有帳戶？',
+    alreadyHaveAccount: '已有帳號？',
     selectCountry: '選擇國家',
-    creatingAccount: '創建帳戶中...',
-    roleVolunteer: '志願者',
+    creatingAccount: '建立帳號中...',
+    roleVolunteer: '志工',
     roleNGO: '組織',
     roleAdmin: '管理員',
     // NGO Admin translations
     ngoWelcome: '組織儀表板',
     manageMissions: '管理任務',
-    createMission: '創建新任務',
+    createMission: '建立新任務',
     pendingVerifications: '待驗證小時',
     verifyHours: '驗證小時',
     approveHours: '批准',
     rejectHours: '拒絕',
     hoursToVerify: '小時待驗證',
-    volunteerName: '志願者姓名',
+    volunteerName: '志工姓名',
     missionName: '任務名稱',
     hoursSubmitted: '提交小時',
     submittedDate: '提交日期',
@@ -2112,7 +2353,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     reportsTitle: '平台報告',
     reportsSubtitle: '平台活動和績效的全面概述',
     rpTotalMissions: '總任務數',
-    rpTotalVolunteers: '總志願者數',
+    rpTotalVolunteers: '總志工人數',
     rpTotalHours: '總小時數',
     rpRegistrations: '註冊數',
     rpByCategory: '按類別分類任務',
@@ -2132,18 +2373,18 @@ const localTranslations: Record<string, Record<string, string>> = {
     rpAvgHours: '每任務平均小時',
     rpTotalCategories: '總類別數',
     totalMissions: '總任務數',
-    activeVolunteers: '活躍志願者',
+    activeVolunteers: '活躍志工',
     hoursCompleted: '完成小時',
     // Admin translations
     platformManagement: '平台管理',
     allMissions: '所有任務',
-    allUsers: '所有用戶',
+    allUsers: '所有使用者',
     removeMission: '刪除任務',
     manageBadges: '管理徽章',
-    addBadge: '添加徽章',
+    addBadge: '新增徽章',
     removeBadge: '刪除徽章',
-    userDetails: '用戶詳情',
-    editUser: '編輯用戶',
+    userDetails: '使用者詳情',
+    editUser: '編輯使用者',
     // Hours detail translations
     hoursBreakdown: '小時明細',
     environmentHours: '環境',
@@ -2153,33 +2394,33 @@ const localTranslations: Record<string, Record<string, string>> = {
     // Learn More page translations
     backToHome: '返回首頁',
     joinNow: '立即加入',
-    volunteers: '志願者',
+    volunteers: '志工',
     countries: '國家',
     hours: '小時',
     missionsLabel: '任務',
-    volunteersLabel: '志願者',
+    volunteersLabel: '志工',
     lmOurStoryLabel: '我們的故事',
     lmHeroTitle: 'KindWorld背後的故事',
     lmHeroSubtitle: '源於一個簡單的信念——每個年輕人都值得找到人生的方向，而志願服務可以照亮前路。',
     lmOriginTitle: '一切的開始',
     lmOriginDate: '2025年11月 · 台灣花蓮',
     lmOriginP1: 'KindWorld誕生於2025年11月，在台灣花蓮的心臟地帶——一個以壯麗的山脈、廣闊的太平洋海岸線和熱情社區而聞名的地方。正是在這裡，被自然和善良包圍，我們的創辦人提出了一個簡單的問題：如何幫助年輕人找到生命的方向與價值？',
-    lmOriginP2: '如今太多年輕人感到迷茫——對自己的目標不確定，與社區脫節，尋找有意義的事物。我們相信，通過志願服務和善行，他們不僅能發現如何改變世界，還能發現真正的自己。這個信念成就了KindWorld。',
+    lmOriginP2: '如今太多年輕人感到迷茫——對自己的目標不確定，與社區脫節，尋找有意義的事物。我們相信，透過志工服務和善行，他們不僅能發現如何改變世界，還能發現真正的自己。這個信念成就了KindWorld。',
     lmMissionTitle: '我們的使命',
     lmMissionPurpose: '尋找目標',
-    lmMissionPurposeDesc: '我們幫助年輕人通過真實的志願體驗找到意義，將他們與更大的事業聯繫起來。',
+    lmMissionPurposeDesc: '我們幫助年輕人透過真實的志工體驗找到意義，將他們與更大的事業相連結。',
     lmMissionGrowth: '個人成長',
-    lmMissionGrowthDesc: '每個任務都是學習、成長和培養塑造品格、建立信心的技能的機會。',
+    lmMissionGrowthDesc: '每個任務都是學習與成長的機會，幫助您培養塑造品格、建立自信的技能。',
     lmMissionCommunity: '建設社區',
-    lmMissionCommunityDesc: '我們將志願者、非營利組織和機構匯聚在一起，形成一個以同情和行動為紐帶的支持性網絡。',
+    lmMissionCommunityDesc: '我們將志工、非營利組織和機構匯聚一堂，建立一個以同理心和行動為紐帶的支持網絡。',
     lmVisionTitle: '我們的願景',
-    lmVisionDesc: '我們的願景是一個每個年輕人都有機會通過有意義的服務找到人生方向的世界。一個善良不僅是一種行為，更是一種生活方式的世界——社區因人們選擇互相關心而繁榮。從花蓮到世界，我們正在一步一步地建設那個未來。',
+    lmVisionDesc: '我們的願景是一個每個年輕人都有機會透過有意義的服務找到人生方向的世界。一個善良不僅是一種行為，更是一種生活方式的世界——社區因人們選擇互相關心而繁榮。從花蓮到世界，我們正在一步一步地建設那個未來。',
     lmCtaTitle: '成為我們故事的一部分',
-    lmCtaSubtitle: '無論你是尋找目標的學生、準備回饋社會的志願者，還是尋找熱心幫手的組織——KindWorld都有你的位置。',
+    lmCtaSubtitle: '無論你是尋找目標的學生、準備回饋社會的志工，還是尋找熱心幫手的組織——KindWorld都有你的位置。',
     lmCtaButton: '加入KindWorld',
     // Missions page translations
     availableMissionsTitle: '可用任務',
-    availableMissionsSubtitle: '加入志願任務，為您的社區創造積極影響',
+    availableMissionsSubtitle: '加入志工任務，為您的社區創造積極影響',
     hoursLabel: '小時',
     participantsLabel: '參與者',
     joinMission: '加入任務',
@@ -2188,9 +2429,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     viewDetails: '查看詳情',
     manageMission: '管理',
     ngoMissionsTitle: '您發布的任務',
-    ngoMissionsSubtitle: '管理志願活動並追蹤參與情況',
+    ngoMissionsSubtitle: '管理志工活動並追蹤參與情況',
     adminMissionsTitle: '所有平台任務',
-    adminMissionsSubtitle: '監控和管理平台上的所有志願活動',
+    adminMissionsSubtitle: '監控和管理平台上的所有志工活動',
     registrationForm: '報名表',
     fullName: '全名',
     emergencyContact: '緊急聯絡人',
@@ -2206,23 +2447,25 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: '特殊技能',
     agreeToTerms: '我同意條款和條件',
     cancel: '取消',
+    reviewVisibilityVol: '此評價對志工、其他NGO管理員和平台管理員可見——不對公眾開放。',
+    reviewVisibilityNgo: '您的評價將對NGO和平台管理員可見。',
     confirmRegistration: '確認報名',
     // Landing page translations
-    activeVolunteersLabel: '活躍志願者',
+    activeVolunteersLabel: '活躍志工',
     partnerNGOsLabel: '合作NGO',
     hoursLoggedLabel: '已記錄小時',
     citiesWorldwide: '全球城市',
-    howItWorks: '工作方式',
+    howItWorks: '如何運作',
     journeyToImpact: '您的影響力之旅',
-    journeySubtitle: '一個旨在放大您對社區貢獻的無縫平台',
-    discoverMissions: '發現任務',
-    discoverMissionsDesc: '找到與您的熱情相匹配的有意義的志願機會',
+    journeySubtitle: '一個讓您的貢獻被看見、影響力被放大的平台',
+    discoverMissions: '探索任務',
+    discoverMissionsDesc: '找到與您熱情相符的有意義志工機會',
     trackProgress: '追蹤進度',
-    trackProgressDesc: '監控您的志願服務時間，見證您的影響力增長',
+    trackProgressDesc: '記錄您的志工時數，見證您的影響力成長',
     earnRecognition: '獲得認可',
-    earnRecognitionDesc: '為您的貢獻獲得徽章和證書',
-    buildNetwork: '建立網絡',
-    buildNetworkDesc: '與志同道合的志願者和組織建立聯繫',
+    earnRecognitionDesc: '以徽章和證書見證您的貢獻與成就',
+    buildNetwork: '拓展人脈',
+    buildNetworkDesc: '與志同道合的志工和組織建立連結',
     founderLabel: '創始人寄語',
     founderSectionTitle: '來自創始人的話',
     founderQuote: '我們的目標是希望讓年輕人找到生命的方向與價值。',
@@ -2249,31 +2492,54 @@ const localTranslations: Record<string, Record<string, string>> = {
     sustainableCities: '可持續城市',
     climateAction: '氣候行動',
     partnerships: '合作夥伴',
-    readyToImpact: '準備好創造影響了嗎？',
+    readyToImpact: '準備好發揮影響力了嗎？',
     readyToImpactSubtitle: '每一個善舉都會激起漣漪。今天就開始你的旅程，發現你能為社區和自己帶來的改變。',
     startVolunteeringToday: '今天開始志願服務',
     registerNGO: '註冊您的非政府組織',
     freeToJoin: '免費加入',
     noCommitments: '無需承諾',
     startImpactImmediately: '立即開始創造影響',
-    footerTagline: '賦能全球志願者',
+    whyKindWorldTitle: '為什麼選擇 KindWorld？',
+    whyKindWorldSubtitle: '我們不只是另一個志工平台',
+    whyItem1Title: '經過驗證的影響',
+    whyItem1Desc: '您記錄的每一個小時都由非政府組織驗證——您的影響真實且可衡量。',
+    whyItem2Title: '持久的認可',
+    whyItem2Desc: '獲得可分享到 LinkedIn 和履歷的數位證書和徽章。',
+    whyItem3Title: '社群驅動',
+    whyItem3Desc: '與來自世界各地的志工、非政府組織和變革推動者建立聯繫。',
+    whyItem4Title: '與 SDG 對齊的任務',
+    whyItem4Desc: '每項任務都直接與聯合國永續發展目標掛鉤——您的工作具有全球意義。',
+    earlyAdopterTitle: '成為早期使用者',
+    earlyAdopterSubtitle: '成為第一批塑造志工服務未來的人',
+    earlyAdopterBadgeLabel: '🌟 創始會員徽章',
+    earlyAdopterBadgeDesc: '獲得永久顯示在您個人資料上的專屬徽章。',
+    earlyAdopterFeedbackLabel: '🗣️ 塑造平台',
+    earlyAdopterFeedbackDesc: '您的意見直接影響我們接下來構建的內容。',
+    earlyAdopterCommunityLabel: '🤝 優先社群訪問',
+    earlyAdopterCommunityDesc: '優先體驗新功能、任務和非政府組織合作夥伴關係。',
+    earlyAdopterCTA: '加入早期社群',
+    earlyAdopterNote: '名額有限——在我們向公眾開放之前立即加入。',
+    earlyAccessLabel: '🚀 早期訪問',
+    sdgTapHint: '點擊目標了解更多',
+    sdgEyebrow: '聯合國 · 永續發展目標',
+    footerTagline: '連結全球志工，共創影響力',
     footerCopyright: 'KindWorld. 保留所有權利。',
     // NGO Dashboard specific translations
     ngoDashboardTitle: '組織儀表板',
-    ngoDashboardSubtitle: '創建志願活動、管理證書並追蹤社區影響',
-    ngoActiveVolunteers: '活躍志願者',
+    ngoDashboardSubtitle: '建立志工活動、管理證書並追蹤社區影響',
+    ngoActiveVolunteers: '活躍志工',
     ngoPublishedActivities: '已發布活動',
     ngoCertificatesIssued: '已頒發證書',
     ngoTotalImpactHours: '總影響小時',
-    createNewActivity: '創建新活動',
-    publishVolunteerOpportunities: '為社區發布志願機會',
-    createActivity: '創建活動',
+    createNewActivity: '建立新活動',
+    publishVolunteerOpportunities: '為社區發布志工機會',
+    createActivity: '建立活動',
     manageCertificatesTitle: '管理證書',
-    createPublishCertificates: '為志願者創建和發布證書',
+    createPublishCertificates: '為志工建立並發布證書',
     allHoursVerified: '所有志願服務小時已驗證！',
     pendingStatus: '待處理',
     viewAll: '查看全部',
-    noActivitiesYet: '尚未發布任何活動。創建您的第一個活動！',
+    noActivitiesYet: '尚未發布任何活動。立即建立您的第一個活動！',
     participantsLabel2: '參與者',
     durationLabel: '時長',
     upcomingStatus: '即將到來',
@@ -2287,11 +2553,11 @@ const localTranslations: Record<string, Record<string, string>> = {
     issuedLabel: '已頒發',
     publishLabel: '發布',
     previewLabel: '預覽',
-    createNewVolunteerActivity: '創建新志願活動',
+    createNewVolunteerActivity: '建立新志工活動',
     activityTitle: '活動標題',
     activityTitlePlaceholder: '例如：海灘清潔行動',
     descriptionLabel: '描述',
-    descriptionPlaceholder: '描述志願活動及其影響...',
+    descriptionPlaceholder: '描述志工活動及其影響...',
     locationLabel: '地點',
     locationPlaceholder: '例如：中央公園，紐約',
     dateLabel: '日期',
@@ -2320,14 +2586,14 @@ const localTranslations: Record<string, Record<string, string>> = {
     emergencyLabel: '緊急聯絡人',
     // Admin Dashboard specific translations
     adminDashboardTitle: '管理員儀表板',
-    adminDashboardSubtitle: '管理用戶、監控平台活動並監督志願者項目',
-    totalUsersLabel: '總用戶',
-    volunteersLabel2: '志願者',
+    adminDashboardSubtitle: '管理使用者、監控平台活動並監督志工專案',
+    totalUsersLabel: '總使用者',
+    volunteersLabel2: '志工',
     totalMissionsLabel: '總任務',
     viewManageMissions: '查看和管理平台上所有的志願服務任務',
     missionsCount: '個任務',
-    volunteersCount: '位志願者',
-    addRemoveBadges: '為志願者添加或移除徽章獎勵',
+    volunteersCount: '位志工',
+    addRemoveBadges: '為志工新增或移除徽章獎勵',
     badgesAvailable: '種可用徽章',
     openBadgeManager: '打開徽章管理',
     ngoApplications: '組織申請',
@@ -2341,6 +2607,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: '您確定要刪除此任務嗎？',
     noUpcomingMissions: '暫無即將到來的任務',
     noPastMissions: '暫無過去的任務',
+    searchMissions: '搜尋任務...',
+    noCompletedMissions: '尚無已完成的任務',
     noRegisteredNGOs: '暫無已註冊的組織',
     missionRemovedSuffix: '已從平台移除',
     journeyStartsHere: '您的旅程從這裡開始！',
@@ -2377,6 +2645,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: '待審批',
     ngoPendingLogout: '登出',
     ngoPendingSignedIn: '已登入為',
+    ngoOnboardingTitle: '完善您的NGO資料',
+    ngoOnboardingSubtitle: '請填寫以下詳情，以便我們的管理團隊驗證您的組織。',
+    ngoOnboardingDescLabel: '使命 / 描述',
+    ngoOnboardingDescPlaceholder: '描述您組織的使命、您所做的工作以及您服務的社群…',
+    ngoOnboardingWebsiteLabel: '網站連結',
+    ngoOnboardingLegalLabel: '法律登記文件',
+    ngoOnboardingLegalHint: '貼上您組織的官方登記/成立文件連結（Google Drive、Dropbox等）',
+    ngoOnboardingPortfolioLabel: '作品集 / 過往工作',
+    ngoOnboardingPortfolioOptional: '（選填）',
+    ngoOnboardingPortfolioPlaceholder: '照片、報告、社群媒體連結…',
+    ngoOnboardingRequiredFields: '⚠️ 請在提交之前填寫所有必填欄位。',
+    ngoOnboardingSubmitBtn: '🚀 提交審核',
+    ngoOnboardingSubmitSuccess: '✅ 資料已提交管理員審核！批准後您將收到通知。',
+    ngoOnboardingReviewMsg: '您的申請已提交。我們的管理團隊將審核您的文件並盡快與您聯絡。',
     ngoName: '組織名稱',
     ngoEmail: '電子郵件',
     ngoDescription: '描述',
@@ -2409,35 +2691,35 @@ const localTranslations: Record<string, Record<string, string>> = {
     joinDateLabel: '加入日期',
     ratingLabel: '平均評分',
     reportLabel: '報告',
-    volunteerActivityBreakdown: '您的志願活動明細',
+    volunteerActivityBreakdown: '您的志工活動明細',
     missionsCompleted: '完成任務',
     missionTimeline: '任務時間軸',
     myBadges: '我的徽章',
-    volunteerRole: '志願者',
-    uploadCertDescription: '上傳您設計好的證書，志願者完成任務後可以獲得',
+    volunteerRole: '志工',
+    uploadCertDescription: '上傳您設計好的證書，志工完成任務後即可領取',
     certificateNameOptional: '證書名稱（選填）',
     // Badge management translations
     badgeManagementCenter: '徽章管理中心',
-    badgeManagementDesc: '為志願者解鎖和管理成就徽章',
-    selectUser: '選擇用戶',
-    selectUserDesc: '選擇一位用戶',
-    selectUserDescLong: '從左側列表中選擇一位志願者來管理他們的徽章',
+    badgeManagementDesc: '為志工解鎖和管理成就徽章',
+    selectUser: '選擇使用者',
+    selectUserDesc: '選擇一位使用者',
+    selectUserDescLong: '從左側列表中選擇一位志工來管理其徽章',
     allBadgesTitle: '所有徽章',
     clickToUnlockRemove: '點擊解鎖或移除',
     clickToRemove: '點擊移除',
     clickToUnlock: '點擊解鎖',
     hoursUnit: '小時',
     // Edit user modal
-    editUserTitle: '編輯用戶',
+    editUserTitle: '編輯使用者',
     fullNameLabel: '全名',
     emailLabel: '電子郵件',
-    volunteerHoursLabel: '志願服務時數',
-    userRoleLabel: '用戶角色',
-    studentVolunteerRole: '志願者',
+    volunteerHoursLabel: '志工時數',
+    userRoleLabel: '使用者角色',
+    studentVolunteerRole: '志工',
     platformAdmin: '管理員',
-    saveLabel: '保存',
+    saveLabel: '儲存',
     cancelLabel: '取消',
-    userUpdatedSuccess: '用戶更新成功',
+    userUpdatedSuccess: '使用者更新成功',
     profileUpdatedSuccess: '個人資料已更新！',
     // Profile page translations
     verifiedLabel: '已驗證',
@@ -2456,8 +2738,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     earnedOn: '獲得於 ',
     noBadgesYet: '您還沒有獲得任何徽章',
     downloadMyStats: '下載我的統計資料',
-    statsDownloaded: '您的志願者統計資料已下載！',
-    volunteerStatsReport: '志願者統計報告',
+    statsDownloaded: '您的志工統計資料已下載！',
+    volunteerStatsReport: '志工統計報告',
     generatedOn: '生成於',
     profileSummary: '個人資料摘要',
     memberSince: '加入時間',
@@ -2474,25 +2756,25 @@ const localTranslations: Record<string, Record<string, string>> = {
     earnedBadgesLabel: '獲得的徽章',
     manageBadgesBtn: '管理徽章',
     // Friends page translations
-    connectWithVolunteers: '與其他志願者聯繫',
-    addFriend: '添加好友',
-    searchFriendPlaceholder: '按姓名或郵箱搜索...',
+    connectWithVolunteers: '與其他志工聯繫',
+    addFriend: '新增好友',
+    searchFriendPlaceholder: '依姓名或電子郵件搜尋...',
     sendRequest: '發送請求',
     friendRequests: '好友請求',
     accept: '接受',
     decline: '拒絕',
     myFriends: '我的好友',
     noFriendsYet: '還沒有好友',
-    startConnecting: '開始與其他志願者聯繫！',
+    startConnecting: '開始與其他志工聯繫！',
     pendingLabel: '等待中',
     removeFriend: '刪除',
     pendingRequests: '待處理請求',
     requestSent: '請求已發送',
     cancelRequest: '取消',
     // Admin user management table
-    userManagementTitle: '用戶管理',
-    userManagementDesc: '查看和管理平台上所有註冊用戶',
-    tableHeaderUser: '用戶',
+    userManagementTitle: '使用者管理',
+    userManagementDesc: '查看和管理平台上所有已註冊的使用者',
+    tableHeaderUser: '使用者',
     tableHeaderRole: '角色',
     tableHeaderHours: '小時',
     tableHeaderMissions: '任務',
@@ -2559,17 +2841,18 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: '首選語言',
     continueSetup: '繼續',
     skipForNow: '暫時跳過',
-    settings: '設定', settingsTitle: '設定', settingsAppearance: '外觀', settingsAppearanceDesc: '個人化 KindWorld 的外觀', settingsLanguage: '語言與地區', settingsLanguageDesc: '選擇您的偏好語言', settingsManageDesc: '管理您的帳戶偏好設定', settingsNotifications: '通知', settingsNotifDesc: '選擇您希望接收哪些通知', settingsMissionUpdates: '任務更新', settingsMissionUpdatesDesc: '當您參與的任務更新或取消時獲得通知', settingsAnnouncements: '機構公告', settingsAnnouncementsDesc: '接收您已加入其任務的組織的公告', settingsFriendReqNotif: '好友請求', settingsFriendReqNotifDesc: '當有人向我發送好友請求時通知我', settingsHourAlert: '小時驗證', settingsHourAlertDesc: '當我提交的志願服務時間被批准或拒絕時提醒', settingsWeeklyDigest: '每週影響摘要', settingsWeeklyDigestDesc: '您志願活動和平台亮點的每週摘要', settingsPrivacy: '隱私', settingsPrivacyDesc: '控制誰可以看到您的資訊', settingsPublicProfile: '公開個人資料', settingsPublicProfileDesc: 'KindWorld上的任何人都可以查看您的個人資料和志願統計', settingsShowLeaderboard: '顯示在排行榜', settingsShowLeaderboardDesc: '出現在社群排行榜排名中', settingsShareActivity: '分享活動', settingsShareActivityDesc: '讓朋友在動態中看到您加入任務或獲得徽章', settingsAllowContact: '允許機構聯繫我', settingsAllowContactDesc: '非政府組織可以直接聯繫您，提供相關志願機會', settingsAccount: '帳戶', settingsAccountDesc: '管理您的帳戶資料', settingsExportData: '匯出我的資料', settingsExportDesc: '以PDF格式下載您的志願活動副本', settingsSignOut: '登出', settingsSignOutDesc: '您將被返回至主頁',
-    leaderboard: '排行榜', leaderboardTitle: '頂尖志願者', leaderboardDesc: '向最具影響力的社區成員致敬', topByHours: '按小時排名', topByBadges: '按徽章排名', yourRank: '您的排名', rankLabel: '排名', notRankedYet: '完成任務以出現在排行榜上！',
+    settings: '設定', settingsTitle: '設定', settingsAppearance: '外觀', settingsAppearanceDesc: '個人化 KindWorld 的外觀', settingsLanguage: '語言與地區', settingsLanguageDesc: '選擇您的偏好語言', settingsManageDesc: '管理您的帳號偏好設定', settingsNotifications: '通知', settingsNotifDesc: '選擇您希望接收哪些通知', settingsMissionUpdates: '任務更新', settingsMissionUpdatesDesc: '當您參與的任務更新或取消時獲得通知', settingsAnnouncements: '機構公告', settingsAnnouncementsDesc: '接收您已加入其任務的組織的公告', settingsFriendReqNotif: '好友請求', settingsFriendReqNotifDesc: '當有人向我發送好友請求時通知我', settingsHourAlert: '小時驗證', settingsHourAlertDesc: '當我提交的志願服務時間被批准或拒絕時提醒', settingsWeeklyDigest: '每週影響摘要', settingsWeeklyDigestDesc: '您志願活動和平台亮點的每週摘要', settingsPrivacy: '隱私', settingsPrivacyDesc: '控制誰可以看到您的資訊', settingsPublicProfile: '公開個人資料', settingsPublicProfileDesc: 'KindWorld上的任何人都可以查看您的個人資料和志願統計', settingsShowLeaderboard: '顯示在排行榜', settingsShowLeaderboardDesc: '出現在社群排行榜排名中', settingsShareActivity: '分享活動', settingsShareActivityDesc: '讓朋友在動態中看到您加入任務或獲得徽章', settingsAllowContact: '允許機構聯繫我', settingsAllowContactDesc: '非政府組織可以直接聯繫您，提供相關志願機會', settingsAccount: '帳號', settingsAccountDesc: '管理您的帳號資料', settingsExportData: '匯出我的資料', settingsExportDesc: '以PDF格式下載您的志願活動副本', exportMyDataTitle: '我的志工資料', exportProfileSection: '個人資料', exportActivitySection: '活動記錄', exportGeneratedBy: '由KindWorld生成', settingsSignOut: '登出', settingsSignOutDesc: '您將被返回至主頁',
+    leaderboard: '排行榜', leaderboardTitle: '頂尖志工', leaderboardDesc: '向最具影響力的社區成員致敬', topByHours: '按小時排名', topByBadges: '按徽章排名', yourRank: '您的排名', rankLabel: '排名', notRankedYet: '完成任務以出現在排行榜上！',
     notifications: '通知', markAllRead: '全部標記已讀', noNotifications: '暫無通知', notificationsDesc: '您的活動更新將顯示在這裡',
-    userNotFound: '用戶未找到。', cannotAddSelf: '您不能添加自己為好友。', alreadyFriends: '您們已經是好友了。', yourProgress: '您的進度', hoursToNextBadge: '志願者小時', missionsToNextBadge: '已完成任務', orgsToNextBadge: '幫助的組織', centuryClubDesc: '達到100小時獲得世紀俱樂部徽章', missionMasterDesc: '完成10個任務獲得任務大師徽章', communityBuilderDesc: '幫助5個組織獲得社區建設者徽章',
+    userNotFound: '找不到此使用者。', cannotAddSelf: '您無法將自己加為好友。', alreadyFriends: '您們已經是好友了。', yourProgress: '您的進度', hoursToNextBadge: '志工時數', missionsToNextBadge: '已完成任務', orgsToNextBadge: '幫助的組織', centuryClubDesc: '達到100小時獲得世紀俱樂部徽章', missionMasterDesc: '完成10個任務獲得任務大師徽章', communityBuilderDesc: '幫助5個組織獲得社區建設者徽章',
     profileCompletion: '資料完整度', completeProfileDesc: '完善您的資料以解鎖所有功能', profileComplete: '您的資料已100%完整！', completeNow: '立即完善', duplicate: '複製',
-    announce: '公告', sendAnnouncement: '發送公告', announcementSubject: '主題', announcementSubjectPlaceholder: '例如：任務重要更新', announcementMessage: '訊息', announcementMessagePlaceholder: '向志願者寫信息...', announcementsFromNGOs: '來自公益組織的公告', impactDashboard: '小組影響力儀表板', volunteersByCategory: '按類別的志願者', volunteersPerMonth: '每月志願者數', noDataYet: '暫無資料。發布任務以查看您的影響！', submitHours: '提交小時', hoursVolunteered: '志願小時', submissionNotes: '備註(可選)', submissionNotesPlaceholder: '描述您的貢獻...', hoursSubmittedSuccess: '小時已提交待審核！', pleaseEnterHours: '請輸入有效小時數。', hoursApproved: '小時已批准', hoursRejected: '小時已拒絕', hoursPending: '待審核', activityFeedTitle: '動態消息', noActivityYet: '暫無動態', noActivityDesc: '當您的朋友加入任務或獲得成就時，您將在這裡看到。', activityJoinedMission: '加入了一個任務', activityEarnedBadge: '獲得了徽章', activitySubmittedHours: '提交了志願小時', justNow: '剛剛', minutesAgo: '分鐘前', hoursAgoLabel: '小時前', daysAgo: '天前', noMissionsFound: '沒有符合搜尋的任務', noMissionsFoundDesc: '嘗試調整篩選條件或搜尋關鍵詞。', getStartedTitle: '準備好產生影響了嗎？', getStartedDesc: '探索您所在地區的志願任務，開始回饋社區的旅程。', findFriends: '尋找朋友', joinMissionPrompt: '加入任務以獲得您的第一個徽章！', leaderboardEmptyHours: '暫無排名志願者 — 成為第一個！', leaderboardEmptyBadges: '暫無徽章 — 開始您的旅程！',
+    announce: '公告', sendAnnouncement: '發送公告', announcementSubject: '主題', announcementSubjectPlaceholder: '例如：任務重要更新', announcementMessage: '訊息', announcementMessagePlaceholder: '寫信息給志工...', announcementsFromNGOs: '來自公益組織的公告', impactDashboard: '小組影響力儀表板', volunteersByCategory: '按類別的志工', volunteersPerMonth: '每月志工人數', noDataYet: '暫無資料。發布任務以查看您的影響！', submitHours: '提交小時', hoursVolunteered: '志願小時', submissionNotes: '備註(可選)', submissionNotesPlaceholder: '描述您的貢獻...', hoursSubmittedSuccess: '小時已提交待審核！', pleaseEnterHours: '請輸入有效小時數。', hoursApproved: '小時已批准', hoursRejected: '小時已拒絕', hoursPending: '待審核', activityFeedTitle: '動態消息', noActivityYet: '暫無動態', noActivityDesc: '當您的朋友加入任務或獲得成就時，您將在這裡看到。', activityJoinedMission: '加入了一個任務', activityEarnedBadge: '獲得了徽章', activitySubmittedHours: '提交了志願小時', justNow: '剛剛', minutesAgo: '分鐘前', hoursAgoLabel: '小時前', daysAgo: '天前', noMissionsFound: '沒有符合搜尋的任務', noMissionsFoundDesc: '嘗試調整篩選條件或搜尋關鍵詞。', getStartedTitle: '準備好發揮影響力了嗎？', getStartedDesc: '探索您所在地區的志願任務，開始回饋社區的旅程。', findFriends: '尋找朋友', joinMissionPrompt: '加入任務以獲得您的第一個徽章！', leaderboardEmptyHours: '暫無排名志工 — 成為第一個！', leaderboardEmptyBadges: '暫無徽章 — 開始您的旅程！',
     statusUpcoming: '即將開始', statusCompleted: '已完成', statusSuspended: '已停辦', exportCSV: '匯出CSV', exportedCSV: 'CSV匯出成功', endTimeLabel: '結束時間', missionImageUrl: '封面圖片網址', missionImagePlaceholder: 'https://example.com/image.jpg（選填）', allCategories: '所有類別', clearFilters: '清除篩選條件',
     certVolRecognitionProg: '志願服務認可計畫', certOfVolServiceLabel: '志願服務證書', certIssuedTo: '此證書頒予', certHasCompleted: '已完成', certVolHoursOf: '小時志願服務，服務於', certDateIssuedLabel: '頒發日期', certCertIdLabel: '證書編號', certSaveAsPDFBtn: '⬇ 儲存為PDF',
-    inactiveStatus: '未啟用', certActivate: '▶ 啟用', requiredLabel: '所需', createdLabel: '建立於', volunteerRequestsEmpty: '志願者申請後將在這裡顯示。',
+    deleteUser: '刪除帳號', deleteUserConfirm: '確定要永久刪除此帳號嗎？此操作無法復原。',
+    inactiveStatus: '未啟用', certActivate: '▶ 啟用', requiredLabel: '所需', createdLabel: '建立於', volunteerRequestsEmpty: '志工申請後將在這裡顯示。',
     myMissionsTitle: '我的任務', myMissionsUpcoming: '即將到來', myMissionsCompleted: '已完成',
-    certIssuedByLabel: '頒發者', certAuthCertLabel: '授權數位證書', certEligibleBadge: '符合條件', certHoursRequired: '小時要求', certVolunteersEarned: '名志願者已獲得', certClaimBtn: '領取證書', certChangeLogo: '更換標誌', statsConfidential: '機密 — 僅供個人使用', downloadNgoReportBtn: '下載NGO報告', ngoImpactReportTitle: 'NGO影響報告', ngoVerifiedPartner: '已認證NGO合作夥伴', ngoVolunteerActivitiesTitle: '志願活動', ngoApprovedHoursTitle: '已批准志願服務時間', ngoCertProgramsTitle: '證書計畫', statsConfidentialNGO: '機密 — 僅供內部使用', ngoTotalVolunteers: '總志願者', ngoActivitiesCreated: '創建的活動', ngoHoursApproved: '已批准小時', ngoCertsIssuedCount: '已頒發證書', ngoNoActivitiesYet: '尚未創建任何活動', ngoNoApprovedHoursYet: '尚未批准任何小時', ngoNoCertProgramsYet: '尚未創建證書計畫', ngoImpactReportGenerated: 'NGO影響報告已生成！', sdg1Desc: '在全球消除一切形式的貧困。超過7億人仍生活在極端貧困中。志願服務幫助建設社區韌性，連結人們與基本資源。', sdg2Desc: '消除飢餓，實現糧食安全。2023年近7.33億人面臨飢餓。社區糧食計畫和永續農業創造持久改變。', sdg3Desc: '確保所有年齡層的健康生活和福祉。志工擴大醫療服務覆蓋面，支持全球弱勢群體。', sdg4Desc: '確保優質教育，促進全民終身學習。超過2.44億兒童未能就學。教育是改變世界最有力的工具。', sdg10Desc: '減少國家內部和國家間的不平等。公平的社區需要積極參與和包容性計畫，不讓任何人落後。', sdg11Desc: '讓城市具有包容性、安全、韌性和永續性。到2050年，70%的人類將生活在城市中——永續城市發展塑造我們共同的未來。', sdg13Desc: '採取緊急行動應對氣候變遷。氣候變遷威脅地球上的每個生態系統。環保行動從本地開始，影響全球。', sdg17Desc: '重振全球永續發展夥伴關係。沒有任何目標能單獨實現——跨部門合作創造持久影響。', sdgLearnMore: '在UN.org了解更多', sdgKindWorldHelps: 'KindWorld將志工與直接推進此目標的任務相連結，在當地社區創造真實影響。'
+    certIssuedByLabel: '頒發者', certAuthCertLabel: '授權數位證書', certEligibleBadge: '符合條件', certHoursRequired: '小時要求', certVolunteersEarned: '名志工已獲得', certClaimBtn: '領取證書', certChangeLogo: '更換標誌', statsConfidential: '機密 — 僅供個人使用', downloadNgoReportBtn: '下載NGO報告', ngoImpactReportTitle: 'NGO影響報告', ngoVerifiedPartner: '已認證NGO合作夥伴', ngoVolunteerActivitiesTitle: '志願活動', ngoApprovedHoursTitle: '已批准志願服務時間', ngoCertProgramsTitle: '證書計畫', statsConfidentialNGO: '機密 — 僅供內部使用', ngoTotalVolunteers: '總志工數', ngoActivitiesCreated: '已建立的活動', ngoHoursApproved: '已批准小時', ngoCertsIssuedCount: '已頒發證書', ngoNoActivitiesYet: '尚未建立任何活動', ngoNoApprovedHoursYet: '尚未批准任何小時', ngoNoCertProgramsYet: '尚未建立證書計畫', ngoImpactReportGenerated: 'NGO影響報告已生成！', sdg1Desc: '在全球消除一切形式的貧困。超過7億人仍生活在極端貧困中。志願服務幫助建設社區韌性，連結人們與基本資源。', sdg2Desc: '消除飢餓，實現糧食安全。2023年近7.33億人面臨飢餓。社區糧食計畫和永續農業創造持久改變。', sdg3Desc: '確保所有年齡層的健康生活和福祉。志工擴大醫療服務覆蓋面，支持全球弱勢群體。', sdg4Desc: '確保優質教育，促進全民終身學習。超過2.44億兒童未能就學。教育是改變世界最有力的工具。', sdg10Desc: '減少國家內部和國家間的不平等。公平的社區需要積極參與和包容性計畫，不讓任何人落後。', sdg11Desc: '讓城市具有包容性、安全、韌性和永續性。到2050年，70%的人類將生活在城市中——永續城市發展塑造我們共同的未來。', sdg13Desc: '採取緊急行動應對氣候變遷。氣候變遷威脅地球上的每個生態系統。環保行動從本地開始，影響全球。', sdg17Desc: '重振全球永續發展夥伴關係。沒有任何目標能單獨實現——跨部門合作創造持久影響。', sdgLearnMore: '在UN.org了解更多', sdgKindWorldHelps: 'KindWorld將志工與直接推進此目標的任務相連結，在當地社區創造真實影響。', profileChangePicture: '更換頭像', profileChangeLabel: '更換', profileContactChannels: '聯絡管道', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: '緊急聯絡人', profileRelationship: '關係', profileHealthLogistics: '健康與後勤', profileHealthLogisticsHint: '在此儲存一次 — 報名任務時自動填寫。', profileAllergies: '過敏', profileAllergiesPlaceholder: '如：花生、貝類', profileMedicalConditions: '醫療狀況', profileMedicalConditionsPlaceholder: '如：哮喘、糖尿病', profileDietaryRestrictions: '飲食限制', profileDietaryRestrictionsPlaceholder: '如：素食、清真', profileTshirtSize: 'T恤尺寸', profileTshirtSizePlaceholder: '選擇尺寸', profileNgoSection: 'NGO公開資料', profileNgoSectionHint: '此資訊顯示在任務卡片上供志工查看。', profileNgoDescription: '組織描述', profileNgoDescriptionPlaceholder: '告訴志工您組織的使命、影響以及與您一起志願服務的意義...', profileNgoWebsite: '網站URL', profileNgoWebsitePlaceholder: 'https://yourorganization.org', profileNgoPortfolio: '作品集 / 展示URL', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 驗證用法律文件', profileNgoLegalDocsHint: '提交您組織的法律註冊文件連結（如Google Drive、Dropbox）。KindWorld管理員將審查這些文件以驗證您的NGO狀態。', profileNgoDocLinkPlaceholder: '您的法律文件連結...', profileNgoDocNotePlaceholder: "關於文件的簡短說明（如：'法務部登記，印尼'）", eventSummaryLabel: '活動總結', reviewsReceived: 'NGO評價', avgRatingLabel: '平均評分', reviewsCount: '則評論', clickToToggleInterests: '點擊選擇/取消選擇您的興趣', refreshMissions: '重新整理'
   },
   es: {
     title: 'KindWorld',
@@ -2626,6 +2909,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: 'Regístrate ahora',
     firstName: 'Nombre',
     lastName: 'Apellido',
+    orgNameField: 'Nombre de la Organización',
+    orgNamePlaceholder: 'p.ej. Fundación Tierra Verde',
+    ngoRegisterSubtitle: 'Registra tu ONG y conecta con voluntarios en todo el mundo',
+    ngoRegisterInfoNote: 'Tras el registro, completa el perfil de tu ONG para iniciar el proceso de verificación.',
     emailAddress: 'Correo Electrónico',
     phoneNumber: 'Número de Teléfono',
     country: 'País',
@@ -2764,6 +3051,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: 'Habilidades',
     agreeToTerms: 'Acepto los términos',
     cancel: 'Cancelar',
+    reviewVisibilityVol: 'Esta reseña es visible para el voluntario, otros administradores de ONG y administradores de la plataforma — no para el público.',
+    reviewVisibilityNgo: 'Tu reseña será visible para la ONG y los administradores de la plataforma.',
     confirmRegistration: 'Confirmar',
     activeVolunteersLabel: 'Voluntarios Activos',
     partnerNGOsLabel: 'ONGs Asociadas',
@@ -2813,6 +3102,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: 'Gratis',
     noCommitments: 'Sin compromisos',
     startImpactImmediately: 'Impacto inmediato',
+    whyKindWorldTitle: '¿Por qué KindWorld?',
+    whyKindWorldSubtitle: 'No somos solo otra plataforma de voluntariado',
+    whyItem1Title: 'Impacto Verificado',
+    whyItem1Desc: 'Cada hora que registras es verificada por ONGs — tu impacto es real y medible.',
+    whyItem2Title: 'Reconocimiento Duradero',
+    whyItem2Desc: 'Gana certificados digitales y badges compartibles en LinkedIn y tu CV.',
+    whyItem3Title: 'Impulsado por la Comunidad',
+    whyItem3Desc: 'Conéctate con voluntarios, ONGs y agentes de cambio de todo el mundo.',
+    whyItem4Title: 'Misiones Alineadas con ODS',
+    whyItem4Desc: 'Cada misión se vincula directamente a los Objetivos de Desarrollo Sostenible de la ONU.',
+    earlyAdopterTitle: 'Únete como Adoptador Temprano',
+    earlyAdopterSubtitle: 'Sé de los primeros en moldear el futuro del voluntariado',
+    earlyAdopterBadgeLabel: '🌟 Insignia de Miembro Fundador',
+    earlyAdopterBadgeDesc: 'Obtén una insignia exclusiva en tu perfil para siempre.',
+    earlyAdopterFeedbackLabel: '🗣️ Moldea la Plataforma',
+    earlyAdopterFeedbackDesc: 'Tu retroalimentación influye directamente en lo que construimos.',
+    earlyAdopterCommunityLabel: '🤝 Acceso Prioritario',
+    earlyAdopterCommunityDesc: 'Acceso anticipado a nuevas funciones, misiones y alianzas con ONGs.',
+    earlyAdopterCTA: 'Únete a la Comunidad Temprana',
+    earlyAdopterNote: 'Plazas limitadas — únete ahora antes de abrir al público.',
+    earlyAccessLabel: '🚀 Acceso Temprano',
+    sdgTapHint: 'Toca un objetivo para saber más',
+    sdgEyebrow: 'ONU · Objetivo de Desarrollo Sostenible',
     footerTagline: 'Empoderando voluntarios',
     footerCopyright: 'KindWorld. Todos los derechos reservados.',
     ngoDashboardTitle: 'Panel de ONG',
@@ -2895,6 +3207,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: '¿Estás seguro de que quieres eliminar esta misión?',
     noUpcomingMissions: 'No hay misiones próximas',
     noPastMissions: 'No hay misiones pasadas aún',
+    searchMissions: 'Buscar misiones...',
+    noCompletedMissions: 'Aún no hay misiones completadas',
     noRegisteredNGOs: 'Aún no hay ONGs registradas',
     missionRemovedSuffix: 'ha sido eliminada de la plataforma',
     journeyStartsHere: '¡Tu viaje comienza aquí!',
@@ -2931,6 +3245,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: 'Pendiente de Aprobación',
     ngoPendingLogout: 'Cerrar Sesión',
     ngoPendingSignedIn: 'Sesión iniciada como',
+    ngoOnboardingTitle: 'Completa tu Perfil de ONG',
+    ngoOnboardingSubtitle: 'Completa los detalles a continuación para que nuestro equipo de administración pueda verificar tu organización.',
+    ngoOnboardingDescLabel: 'Misión / Descripción',
+    ngoOnboardingDescPlaceholder: 'Describe la misión de tu organización, lo que hace y las comunidades a las que sirve…',
+    ngoOnboardingWebsiteLabel: 'URL del Sitio Web',
+    ngoOnboardingLegalLabel: 'Documento de Registro Legal',
+    ngoOnboardingLegalHint: 'Pega un enlace a los documentos oficiales de registro/constitución de tu organización (Google Drive, Dropbox, etc.)',
+    ngoOnboardingPortfolioLabel: 'Portafolio / Trabajo Previo',
+    ngoOnboardingPortfolioOptional: '(opcional)',
+    ngoOnboardingPortfolioPlaceholder: 'Enlace a fotos, informes, redes sociales…',
+    ngoOnboardingRequiredFields: '⚠️ Por favor, completa todos los campos requeridos antes de enviar.',
+    ngoOnboardingSubmitBtn: '🚀 Enviar para Verificación',
+    ngoOnboardingSubmitSuccess: '✅ ¡Perfil enviado para revisión de administrador! Se te notificará una vez aprobado.',
+    ngoOnboardingReviewMsg: 'Tu solicitud ha sido enviada. Nuestro equipo de administración revisará tus documentos y te contactará pronto.',
     ngoName: 'Nombre',
     ngoEmail: 'Email',
     ngoDescription: 'Descripción',
@@ -3104,7 +3432,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Idioma Preferido',
     continueSetup: 'Continuar',
     skipForNow: 'Saltar',
-    settings: 'Configuración', settingsTitle: 'Configuración', settingsAppearance: 'Apariencia', settingsAppearanceDesc: 'Personaliza el aspecto de KindWorld', settingsLanguage: 'Idioma y Región', settingsLanguageDesc: 'Elige tu idioma preferido', settingsManageDesc: 'Gestiona tus preferencias de cuenta', settingsNotifications: 'Notificaciones', settingsNotifDesc: 'Elige de qué quieres recibir notificaciones', settingsMissionUpdates: 'Actualizaciones de misiones', settingsMissionUpdatesDesc: 'Recibe notificaciones cuando una misión en la que participas se actualiza o cancela', settingsAnnouncements: 'Anuncios de ONG', settingsAnnouncementsDesc: 'Recibe anuncios de organizaciones cuyas misiones has unido', settingsFriendReqNotif: 'Solicitudes de amistad', settingsFriendReqNotifDesc: 'Notifícame cuando alguien me envíe una solicitud de amistad', settingsHourAlert: 'Verificaciones de horas', settingsHourAlertDesc: 'Alerta cuando mis horas de voluntariado enviadas sean aprobadas o rechazadas', settingsWeeklyDigest: 'Resumen semanal de impacto', settingsWeeklyDigestDesc: 'Un resumen semanal de tu actividad de voluntariado y destacados de la plataforma', settingsPrivacy: 'Privacidad', settingsPrivacyDesc: 'Controla quién puede ver tu información', settingsPublicProfile: 'Perfil público', settingsPublicProfileDesc: 'Cualquier persona en KindWorld puede ver tu perfil y estadísticas de voluntariado', settingsShowLeaderboard: 'Mostrar en clasificación', settingsShowLeaderboardDesc: 'Aparecer en las clasificaciones del leaderboard comunitario', settingsShareActivity: 'Compartir actividad', settingsShareActivityDesc: 'Permite que los amigos vean cuando te unes a misiones o ganas insignias en su feed', settingsAllowContact: 'Permitir que organizaciones me contacten', settingsAllowContactDesc: 'Las ONG pueden contactarte directamente para oportunidades de voluntariado relevantes', settingsAccount: 'Cuenta', settingsAccountDesc: 'Gestiona los datos de tu cuenta', settingsExportData: 'Exportar mis datos', settingsExportDesc: 'Descarga una copia de tu actividad de voluntariado como PDF', settingsSignOut: 'Cerrar sesión', settingsSignOutDesc: 'Serás redirigido a la página de inicio',
+    settings: 'Configuración', settingsTitle: 'Configuración', settingsAppearance: 'Apariencia', settingsAppearanceDesc: 'Personaliza el aspecto de KindWorld', settingsLanguage: 'Idioma y Región', settingsLanguageDesc: 'Elige tu idioma preferido', settingsManageDesc: 'Gestiona tus preferencias de cuenta', settingsNotifications: 'Notificaciones', settingsNotifDesc: 'Elige de qué quieres recibir notificaciones', settingsMissionUpdates: 'Actualizaciones de misiones', settingsMissionUpdatesDesc: 'Recibe notificaciones cuando una misión en la que participas se actualiza o cancela', settingsAnnouncements: 'Anuncios de ONG', settingsAnnouncementsDesc: 'Recibe anuncios de organizaciones cuyas misiones has unido', settingsFriendReqNotif: 'Solicitudes de amistad', settingsFriendReqNotifDesc: 'Notifícame cuando alguien me envíe una solicitud de amistad', settingsHourAlert: 'Verificaciones de horas', settingsHourAlertDesc: 'Alerta cuando mis horas de voluntariado enviadas sean aprobadas o rechazadas', settingsWeeklyDigest: 'Resumen semanal de impacto', settingsWeeklyDigestDesc: 'Un resumen semanal de tu actividad de voluntariado y destacados de la plataforma', settingsPrivacy: 'Privacidad', settingsPrivacyDesc: 'Controla quién puede ver tu información', settingsPublicProfile: 'Perfil público', settingsPublicProfileDesc: 'Cualquier persona en KindWorld puede ver tu perfil y estadísticas de voluntariado', settingsShowLeaderboard: 'Mostrar en clasificación', settingsShowLeaderboardDesc: 'Aparecer en las clasificaciones del leaderboard comunitario', settingsShareActivity: 'Compartir actividad', settingsShareActivityDesc: 'Permite que los amigos vean cuando te unes a misiones o ganas insignias en su feed', settingsAllowContact: 'Permitir que organizaciones me contacten', settingsAllowContactDesc: 'Las ONG pueden contactarte directamente para oportunidades de voluntariado relevantes', settingsAccount: 'Cuenta', settingsAccountDesc: 'Gestiona los datos de tu cuenta', settingsExportData: 'Exportar mis datos', settingsExportDesc: 'Descarga una copia de tu actividad de voluntariado como PDF', exportMyDataTitle: 'Mis datos de voluntariado', exportProfileSection: 'Perfil', exportActivitySection: 'Actividad', exportGeneratedBy: 'Generado por KindWorld', settingsSignOut: 'Cerrar sesión', settingsSignOutDesc: 'Serás redirigido a la página de inicio',
     leaderboard: 'Clasificación', leaderboardTitle: 'Mejores Voluntarios', leaderboardDesc: 'Celebrando a los miembros más impactantes de nuestra comunidad', topByHours: 'Por Horas', topByBadges: 'Por Insignias', yourRank: 'Tu Rango', rankLabel: 'Rango', notRankedYet: '¡Completa misiones para aparecer en la clasificación!',
     notifications: 'Notificaciones', markAllRead: 'Marcar todo como leído', noNotifications: 'Sin notificaciones', notificationsDesc: 'Tus actualizaciones de actividad aparecerán aquí',
     userNotFound: 'Usuario no encontrado.', cannotAddSelf: 'No puedes añadirte a ti mismo.', alreadyFriends: 'Ya sois amigos.', yourProgress: 'Tu Progreso', hoursToNextBadge: 'Horas Voluntarias', missionsToNextBadge: 'Misiones Completadas', orgsToNextBadge: 'Organizaciones Ayudadas', centuryClubDesc: 'Alcanza 100 horas para ganar la insignia Century Club', missionMasterDesc: 'Completa 10 misiones para ganar la insignia Mission Master', communityBuilderDesc: 'Ayuda a 5 organizaciones para ganar la insignia Community Builder',
@@ -3114,7 +3442,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     certVolRecognitionProg: 'Programa de Reconocimiento de Voluntarios', certOfVolServiceLabel: 'Certificado de Servicio Voluntario', certIssuedTo: 'Certificado otorgado a', certHasCompleted: 'ha completado', certVolHoursOf: 'horas de voluntariado con', certDateIssuedLabel: 'Fecha de Emisión', certCertIdLabel: 'ID del Certificado', certSaveAsPDFBtn: '⬇ Guardar como PDF',
     inactiveStatus: 'Inactivo', certActivate: '▶ Activar', requiredLabel: 'requeridas', createdLabel: 'Creado', volunteerRequestsEmpty: 'Las solicitudes de voluntarios aparecerán aquí una vez que apliquen.',
     myMissionsTitle: 'Mis Misiones', myMissionsUpcoming: 'Próximas', myMissionsCompleted: 'Completadas',
-    certIssuedByLabel: 'Emitido por', certAuthCertLabel: 'Certificado digital autorizado', certEligibleBadge: 'Elegible', certHoursRequired: 'horas requeridas', certVolunteersEarned: 'voluntarios lo obtuvieron', certClaimBtn: 'Reclamar Certificado', certChangeLogo: 'Cambiar Logo', statsConfidential: 'Confidencial — Uso Personal', downloadNgoReportBtn: 'Descargar Informe ONG', ngoImpactReportTitle: 'Informe de Impacto ONG', ngoVerifiedPartner: 'Socio ONG Verificado', ngoVolunteerActivitiesTitle: 'Actividades de Voluntariado', ngoApprovedHoursTitle: 'Horas de Voluntariado Aprobadas', ngoCertProgramsTitle: 'Programas de Certificado', statsConfidentialNGO: 'Confidencial — Uso Interno', ngoTotalVolunteers: 'Total Voluntarios', ngoActivitiesCreated: 'Actividades Creadas', ngoHoursApproved: 'Horas Aprobadas', ngoCertsIssuedCount: 'Certificados Emitidos', ngoNoActivitiesYet: 'No se han creado actividades aún', ngoNoApprovedHoursYet: 'No hay horas aprobadas aún', ngoNoCertProgramsYet: 'No se han creado programas de certificado', ngoImpactReportGenerated: '¡Informe de Impacto ONG generado!', sdg1Desc: 'Poner fin a la pobreza en todas sus formas. Más de 700 millones de personas viven en pobreza extrema. El voluntariado ayuda a construir resiliencia comunitaria y conectar a las personas con recursos esenciales.', sdg2Desc: 'Poner fin al hambre y lograr la seguridad alimentaria. Cerca de 733 millones de personas padecieron hambre en 2023. Los programas comunitarios de alimentos crean cambios duraderos.', sdg3Desc: 'Garantizar vidas saludables y promover el bienestar para todas las edades. Los voluntarios amplían el acceso a servicios de salud y apoyan a comunidades vulnerables.', sdg4Desc: 'Garantizar educación de calidad y promover el aprendizaje permanente. Más de 244 millones de niños están fuera de la escuela. La educación es la herramienta más poderosa para cambiar el mundo.', sdg10Desc: 'Reducir la desigualdad dentro y entre los países. Las comunidades equitativas requieren participación activa y programas inclusivos que no dejen a nadie atrás.', sdg11Desc: 'Lograr que las ciudades sean inclusivas, seguras y sostenibles. Para 2050, el 70% de la humanidad vivirá en ciudades — el desarrollo urbano sostenible define nuestro futuro.', sdg13Desc: 'Adoptar medidas urgentes para combatir el cambio climático. El cambio climático amenaza todos los ecosistemas de la Tierra. La acción ambiental comienza localmente y crece globalmente.', sdg17Desc: 'Revitalizar las alianzas mundiales para el desarrollo sostenible. Ningún objetivo se logra solo — la colaboración entre sectores crea impacto duradero.', sdgLearnMore: 'Aprende más en UN.org', sdgKindWorldHelps: 'KindWorld conecta voluntarios con misiones que impulsan directamente este objetivo, creando impacto real en comunidades locales.'
+    certIssuedByLabel: 'Emitido por', certAuthCertLabel: 'Certificado digital autorizado', certEligibleBadge: 'Elegible', certHoursRequired: 'horas requeridas', certVolunteersEarned: 'voluntarios lo obtuvieron', certClaimBtn: 'Reclamar Certificado', certChangeLogo: 'Cambiar Logo', statsConfidential: 'Confidencial — Uso Personal', downloadNgoReportBtn: 'Descargar Informe ONG', ngoImpactReportTitle: 'Informe de Impacto ONG', ngoVerifiedPartner: 'Socio ONG Verificado', ngoVolunteerActivitiesTitle: 'Actividades de Voluntariado', ngoApprovedHoursTitle: 'Horas de Voluntariado Aprobadas', ngoCertProgramsTitle: 'Programas de Certificado', statsConfidentialNGO: 'Confidencial — Uso Interno', ngoTotalVolunteers: 'Total Voluntarios', ngoActivitiesCreated: 'Actividades Creadas', ngoHoursApproved: 'Horas Aprobadas', ngoCertsIssuedCount: 'Certificados Emitidos', ngoNoActivitiesYet: 'No se han creado actividades aún', ngoNoApprovedHoursYet: 'No hay horas aprobadas aún', ngoNoCertProgramsYet: 'No se han creado programas de certificado', ngoImpactReportGenerated: '¡Informe de Impacto ONG generado!', sdg1Desc: 'Poner fin a la pobreza en todas sus formas. Más de 700 millones de personas viven en pobreza extrema. El voluntariado ayuda a construir resiliencia comunitaria y conectar a las personas con recursos esenciales.', sdg2Desc: 'Poner fin al hambre y lograr la seguridad alimentaria. Cerca de 733 millones de personas padecieron hambre en 2023. Los programas comunitarios de alimentos crean cambios duraderos.', sdg3Desc: 'Garantizar vidas saludables y promover el bienestar para todas las edades. Los voluntarios amplían el acceso a servicios de salud y apoyan a comunidades vulnerables.', sdg4Desc: 'Garantizar educación de calidad y promover el aprendizaje permanente. Más de 244 millones de niños están fuera de la escuela. La educación es la herramienta más poderosa para cambiar el mundo.', sdg10Desc: 'Reducir la desigualdad dentro y entre los países. Las comunidades equitativas requieren participación activa y programas inclusivos que no dejen a nadie atrás.', sdg11Desc: 'Lograr que las ciudades sean inclusivas, seguras y sostenibles. Para 2050, el 70% de la humanidad vivirá en ciudades — el desarrollo urbano sostenible define nuestro futuro.', sdg13Desc: 'Adoptar medidas urgentes para combatir el cambio climático. El cambio climático amenaza todos los ecosistemas de la Tierra. La acción ambiental comienza localmente y crece globalmente.', sdg17Desc: 'Revitalizar las alianzas mundiales para el desarrollo sostenible. Ningún objetivo se logra solo — la colaboración entre sectores crea impacto duradero.', sdgLearnMore: 'Aprende más en UN.org', sdgKindWorldHelps: 'KindWorld conecta voluntarios con misiones que impulsan directamente este objetivo, creando impacto real en comunidades locales.', profileChangePicture: 'Cambiar foto de perfil', profileChangeLabel: 'Cambiar', profileContactChannels: 'Canales de Contacto', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: 'Contacto de Emergencia', profileRelationship: 'Relación', profileHealthLogistics: 'Salud y Logística', profileHealthLogisticsHint: 'Guardado una vez aquí — se autocompleta al registrarse en misiones.', profileAllergies: 'Alergias', profileAllergiesPlaceholder: 'ej. Maní, Mariscos', profileMedicalConditions: 'Condiciones Médicas', profileMedicalConditionsPlaceholder: 'ej. Asma, Diabetes', profileDietaryRestrictions: 'Restricciones Dietéticas', profileDietaryRestrictionsPlaceholder: 'ej. Vegetariano, Halal', profileTshirtSize: 'Talla de Camiseta', profileTshirtSizePlaceholder: 'Seleccionar talla', profileNgoSection: 'Perfil Público ONG', profileNgoSectionHint: 'Esta información se muestra a los voluntarios en las tarjetas de misión.', profileNgoDescription: 'Descripción de la Organización', profileNgoDescriptionPlaceholder: 'Cuente a los voluntarios sobre la misión, el impacto y por qué hacer voluntariado con ustedes es significativo...', profileNgoWebsite: 'URL del Sitio Web', profileNgoWebsitePlaceholder: 'https://suorganizacion.org', profileNgoPortfolio: 'URL de Portafolio / Showcase', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 Documentos Legales para Verificación', profileNgoLegalDocsHint: 'Envíe un enlace a los documentos de registro legal de su organización (ej. Google Drive, Dropbox). El administrador de KindWorld los revisará para verificar su estado como ONG.', profileNgoDocLinkPlaceholder: 'Enlace a sus documentos legales...', profileNgoDocNotePlaceholder: "Nota breve sobre los documentos (ej. 'Registro ministerial, Colombia')", eventSummaryLabel: 'Resumen del Evento', reviewsReceived: 'Reseñas de ONGs', avgRatingLabel: 'Calificación promedio', reviewsCount: 'reseña(s)', clickToToggleInterests: 'Haz clic para seleccionar/deseleccionar tus intereses', refreshMissions: 'Actualizar'
   },
   fr: {
     title: 'KindWorld',
@@ -3171,6 +3499,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: 'Inscrivez-vous',
     firstName: 'Prénom',
     lastName: 'Nom',
+    orgNameField: "Nom de l'Organisation",
+    orgNamePlaceholder: 'ex. Fondation Terre Verte',
+    ngoRegisterSubtitle: 'Enregistrez votre ONG et connectez-vous avec des bénévoles dans le monde entier',
+    ngoRegisterInfoNote: "Après l'inscription, complétez le profil de votre ONG pour démarrer le processus de vérification.",
     emailAddress: 'Adresse Email',
     phoneNumber: 'Numéro de Téléphone',
     country: 'Pays',
@@ -3309,6 +3641,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: 'Compétences',
     agreeToTerms: 'J\'accepte les conditions',
     cancel: 'Annuler',
+    reviewVisibilityVol: 'Cet avis est visible par le bénévole, les autres admins ONG et les admins de la plateforme — pas pour le grand public.',
+    reviewVisibilityNgo: 'Votre avis sera visible par l\'ONG et les admins de la plateforme.',
     confirmRegistration: 'Confirmer',
     activeVolunteersLabel: 'Bénévoles Actifs',
     partnerNGOsLabel: 'ONGs Partenaires',
@@ -3358,6 +3692,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: 'Gratuit',
     noCommitments: 'Sans engagement',
     startImpactImmediately: 'Impact immédiat',
+    whyKindWorldTitle: 'Pourquoi KindWorld ?',
+    whyKindWorldSubtitle: "Nous ne sommes pas qu'une autre plateforme de bénévolat",
+    whyItem1Title: 'Impact Vérifié',
+    whyItem1Desc: "Chaque heure que vous enregistrez est vérifiée par des ONG — votre impact est réel et mesurable.",
+    whyItem2Title: 'Reconnaissance Durable',
+    whyItem2Desc: 'Obtenez des certificats et badges numériques partageables sur LinkedIn et votre CV.',
+    whyItem3Title: 'Piloté par la Communauté',
+    whyItem3Desc: "Connectez-vous avec des bénévoles, des ONG et des acteurs du changement du monde entier.",
+    whyItem4Title: 'Missions alignées sur les ODD',
+    whyItem4Desc: "Chaque mission est directement liée aux Objectifs de Développement Durable de l'ONU.",
+    earlyAdopterTitle: "Rejoignez en tant qu'Adopteur Précoce",
+    earlyAdopterSubtitle: "Soyez parmi les premiers à façonner l'avenir du bénévolat",
+    earlyAdopterBadgeLabel: '🌟 Badge Membre Fondateur',
+    earlyAdopterBadgeDesc: 'Obtenez un badge exclusif affiché sur votre profil pour toujours.',
+    earlyAdopterFeedbackLabel: '🗣️ Façonnez la Plateforme',
+    earlyAdopterFeedbackDesc: 'Vos retours influencent directement ce que nous construisons ensuite.',
+    earlyAdopterCommunityLabel: '🤝 Accès Communautaire Prioritaire',
+    earlyAdopterCommunityDesc: 'Accès anticipé aux nouvelles fonctionnalités, missions et partenariats ONG.',
+    earlyAdopterCTA: 'Rejoindre la Communauté Précoce',
+    earlyAdopterNote: 'Places limitées — rejoignez maintenant avant notre ouverture au public.',
+    earlyAccessLabel: '🚀 Accès Anticipé',
+    sdgTapHint: 'Appuyez sur un objectif pour en savoir plus',
+    sdgEyebrow: 'ONU · Objectif de Développement Durable',
     footerTagline: 'Autonomiser les bénévoles',
     footerCopyright: 'KindWorld. Tous droits réservés.',
     ngoDashboardTitle: 'Tableau de Bord ONG',
@@ -3440,6 +3797,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: 'Êtes-vous sûr de vouloir supprimer cette mission ?',
     noUpcomingMissions: 'Aucune mission à venir',
     noPastMissions: 'Aucune mission passée pour l\'instant',
+    searchMissions: 'Rechercher des missions...',
+    noCompletedMissions: 'Aucune mission complétée pour l\'instant',
     noRegisteredNGOs: 'Aucune ONG enregistrée pour l\'instant',
     missionRemovedSuffix: 'a été supprimée de la plateforme',
     journeyStartsHere: 'Votre voyage commence ici !',
@@ -3476,6 +3835,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: 'En attente d\'approbation',
     ngoPendingLogout: 'Se déconnecter',
     ngoPendingSignedIn: 'Connecté en tant que',
+    ngoOnboardingTitle: 'Complétez votre profil ONG',
+    ngoOnboardingSubtitle: "Remplissez les détails ci-dessous pour que notre équipe d'administration puisse vérifier votre organisation.",
+    ngoOnboardingDescLabel: 'Mission / Description',
+    ngoOnboardingDescPlaceholder: "Décrivez la mission de votre organisation, ce que vous faites et les communautés que vous servez…",
+    ngoOnboardingWebsiteLabel: 'URL du site web',
+    ngoOnboardingLegalLabel: "Document d'enregistrement légal",
+    ngoOnboardingLegalHint: "Collez un lien vers les documents officiels d'enregistrement/constitution de votre organisation (Google Drive, Dropbox, etc.)",
+    ngoOnboardingPortfolioLabel: 'Portfolio / Travaux antérieurs',
+    ngoOnboardingPortfolioOptional: '(facultatif)',
+    ngoOnboardingPortfolioPlaceholder: 'Lien vers des photos, rapports, réseaux sociaux…',
+    ngoOnboardingRequiredFields: '⚠️ Veuillez remplir tous les champs obligatoires avant de soumettre.',
+    ngoOnboardingSubmitBtn: '🚀 Soumettre pour vérification',
+    ngoOnboardingSubmitSuccess: '✅ Profil soumis pour examen par les administrateurs ! Vous serez notifié une fois approuvé.',
+    ngoOnboardingReviewMsg: "Votre demande a été soumise. Notre équipe d'administration examinera vos documents et vous contactera prochainement.",
     ngoName: 'Nom',
     ngoEmail: 'Email',
     ngoDescription: 'Description',
@@ -3649,7 +4022,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Langue Préférée',
     continueSetup: 'Continuer',
     skipForNow: 'Passer',
-    settings: 'Paramètres', settingsTitle: 'Paramètres', settingsAppearance: 'Apparence', settingsAppearanceDesc: 'Personnalisez l\'apparence de KindWorld', settingsLanguage: 'Langue et Région', settingsLanguageDesc: 'Choisissez votre langue préférée', settingsManageDesc: 'Gérez vos préférences de compte', settingsNotifications: 'Notifications', settingsNotifDesc: 'Choisissez ce dont vous souhaitez être notifié', settingsMissionUpdates: 'Mises à jour des missions', settingsMissionUpdatesDesc: 'Soyez notifié quand une mission que vous avez rejointe est mise à jour ou annulée', settingsAnnouncements: 'Annonces des ONG', settingsAnnouncementsDesc: 'Recevez les annonces des organisations dont vous avez rejoint les missions', settingsFriendReqNotif: 'Demandes d\'amis', settingsFriendReqNotifDesc: 'Recevez une notification quand quelqu\'un vous envoie une demande d\'ami', settingsHourAlert: 'Vérifications des heures', settingsHourAlertDesc: 'Alerte quand mes heures de bénévolat soumises sont approuvées ou refusées', settingsWeeklyDigest: 'Résumé hebdomadaire d\'impact', settingsWeeklyDigestDesc: 'Un résumé hebdomadaire de votre activité bénévole et des faits saillants de la plateforme', settingsPrivacy: 'Confidentialité', settingsPrivacyDesc: 'Contrôlez qui peut voir vos informations', settingsPublicProfile: 'Profil public', settingsPublicProfileDesc: 'N\'importe qui sur KindWorld peut voir votre profil et vos statistiques de bénévolat', settingsShowLeaderboard: 'Afficher dans le classement', settingsShowLeaderboardDesc: 'Apparaître dans les classements du leaderboard communautaire', settingsShareActivity: 'Partager l\'activité', settingsShareActivityDesc: 'Laissez vos amis voir quand vous rejoignez des missions ou gagnez des badges', settingsAllowContact: 'Autoriser les organisations à me contacter', settingsAllowContactDesc: 'Les ONG peuvent vous contacter directement pour des opportunités de bénévolat pertinentes', settingsAccount: 'Compte', settingsAccountDesc: 'Gérez les données de votre compte', settingsExportData: 'Exporter mes données', settingsExportDesc: 'Téléchargez une copie de votre activité bénévole en PDF', settingsSignOut: 'Se déconnecter', settingsSignOutDesc: 'Vous serez redirigé vers la page d\'accueil',
+    settings: 'Paramètres', settingsTitle: 'Paramètres', settingsAppearance: 'Apparence', settingsAppearanceDesc: 'Personnalisez l\'apparence de KindWorld', settingsLanguage: 'Langue et Région', settingsLanguageDesc: 'Choisissez votre langue préférée', settingsManageDesc: 'Gérez vos préférences de compte', settingsNotifications: 'Notifications', settingsNotifDesc: 'Choisissez ce dont vous souhaitez être notifié', settingsMissionUpdates: 'Mises à jour des missions', settingsMissionUpdatesDesc: 'Soyez notifié quand une mission que vous avez rejointe est mise à jour ou annulée', settingsAnnouncements: 'Annonces des ONG', settingsAnnouncementsDesc: 'Recevez les annonces des organisations dont vous avez rejoint les missions', settingsFriendReqNotif: 'Demandes d\'amis', settingsFriendReqNotifDesc: 'Recevez une notification quand quelqu\'un vous envoie une demande d\'ami', settingsHourAlert: 'Vérifications des heures', settingsHourAlertDesc: 'Alerte quand mes heures de bénévolat soumises sont approuvées ou refusées', settingsWeeklyDigest: 'Résumé hebdomadaire d\'impact', settingsWeeklyDigestDesc: 'Un résumé hebdomadaire de votre activité bénévole et des faits saillants de la plateforme', settingsPrivacy: 'Confidentialité', settingsPrivacyDesc: 'Contrôlez qui peut voir vos informations', settingsPublicProfile: 'Profil public', settingsPublicProfileDesc: 'N\'importe qui sur KindWorld peut voir votre profil et vos statistiques de bénévolat', settingsShowLeaderboard: 'Afficher dans le classement', settingsShowLeaderboardDesc: 'Apparaître dans les classements du leaderboard communautaire', settingsShareActivity: 'Partager l\'activité', settingsShareActivityDesc: 'Laissez vos amis voir quand vous rejoignez des missions ou gagnez des badges', settingsAllowContact: 'Autoriser les organisations à me contacter', settingsAllowContactDesc: 'Les ONG peuvent vous contacter directement pour des opportunités de bénévolat pertinentes', settingsAccount: 'Compte', settingsAccountDesc: 'Gérez les données de votre compte', settingsExportData: 'Exporter mes données', settingsExportDesc: 'Téléchargez une copie de votre activité bénévole en PDF', exportMyDataTitle: 'Mes données de bénévolat', exportProfileSection: 'Profil', exportActivitySection: 'Activité', exportGeneratedBy: 'Généré par KindWorld', settingsSignOut: 'Se déconnecter', settingsSignOutDesc: 'Vous serez redirigé vers la page d\'accueil',
     leaderboard: 'Classement', leaderboardTitle: 'Meilleurs Bénévoles', leaderboardDesc: 'Célébrant les membres les plus impactants de notre communauté', topByHours: 'Par Heures', topByBadges: 'Par Badges', yourRank: 'Votre Rang', rankLabel: 'Rang', notRankedYet: 'Complétez des missions pour apparaître dans le classement !',
     notifications: 'Notifications', markAllRead: 'Tout marquer comme lu', noNotifications: 'Pas de notifications', notificationsDesc: "Vos mises à jour d'activité apparaîtront ici",
     userNotFound: 'Utilisateur non trouvé.', cannotAddSelf: 'Vous ne pouvez pas vous ajouter vous-même.', alreadyFriends: "Vous êtes déjà amis.", yourProgress: 'Votre Progrès', hoursToNextBadge: "Heures Bénévoles", missionsToNextBadge: 'Missions Complétées', orgsToNextBadge: 'Organisations Aidées', centuryClubDesc: 'Atteignez 100 heures pour gagner le badge Century Club', missionMasterDesc: 'Complétez 10 missions pour gagner le badge Mission Master', communityBuilderDesc: 'Aidez 5 organisations pour gagner le badge Community Builder',
@@ -3659,7 +4032,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     certVolRecognitionProg: 'Programme de Reconnaissance des Bénévoles', certOfVolServiceLabel: 'Certificat de Bénévolat', certIssuedTo: 'Certificat décerné à', certHasCompleted: 'a accompli', certVolHoursOf: 'heures de bénévolat avec', certDateIssuedLabel: "Date d'émission", certCertIdLabel: 'N° de Certificat', certSaveAsPDFBtn: '⬇ Enregistrer en PDF',
     inactiveStatus: 'Inactif', certActivate: '▶ Activer', requiredLabel: 'requises', createdLabel: 'Créé', volunteerRequestsEmpty: 'Les demandes de bénévoles apparaîtront ici une fois qu\'ils auront postulé.',
     myMissionsTitle: 'Mes Missions', myMissionsUpcoming: 'À venir', myMissionsCompleted: 'Terminées',
-    certIssuedByLabel: 'Émis par', certAuthCertLabel: 'Certificat numérique autorisé', certEligibleBadge: 'Éligible', certHoursRequired: 'heures requises', certVolunteersEarned: 'bénévoles ont obtenu', certClaimBtn: 'Réclamer le Certificat', certChangeLogo: 'Changer le Logo', statsConfidential: 'Confidentiel — Usage Personnel', downloadNgoReportBtn: 'Télécharger le Rapport ONG', ngoImpactReportTitle: "Rapport d'Impact ONG", ngoVerifiedPartner: 'Partenaire ONG Vérifié', ngoVolunteerActivitiesTitle: 'Activités Bénévoles', ngoApprovedHoursTitle: 'Heures de Bénévolat Approuvées', ngoCertProgramsTitle: 'Programmes de Certificats', statsConfidentialNGO: 'Confidentiel — Usage Interne', ngoTotalVolunteers: 'Total Bénévoles', ngoActivitiesCreated: 'Activités Créées', ngoHoursApproved: 'Heures Approuvées', ngoCertsIssuedCount: 'Certificats Émis', ngoNoActivitiesYet: "Aucune activité créée pour l'instant", ngoNoApprovedHoursYet: "Aucune heure approuvée pour l'instant", ngoNoCertProgramsYet: 'Aucun programme de certificat créé', ngoImpactReportGenerated: "Rapport d'Impact ONG généré!", sdg1Desc: "Éliminer la pauvreté sous toutes ses formes. Plus de 700 millions de personnes vivent encore dans une pauvreté extrême. Le bénévolat aide à renforcer la résilience des communautés et à connecter les personnes aux ressources essentielles.", sdg2Desc: "Éliminer la faim et assurer la sécurité alimentaire. Près de 733 millions de personnes ont souffert de la faim en 2023. Les programmes alimentaires communautaires et l'agriculture durable créent un changement durable.", sdg3Desc: "Garantir des vies saines et promouvoir le bien-être pour tous. Les bénévoles élargissent l'accès aux soins de santé et soutiennent les communautés vulnérables dans le monde entier.", sdg4Desc: "Garantir une éducation de qualité et promouvoir l'apprentissage tout au long de la vie. Plus de 244 millions d'enfants sont hors de l'école. L'éducation est l'outil le plus puissant pour changer le monde.", sdg10Desc: "Réduire les inégalités dans et entre les pays. Des communautés équitables nécessitent une participation active et des programmes inclusifs qui ne laissent personne de côté.", sdg11Desc: "Rendre les villes inclusives, sûres et durables. D'ici 2050, 70% de l'humanité vivra dans des villes — le développement urbain durable façonne notre avenir commun.", sdg13Desc: "Prendre des mesures urgentes pour lutter contre les changements climatiques. Le changement climatique menace tous les écosystèmes de la Terre. L'action environnementale commence localement et se développe à l'échelle mondiale.", sdg17Desc: "Revitaliser les partenariats mondiaux pour le développement durable. Aucun objectif n'est atteint seul — la collaboration entre secteurs crée un impact durable.", sdgLearnMore: "En savoir plus sur UN.org", sdgKindWorldHelps: "KindWorld connecte les bénévoles avec des missions qui font directement avancer cet objectif, créant un impact réel dans les communautés locales."
+    certIssuedByLabel: 'Émis par', certAuthCertLabel: 'Certificat numérique autorisé', certEligibleBadge: 'Éligible', certHoursRequired: 'heures requises', certVolunteersEarned: 'bénévoles ont obtenu', certClaimBtn: 'Réclamer le Certificat', certChangeLogo: 'Changer le Logo', statsConfidential: 'Confidentiel — Usage Personnel', downloadNgoReportBtn: 'Télécharger le Rapport ONG', ngoImpactReportTitle: "Rapport d'Impact ONG", ngoVerifiedPartner: 'Partenaire ONG Vérifié', ngoVolunteerActivitiesTitle: 'Activités Bénévoles', ngoApprovedHoursTitle: 'Heures de Bénévolat Approuvées', ngoCertProgramsTitle: 'Programmes de Certificats', statsConfidentialNGO: 'Confidentiel — Usage Interne', ngoTotalVolunteers: 'Total Bénévoles', ngoActivitiesCreated: 'Activités Créées', ngoHoursApproved: 'Heures Approuvées', ngoCertsIssuedCount: 'Certificats Émis', ngoNoActivitiesYet: "Aucune activité créée pour l'instant", ngoNoApprovedHoursYet: "Aucune heure approuvée pour l'instant", ngoNoCertProgramsYet: 'Aucun programme de certificat créé', ngoImpactReportGenerated: "Rapport d'Impact ONG généré!", sdg1Desc: "Éliminer la pauvreté sous toutes ses formes. Plus de 700 millions de personnes vivent encore dans une pauvreté extrême. Le bénévolat aide à renforcer la résilience des communautés et à connecter les personnes aux ressources essentielles.", sdg2Desc: "Éliminer la faim et assurer la sécurité alimentaire. Près de 733 millions de personnes ont souffert de la faim en 2023. Les programmes alimentaires communautaires et l'agriculture durable créent un changement durable.", sdg3Desc: "Garantir des vies saines et promouvoir le bien-être pour tous. Les bénévoles élargissent l'accès aux soins de santé et soutiennent les communautés vulnérables dans le monde entier.", sdg4Desc: "Garantir une éducation de qualité et promouvoir l'apprentissage tout au long de la vie. Plus de 244 millions d'enfants sont hors de l'école. L'éducation est l'outil le plus puissant pour changer le monde.", sdg10Desc: "Réduire les inégalités dans et entre les pays. Des communautés équitables nécessitent une participation active et des programmes inclusifs qui ne laissent personne de côté.", sdg11Desc: "Rendre les villes inclusives, sûres et durables. D'ici 2050, 70% de l'humanité vivra dans des villes — le développement urbain durable façonne notre avenir commun.", sdg13Desc: "Prendre des mesures urgentes pour lutter contre les changements climatiques. Le changement climatique menace tous les écosystèmes de la Terre. L'action environnementale commence localement et se développe à l'échelle mondiale.", sdg17Desc: "Revitaliser les partenariats mondiaux pour le développement durable. Aucun objectif n'est atteint seul — la collaboration entre secteurs crée un impact durable.", sdgLearnMore: "En savoir plus sur UN.org", sdgKindWorldHelps: "KindWorld connecte les bénévoles avec des missions qui font directement avancer cet objectif, créant un impact réel dans les communautés locales.", profileChangePicture: 'Changer la photo de profil', profileChangeLabel: 'Changer', profileContactChannels: 'Canaux de contact', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: "Contact d'urgence", profileRelationship: 'Relation', profileHealthLogistics: 'Santé et logistique', profileHealthLogisticsHint: "Enregistré une fois ici — rempli automatiquement lors de l'inscription aux missions.", profileAllergies: 'Allergies', profileAllergiesPlaceholder: 'ex. Arachides, Fruits de mer', profileMedicalConditions: 'Conditions médicales', profileMedicalConditionsPlaceholder: 'ex. Asthme, Diabète', profileDietaryRestrictions: 'Restrictions alimentaires', profileDietaryRestrictionsPlaceholder: 'ex. Végétarien, Halal', profileTshirtSize: 'Taille de T-shirt', profileTshirtSizePlaceholder: 'Choisir la taille', profileNgoSection: 'Profil public ONG', profileNgoSectionHint: 'Ces informations sont affichées aux bénévoles sur les cartes de mission.', profileNgoDescription: "Description de l'organisation", profileNgoDescriptionPlaceholder: "Parlez aux bénévoles de la mission, de l'impact de votre organisation et de ce qui rend le bénévolat avec vous significatif...", profileNgoWebsite: 'URL du site web', profileNgoWebsitePlaceholder: 'https://votreorganisation.org', profileNgoPortfolio: 'URL du portfolio / vitrine', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 Documents légaux pour vérification', profileNgoLegalDocsHint: "Soumettez un lien vers les documents d'enregistrement légal de votre organisation (ex. Google Drive, Dropbox). L'administrateur KindWorld les examinera pour vérifier votre statut d'ONG.", profileNgoDocLinkPlaceholder: 'Lien vers vos documents légaux...', profileNgoDocNotePlaceholder: "Note brève sur les documents (ex. 'Enregistrement ministériel, France')", eventSummaryLabel: 'Résumé de l\'Événement', reviewsReceived: 'Avis des ONG', avgRatingLabel: 'Note moyenne', reviewsCount: 'avis', clickToToggleInterests: 'Cliquez pour sélectionner/désélectionner vos intérêts', refreshMissions: 'Actualiser'
   },
   pt: {
     title: 'KindWorld',
@@ -3716,6 +4089,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: 'Registre-se',
     firstName: 'Nome',
     lastName: 'Sobrenome',
+    orgNameField: 'Nome da Organização',
+    orgNamePlaceholder: 'ex. Fundação Terra Verde',
+    ngoRegisterSubtitle: 'Registre sua ONG e conecte-se com voluntários em todo o mundo',
+    ngoRegisterInfoNote: 'Após o registro, complete o perfil da sua ONG para iniciar o processo de verificação.',
     emailAddress: 'Endereço de Email',
     phoneNumber: 'Número de Telefone',
     country: 'País',
@@ -3854,6 +4231,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: 'Habilidades',
     agreeToTerms: 'Aceito os termos',
     cancel: 'Cancelar',
+    reviewVisibilityVol: 'Esta avaliação é visível para o voluntário, outros admins de ONG e admins da plataforma — não para o público.',
+    reviewVisibilityNgo: 'Sua avaliação será visível para a ONG e os admins da plataforma.',
     confirmRegistration: 'Confirmar',
     activeVolunteersLabel: 'Voluntários Ativos',
     partnerNGOsLabel: 'ONGs Parceiras',
@@ -3903,6 +4282,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: 'Gratuito',
     noCommitments: 'Sem compromissos',
     startImpactImmediately: 'Impacto imediato',
+    whyKindWorldTitle: 'Por que KindWorld?',
+    whyKindWorldSubtitle: 'Não somos apenas mais uma plataforma de voluntariado',
+    whyItem1Title: 'Impacto Verificado',
+    whyItem1Desc: 'Cada hora que você registra é verificada por ONGs — seu impacto é real e mensurável.',
+    whyItem2Title: 'Reconhecimento Duradouro',
+    whyItem2Desc: 'Ganhe certificados digitais e badges compartilháveis no LinkedIn e currículo.',
+    whyItem3Title: 'Impulsionado pela Comunidade',
+    whyItem3Desc: 'Conecte-se com voluntários, ONGs e agentes de mudança de todo o mundo.',
+    whyItem4Title: 'Missões Alinhadas aos ODS',
+    whyItem4Desc: 'Cada missão está diretamente ligada aos Objetivos de Desenvolvimento Sustentável da ONU.',
+    earlyAdopterTitle: 'Junte-se como Adotante Precoce',
+    earlyAdopterSubtitle: 'Seja um dos primeiros a moldar o futuro do voluntariado',
+    earlyAdopterBadgeLabel: '🌟 Distintivo de Membro Fundador',
+    earlyAdopterBadgeDesc: 'Obtenha um distintivo exclusivo exibido no seu perfil para sempre.',
+    earlyAdopterFeedbackLabel: '🗣️ Molde a Plataforma',
+    earlyAdopterFeedbackDesc: 'Seu feedback influencia diretamente o que construiremos a seguir.',
+    earlyAdopterCommunityLabel: '🤝 Acesso Prioritário à Comunidade',
+    earlyAdopterCommunityDesc: 'Acesso antecipado a novos recursos, missões e parcerias com ONGs.',
+    earlyAdopterCTA: 'Junte-se à Comunidade Inicial',
+    earlyAdopterNote: 'Vagas limitadas — junte-se agora antes de abrirmos ao público.',
+    earlyAccessLabel: '🚀 Acesso Antecipado',
+    sdgTapHint: 'Toque num objetivo para saber mais',
+    sdgEyebrow: 'ONU · Objetivo de Desenvolvimento Sustentável',
     footerTagline: 'Empoderando voluntários',
     footerCopyright: 'KindWorld. Todos os direitos reservados.',
     ngoDashboardTitle: 'Painel da ONG',
@@ -3985,6 +4387,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: 'Tem certeza de que deseja remover esta missão?',
     noUpcomingMissions: 'Sem missões futuras',
     noPastMissions: 'Ainda não há missões passadas',
+    searchMissions: 'Pesquisar missões...',
+    noCompletedMissions: 'Ainda não há missões concluídas',
     noRegisteredNGOs: 'Ainda não há ONGs registradas',
     missionRemovedSuffix: 'foi removida da plataforma',
     journeyStartsHere: 'Sua jornada começa aqui!',
@@ -4021,6 +4425,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: 'Aprovação Pendente',
     ngoPendingLogout: 'Sair',
     ngoPendingSignedIn: 'Sessão iniciada como',
+    ngoOnboardingTitle: 'Complete o Perfil da sua ONG',
+    ngoOnboardingSubtitle: 'Preencha os detalhes abaixo para que nossa equipe de administração possa verificar sua organização.',
+    ngoOnboardingDescLabel: 'Missão / Descrição',
+    ngoOnboardingDescPlaceholder: 'Descreva a missão da sua organização, o que você faz e as comunidades que você atende…',
+    ngoOnboardingWebsiteLabel: 'URL do Site',
+    ngoOnboardingLegalLabel: 'Documento de Registro Legal',
+    ngoOnboardingLegalHint: 'Cole um link para os documentos oficiais de registro/constituição da sua organização (Google Drive, Dropbox, etc.)',
+    ngoOnboardingPortfolioLabel: 'Portfólio / Trabalhos Anteriores',
+    ngoOnboardingPortfolioOptional: '(opcional)',
+    ngoOnboardingPortfolioPlaceholder: 'Link para fotos, relatórios, mídias sociais…',
+    ngoOnboardingRequiredFields: '⚠️ Por favor, preencha todos os campos obrigatórios antes de enviar.',
+    ngoOnboardingSubmitBtn: '🚀 Enviar para Verificação',
+    ngoOnboardingSubmitSuccess: '✅ Perfil enviado para revisão do administrador! Você será notificado após a aprovação.',
+    ngoOnboardingReviewMsg: 'Sua candidatura foi enviada. Nossa equipe de administração revisará seus documentos e entrará em contato em breve.',
     ngoName: 'Nome',
     ngoEmail: 'Email',
     ngoDescription: 'Descrição',
@@ -4194,7 +4612,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Idioma Preferido',
     continueSetup: 'Continuar',
     skipForNow: 'Pular',
-    settings: 'Configurações', settingsTitle: 'Configurações', settingsAppearance: 'Aparência', settingsAppearanceDesc: 'Personalize a aparência do KindWorld', settingsLanguage: 'Idioma e Região', settingsLanguageDesc: 'Escolha seu idioma preferido', settingsManageDesc: 'Gerencie suas preferências de conta', settingsNotifications: 'Notificações', settingsNotifDesc: 'Escolha sobre o que deseja ser notificado', settingsMissionUpdates: 'Atualizações de missões', settingsMissionUpdatesDesc: 'Seja notificado quando uma missão que participou for atualizada ou cancelada', settingsAnnouncements: 'Anúncios de ONGs', settingsAnnouncementsDesc: 'Receba anúncios das organizações cujas missões você entrou', settingsFriendReqNotif: 'Pedidos de amizade', settingsFriendReqNotifDesc: 'Me notifique quando alguém me enviar um pedido de amizade', settingsHourAlert: 'Verificações de horas', settingsHourAlertDesc: 'Alerta quando minhas horas de voluntariado enviadas forem aprovadas ou rejeitadas', settingsWeeklyDigest: 'Resumo semanal de impacto', settingsWeeklyDigestDesc: 'Um resumo semanal da sua atividade voluntária e destaques da plataforma', settingsPrivacy: 'Privacidade', settingsPrivacyDesc: 'Controle quem pode ver suas informações', settingsPublicProfile: 'Perfil público', settingsPublicProfileDesc: 'Qualquer pessoa no KindWorld pode ver seu perfil e estatísticas de voluntariado', settingsShowLeaderboard: 'Mostrar no leaderboard', settingsShowLeaderboardDesc: 'Aparecer nos rankings do leaderboard da comunidade', settingsShareActivity: 'Compartilhar atividade', settingsShareActivityDesc: 'Deixe amigos ver quando você entra em missões ou ganha badges', settingsAllowContact: 'Permitir que organizações me contaktem', settingsAllowContactDesc: 'ONGs podem entrar em contato diretamente para oportunidades relevantes', settingsAccount: 'Conta', settingsAccountDesc: 'Gerencie os dados da sua conta', settingsExportData: 'Exportar meus dados', settingsExportDesc: 'Baixe uma cópia da sua atividade voluntária em PDF', settingsSignOut: 'Sair', settingsSignOutDesc: 'Você será redirecionado para a página inicial',
+    settings: 'Configurações', settingsTitle: 'Configurações', settingsAppearance: 'Aparência', settingsAppearanceDesc: 'Personalize a aparência do KindWorld', settingsLanguage: 'Idioma e Região', settingsLanguageDesc: 'Escolha seu idioma preferido', settingsManageDesc: 'Gerencie suas preferências de conta', settingsNotifications: 'Notificações', settingsNotifDesc: 'Escolha sobre o que deseja ser notificado', settingsMissionUpdates: 'Atualizações de missões', settingsMissionUpdatesDesc: 'Seja notificado quando uma missão que participou for atualizada ou cancelada', settingsAnnouncements: 'Anúncios de ONGs', settingsAnnouncementsDesc: 'Receba anúncios das organizações cujas missões você entrou', settingsFriendReqNotif: 'Pedidos de amizade', settingsFriendReqNotifDesc: 'Me notifique quando alguém me enviar um pedido de amizade', settingsHourAlert: 'Verificações de horas', settingsHourAlertDesc: 'Alerta quando minhas horas de voluntariado enviadas forem aprovadas ou rejeitadas', settingsWeeklyDigest: 'Resumo semanal de impacto', settingsWeeklyDigestDesc: 'Um resumo semanal da sua atividade voluntária e destaques da plataforma', settingsPrivacy: 'Privacidade', settingsPrivacyDesc: 'Controle quem pode ver suas informações', settingsPublicProfile: 'Perfil público', settingsPublicProfileDesc: 'Qualquer pessoa no KindWorld pode ver seu perfil e estatísticas de voluntariado', settingsShowLeaderboard: 'Mostrar no leaderboard', settingsShowLeaderboardDesc: 'Aparecer nos rankings do leaderboard da comunidade', settingsShareActivity: 'Compartilhar atividade', settingsShareActivityDesc: 'Deixe amigos ver quando você entra em missões ou ganha badges', settingsAllowContact: 'Permitir que organizações me contaktem', settingsAllowContactDesc: 'ONGs podem entrar em contato diretamente para oportunidades relevantes', settingsAccount: 'Conta', settingsAccountDesc: 'Gerencie os dados da sua conta', settingsExportData: 'Exportar meus dados', settingsExportDesc: 'Baixe uma cópia da sua atividade voluntária em PDF', exportMyDataTitle: 'Meus dados de voluntariado', exportProfileSection: 'Perfil', exportActivitySection: 'Atividade', exportGeneratedBy: 'Gerado pelo KindWorld', settingsSignOut: 'Sair', settingsSignOutDesc: 'Você será redirecionado para a página inicial',
     leaderboard: 'Classificação', leaderboardTitle: 'Melhores Voluntários', leaderboardDesc: 'Celebrando os membros mais impactantes da nossa comunidade', topByHours: 'Por Horas', topByBadges: 'Por Medalhas', yourRank: 'Sua Posição', rankLabel: 'Posição', notRankedYet: 'Complete missões para aparecer no ranking!',
     notifications: 'Notificações', markAllRead: 'Marcar tudo como lido', noNotifications: 'Sem notificações', notificationsDesc: 'Suas atualizações de atividade aparecerão aqui',
     userNotFound: 'Usuário não encontrado.', cannotAddSelf: 'Você não pode adicionar a si mesmo.', alreadyFriends: 'Vocês já são amigos.', yourProgress: 'Seu Progresso', hoursToNextBadge: 'Horas Voluntárias', missionsToNextBadge: 'Missões Concluídas', orgsToNextBadge: 'Organizações Ajudadas', centuryClubDesc: 'Alcance 100 horas para ganhar a medalha Century Club', missionMasterDesc: 'Complete 10 missões para ganhar a medalha Mission Master', communityBuilderDesc: 'Ajude 5 organizações para ganhar a medalha Community Builder',
@@ -4204,7 +4622,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     certVolRecognitionProg: 'Programa de Reconhecimento de Voluntários', certOfVolServiceLabel: 'Certificado de Serviço Voluntário', certIssuedTo: 'Certificado emitido a', certHasCompleted: 'completou', certVolHoursOf: 'horas de voluntariado com', certDateIssuedLabel: 'Data de Emissão', certCertIdLabel: 'ID do Certificado', certSaveAsPDFBtn: '⬇ Guardar como PDF',
     inactiveStatus: 'Inativo', certActivate: '▶ Ativar', requiredLabel: 'necessárias', createdLabel: 'Criado', volunteerRequestsEmpty: 'Pedidos de voluntários aparecerão aqui quando se candidatarem.',
     myMissionsTitle: 'Minhas Missões', myMissionsUpcoming: 'Próximas', myMissionsCompleted: 'Concluídas',
-    certIssuedByLabel: 'Emitido por', certAuthCertLabel: 'Certificado digital autorizado', certEligibleBadge: 'Elegível', certHoursRequired: 'horas necessárias', certVolunteersEarned: 'voluntários conquistaram', certClaimBtn: 'Resgatar Certificado', certChangeLogo: 'Alterar Logo', statsConfidential: 'Confidencial — Uso Pessoal', downloadNgoReportBtn: 'Baixar Relatório ONG', ngoImpactReportTitle: 'Relatório de Impacto ONG', ngoVerifiedPartner: 'Parceiro ONG Verificado', ngoVolunteerActivitiesTitle: 'Atividades de Voluntariado', ngoApprovedHoursTitle: 'Horas de Voluntariado Aprovadas', ngoCertProgramsTitle: 'Programas de Certificado', statsConfidentialNGO: 'Confidencial — Uso Interno', ngoTotalVolunteers: 'Total Voluntários', ngoActivitiesCreated: 'Atividades Criadas', ngoHoursApproved: 'Horas Aprovadas', ngoCertsIssuedCount: 'Certificados Emitidos', ngoNoActivitiesYet: 'Nenhuma atividade criada ainda', ngoNoApprovedHoursYet: 'Nenhuma hora aprovada ainda', ngoNoCertProgramsYet: 'Nenhum programa de certificado criado', ngoImpactReportGenerated: 'Relatório de Impacto ONG gerado!', sdg1Desc: 'Acabar com a pobreza em todas as suas formas. Mais de 700 milhões de pessoas ainda vivem em extrema pobreza. O voluntariado ajuda a construir resiliência comunitária e conectar pessoas a recursos essenciais.', sdg2Desc: 'Acabar com a fome e garantir a segurança alimentar. Cerca de 733 milhões de pessoas enfrentaram a fome em 2023. Programas comunitários de alimentos e agricultura sustentável criam mudanças duradouras.', sdg3Desc: 'Garantir vidas saudáveis e promover o bem-estar para todas as idades. Voluntários ampliam o acesso a serviços de saúde e apoiam comunidades vulneráveis em todo o mundo.', sdg4Desc: 'Garantir educação de qualidade e promover a aprendizagem ao longo da vida. Mais de 244 milhões de crianças estão fora da escola. A educação é a ferramenta mais poderosa para mudar o mundo.', sdg10Desc: 'Reduzir as desigualdades dentro e entre os países. Comunidades equitativas requerem participação ativa e programas inclusivos que não deixem ninguém para trás.', sdg11Desc: 'Tornar as cidades inclusivas, seguras e sustentáveis. Até 2050, 70% da humanidade viverá em cidades — o desenvolvimento urbano sustentável molda nosso futuro comum.', sdg13Desc: 'Tomar medidas urgentes para combater as alterações climáticas. A ação ambiental começa localmente e cresce globalmente.', sdg17Desc: 'Revitalizar as parcerias globais para o desenvolvimento sustentável. Nenhum objetivo é alcançado sozinho — a colaboração entre setores cria impacto duradouro.', sdgLearnMore: 'Saiba mais em UN.org', sdgKindWorldHelps: 'KindWorld conecta voluntários com missões que diretamente avançam este objetivo, criando impacto real nas comunidades locais.'
+    certIssuedByLabel: 'Emitido por', certAuthCertLabel: 'Certificado digital autorizado', certEligibleBadge: 'Elegível', certHoursRequired: 'horas necessárias', certVolunteersEarned: 'voluntários conquistaram', certClaimBtn: 'Resgatar Certificado', certChangeLogo: 'Alterar Logo', statsConfidential: 'Confidencial — Uso Pessoal', downloadNgoReportBtn: 'Baixar Relatório ONG', ngoImpactReportTitle: 'Relatório de Impacto ONG', ngoVerifiedPartner: 'Parceiro ONG Verificado', ngoVolunteerActivitiesTitle: 'Atividades de Voluntariado', ngoApprovedHoursTitle: 'Horas de Voluntariado Aprovadas', ngoCertProgramsTitle: 'Programas de Certificado', statsConfidentialNGO: 'Confidencial — Uso Interno', ngoTotalVolunteers: 'Total Voluntários', ngoActivitiesCreated: 'Atividades Criadas', ngoHoursApproved: 'Horas Aprovadas', ngoCertsIssuedCount: 'Certificados Emitidos', ngoNoActivitiesYet: 'Nenhuma atividade criada ainda', ngoNoApprovedHoursYet: 'Nenhuma hora aprovada ainda', ngoNoCertProgramsYet: 'Nenhum programa de certificado criado', ngoImpactReportGenerated: 'Relatório de Impacto ONG gerado!', sdg1Desc: 'Acabar com a pobreza em todas as suas formas. Mais de 700 milhões de pessoas ainda vivem em extrema pobreza. O voluntariado ajuda a construir resiliência comunitária e conectar pessoas a recursos essenciais.', sdg2Desc: 'Acabar com a fome e garantir a segurança alimentar. Cerca de 733 milhões de pessoas enfrentaram a fome em 2023. Programas comunitários de alimentos e agricultura sustentável criam mudanças duradouras.', sdg3Desc: 'Garantir vidas saudáveis e promover o bem-estar para todas as idades. Voluntários ampliam o acesso a serviços de saúde e apoiam comunidades vulneráveis em todo o mundo.', sdg4Desc: 'Garantir educação de qualidade e promover a aprendizagem ao longo da vida. Mais de 244 milhões de crianças estão fora da escola. A educação é a ferramenta mais poderosa para mudar o mundo.', sdg10Desc: 'Reduzir as desigualdades dentro e entre os países. Comunidades equitativas requerem participação ativa e programas inclusivos que não deixem ninguém para trás.', sdg11Desc: 'Tornar as cidades inclusivas, seguras e sustentáveis. Até 2050, 70% da humanidade viverá em cidades — o desenvolvimento urbano sustentável molda nosso futuro comum.', sdg13Desc: 'Tomar medidas urgentes para combater as alterações climáticas. A ação ambiental começa localmente e cresce globalmente.', sdg17Desc: 'Revitalizar as parcerias globais para o desenvolvimento sustentável. Nenhum objetivo é alcançado sozinho — a colaboração entre setores cria impacto duradouro.', sdgLearnMore: 'Saiba mais em UN.org', sdgKindWorldHelps: 'KindWorld conecta voluntários com missões que diretamente avançam este objetivo, criando impacto real nas comunidades locais.', profileChangePicture: 'Alterar foto de perfil', profileChangeLabel: 'Alterar', profileContactChannels: 'Canais de Contato', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: 'Contato de Emergência', profileRelationship: 'Relação', profileHealthLogistics: 'Saúde e Logística', profileHealthLogisticsHint: 'Salvo uma vez aqui — preenchido automaticamente ao registrar-se em missões.', profileAllergies: 'Alergias', profileAllergiesPlaceholder: 'ex. Amendoim, Frutos do mar', profileMedicalConditions: 'Condições Médicas', profileMedicalConditionsPlaceholder: 'ex. Asma, Diabetes', profileDietaryRestrictions: 'Restrições Alimentares', profileDietaryRestrictionsPlaceholder: 'ex. Vegetariano, Halal', profileTshirtSize: 'Tamanho da Camiseta', profileTshirtSizePlaceholder: 'Selecionar tamanho', profileNgoSection: 'Perfil Público da ONG', profileNgoSectionHint: 'Estas informações são exibidas aos voluntários nos cartões de missão.', profileNgoDescription: 'Descrição da Organização', profileNgoDescriptionPlaceholder: 'Conte aos voluntários sobre a missão, o impacto da sua organização e o que torna o voluntariado com vocês significativo...', profileNgoWebsite: 'URL do Site', profileNgoWebsitePlaceholder: 'https://suaorganizacao.org', profileNgoPortfolio: 'URL do Portfólio / Showcase', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 Documentos Legais para Verificação', profileNgoLegalDocsHint: 'Envie um link para os documentos de registro legal da sua organização (ex. Google Drive, Dropbox). O administrador do KindWorld irá revisá-los para verificar seu status de ONG.', profileNgoDocLinkPlaceholder: 'Link para seus documentos legais...', profileNgoDocNotePlaceholder: "Nota breve sobre os documentos (ex. 'Registro ministerial, Brasil')", eventSummaryLabel: 'Resumo do Evento', reviewsReceived: 'Avaliações de ONGs', avgRatingLabel: 'Classificação média', reviewsCount: 'avaliação(ões)', clickToToggleInterests: 'Clique para selecionar/desselecionar seus interesses', refreshMissions: 'Atualizar'
   },
   ja: {
     title: 'KindWorld',
@@ -4261,6 +4679,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: '今すぐ登録',
     firstName: '名',
     lastName: '姓',
+    orgNameField: '団体名',
+    orgNamePlaceholder: '例：グリーンアース財団',
+    ngoRegisterSubtitle: 'NGOを登録して、世界中のボランティアとつながりましょう',
+    ngoRegisterInfoNote: '登録後、NGOプロフィールを完成させて審査プロセスを開始してください。',
     emailAddress: 'メールアドレス',
     phoneNumber: '電話番号',
     country: '国',
@@ -4399,6 +4821,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: 'スキル',
     agreeToTerms: '規約に同意',
     cancel: 'キャンセル',
+    reviewVisibilityVol: 'このレビューはボランティア、他のNGO管理者、プラットフォーム管理者に表示されます（一般公開はされません）。',
+    reviewVisibilityNgo: 'あなたのレビューはNGOとプラットフォーム管理者に表示されます。',
     confirmRegistration: '確認',
     activeVolunteersLabel: 'アクティブなボランティア',
     partnerNGOsLabel: 'パートナーNGO',
@@ -4448,6 +4872,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: '無料',
     noCommitments: '義務なし',
     startImpactImmediately: '即時インパクト',
+    whyKindWorldTitle: 'KindWorldを選ぶ理由',
+    whyKindWorldSubtitle: '私たちはただのボランティアプラットフォームではありません',
+    whyItem1Title: '検証済みのインパクト',
+    whyItem1Desc: '記録した時間はNGOによって検証されます — あなたの影響は本物で測定可能です。',
+    whyItem2Title: '持続する認証',
+    whyItem2Desc: 'LinkedInや履歴書でシェアできるデジタル証明書とバッジを獲得。',
+    whyItem3Title: 'コミュニティ主導',
+    whyItem3Desc: '世界中のボランティア、NGO、変革者とつながりましょう。',
+    whyItem4Title: 'SDG対応ミッション',
+    whyItem4Desc: '全てのミッションが国連の持続可能な開発目標に直接結びついています。',
+    earlyAdopterTitle: 'アーリーアダプターとして参加',
+    earlyAdopterSubtitle: 'ボランティアの未来を形作る最初の一人になりましょう',
+    earlyAdopterBadgeLabel: '🌟 創設メンバーバッジ',
+    earlyAdopterBadgeDesc: 'プロフィールに永久表示される限定バッジを獲得。',
+    earlyAdopterFeedbackLabel: '🗣️ プラットフォームを形作る',
+    earlyAdopterFeedbackDesc: 'あなたのフィードバックが次に構築するものに直接影響します。',
+    earlyAdopterCommunityLabel: '🤝 優先コミュニティアクセス',
+    earlyAdopterCommunityDesc: '新機能、ミッション、NGOパートナーシップへの早期アクセス。',
+    earlyAdopterCTA: 'コミュニティに参加',
+    earlyAdopterNote: '一般公開前に今すぐご参加ください。',
+    earlyAccessLabel: '🚀 早期アクセス',
+    sdgTapHint: '目標をタップして詳細を確認',
+    sdgEyebrow: '国連 · 持続可能な開発目標',
     footerTagline: 'ボランティアを支援',
     footerCopyright: 'KindWorld. All rights reserved.',
     ngoDashboardTitle: 'NGOダッシュボード',
@@ -4530,6 +4977,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: 'このミッションを削除してもよろしいですか？',
     noUpcomingMissions: '今後のミッションはありません',
     noPastMissions: '過去のミッションはまだありません',
+    searchMissions: 'ミッションを検索...',
+    noCompletedMissions: '完了したミッションはまだありません',
     noRegisteredNGOs: '登録済みのNGOはまだありません',
     missionRemovedSuffix: 'がプラットフォームから削除されました',
     journeyStartsHere: 'あなたの旅がここから始まります！',
@@ -4566,6 +5015,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: '承認待ち',
     ngoPendingLogout: 'サインアウト',
     ngoPendingSignedIn: 'ログイン中',
+    ngoOnboardingTitle: 'NGOプロフィールを完成させましょう',
+    ngoOnboardingSubtitle: '管理チームが組織を審査できるよう、以下の詳細を入力してください。',
+    ngoOnboardingDescLabel: 'ミッション / 説明',
+    ngoOnboardingDescPlaceholder: '組織のミッション、活動内容、支援するコミュニティについて説明してください…',
+    ngoOnboardingWebsiteLabel: 'ウェブサイトURL',
+    ngoOnboardingLegalLabel: '法人登記書類',
+    ngoOnboardingLegalHint: '組織の公式登記/設立書類へのリンクを貼り付けてください（Google Drive、Dropboxなど）',
+    ngoOnboardingPortfolioLabel: 'ポートフォリオ / 過去の活動',
+    ngoOnboardingPortfolioOptional: '（任意）',
+    ngoOnboardingPortfolioPlaceholder: '写真、レポート、ソーシャルメディアへのリンク…',
+    ngoOnboardingRequiredFields: '⚠️ 送信前にすべての必須フィールドを入力してください。',
+    ngoOnboardingSubmitBtn: '🚀 審査に提出する',
+    ngoOnboardingSubmitSuccess: '✅ プロフィールが管理者に提出されました！承認後に通知されます。',
+    ngoOnboardingReviewMsg: '申請が送信されました。管理チームが書類を審査し、まもなくご連絡いたします。',
     ngoName: '名前',
     ngoEmail: 'メール',
     ngoDescription: '説明',
@@ -4739,17 +5202,17 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: '希望言語',
     continueSetup: '続ける',
     skipForNow: 'スキップ',
-    settings: '設定', settingsTitle: '設定', settingsAppearance: '外観', settingsAppearanceDesc: 'KindWorldの外観をカスタマイズ', settingsLanguage: '言語と地域', settingsLanguageDesc: '使用する言語を選択してください', settingsManageDesc: 'アカウントの設定を管理します', settingsNotifications: '通知', settingsNotifDesc: '通知を受け取る内容を選択してください', settingsMissionUpdates: 'ミッションの更新', settingsMissionUpdatesDesc: '参加中のミッションが更新またはキャンセルされたときに通知されます', settingsAnnouncements: '団体からのお知らせ', settingsAnnouncementsDesc: '参加したミッションの組織からのお知らせを受け取ります', settingsFriendReqNotif: 'フレンドリクエスト', settingsFriendReqNotifDesc: '誰かからフレンドリクエストが届いたときに通知されます', settingsHourAlert: '時間の確認', settingsHourAlertDesc: '提出したボランティア時間が承認または却下されたときにアラートを受け取ります', settingsWeeklyDigest: '週刊インパクトダイジェスト', settingsWeeklyDigestDesc: 'ボランティア活動とプラットフォームの週刊まとめ', settingsPrivacy: 'プライバシー', settingsPrivacyDesc: '情報を見られる範囲を管理します', settingsPublicProfile: '公開プロフィール', settingsPublicProfileDesc: 'KindWorldの誰でもあなたのプロフィールとボランティア統計を見ることができます', settingsShowLeaderboard: 'ランキングに表示', settingsShowLeaderboardDesc: 'コミュニティランキングにあなたの順位を表示します', settingsShareActivity: 'アクティビティを共有', settingsShareActivityDesc: 'ミッション参加やバッジ獲得を友達のフィードに表示します', settingsAllowContact: '組織からの連絡を許可', settingsAllowContactDesc: '関連するボランティア機会のために団体から直接連絡を受け取ることができます', settingsAccount: 'アカウント', settingsAccountDesc: 'アカウントとデータを管理します', settingsExportData: 'データをエクスポート', settingsExportDesc: 'ボランティア活動のコピーをPDFとしてダウンロードします', settingsSignOut: 'サインアウト', settingsSignOutDesc: 'ランディングページに戻ります',
+    settings: '設定', settingsTitle: '設定', settingsAppearance: '外観', settingsAppearanceDesc: 'KindWorldの外観をカスタマイズ', settingsLanguage: '言語と地域', settingsLanguageDesc: '使用する言語を選択してください', settingsManageDesc: 'アカウントの設定を管理します', settingsNotifications: '通知', settingsNotifDesc: '通知を受け取る内容を選択してください', settingsMissionUpdates: 'ミッションの更新', settingsMissionUpdatesDesc: '参加中のミッションが更新またはキャンセルされたときに通知されます', settingsAnnouncements: '団体からのお知らせ', settingsAnnouncementsDesc: '参加したミッションの組織からのお知らせを受け取ります', settingsFriendReqNotif: 'フレンドリクエスト', settingsFriendReqNotifDesc: '誰かからフレンドリクエストが届いたときに通知されます', settingsHourAlert: '時間の確認', settingsHourAlertDesc: '提出したボランティア時間が承認または却下されたときにアラートを受け取ります', settingsWeeklyDigest: '週刊インパクトダイジェスト', settingsWeeklyDigestDesc: 'ボランティア活動とプラットフォームの週刊まとめ', settingsPrivacy: 'プライバシー', settingsPrivacyDesc: '情報を見られる範囲を管理します', settingsPublicProfile: '公開プロフィール', settingsPublicProfileDesc: 'KindWorldの誰でもあなたのプロフィールとボランティア統計を見ることができます', settingsShowLeaderboard: 'ランキングに表示', settingsShowLeaderboardDesc: 'コミュニティランキングにあなたの順位を表示します', settingsShareActivity: 'アクティビティを共有', settingsShareActivityDesc: 'ミッション参加やバッジ獲得を友達のフィードに表示します', settingsAllowContact: '組織からの連絡を許可', settingsAllowContactDesc: '関連するボランティア機会のために団体から直接連絡を受け取ることができます', settingsAccount: 'アカウント', settingsAccountDesc: 'アカウントとデータを管理します', settingsExportData: 'データをエクスポート', settingsExportDesc: 'ボランティア活動のコピーをPDFとしてダウンロードします', exportMyDataTitle: 'ボランティアデータ', exportProfileSection: 'プロフィール', exportActivitySection: '活動記録', exportGeneratedBy: 'KindWorld作成', settingsSignOut: 'サインアウト', settingsSignOutDesc: 'ランディングページに戻ります',
     leaderboard: 'リーダーボード', leaderboardTitle: 'トップボランティア', leaderboardDesc: '最も影響力のあるコミュニティメンバーを謼えます', topByHours: '時間別', topByBadges: 'バッジ別', yourRank: 'あなたの順位', rankLabel: '順位', notRankedYet: 'ミッションを完了してランキングに登場しましょう！',
     notifications: '通知', markAllRead: 'すべて既読にする', noNotifications: '通知なし', notificationsDesc: 'アクティビティの更新がここに表示されます',
     userNotFound: 'ユーザーが見つかりません。', cannotAddSelf: '自分自身を追加することはできません。', alreadyFriends: 'すでに友達です。', yourProgress: 'あなたの進捗', hoursToNextBadge: 'ボランティア時間', missionsToNextBadge: '完了ミッション', orgsToNextBadge: '支援組織', centuryClubDesc: '100時間でCentury Clubバッジ獲得', missionMasterDesc: '10ミッション完了でMission Masterバッジ獲得', communityBuilderDesc: '5組織支援でCommunity Builderバッジ獲得',
     profileCompletion: 'プロフィール完成度', completeProfileDesc: 'プロフィールを完成させて全機能を解放', profileComplete: 'プロフィールが100%完成しました！', completeNow: '今すぐ完成', duplicate: '複製',
     announce: 'アナウンス', sendAnnouncement: 'アナウンスを送る', announcementSubject: '件名', announcementSubjectPlaceholder: '例：ミッションの重要な更新', announcementMessage: 'メッセージ', announcementMessagePlaceholder: 'ボランティアへのメッセージを書いてください...', announcementsFromNGOs: 'NGOからのお知らせ', impactDashboard: 'インパクトダッシュボード', volunteersByCategory: 'カテゴリ別ボランティア', volunteersPerMonth: '月別ボランティア数', noDataYet: 'まだデータがありません。ミッションを公開して影響を確認してください！', submitHours: '時間を提出', hoursVolunteered: 'ボランティア時間', submissionNotes: 'メモ(任意)', submissionNotesPlaceholder: '貢献を記述してください...', hoursSubmittedSuccess: '時間を審査のために提出しました！', pleaseEnterHours: '有効な時間数を入力してください。', hoursApproved: '時間承認済', hoursRejected: '時間却下', hoursPending: '審査中', activityFeedTitle: 'アクティビティフィード', noActivityYet: 'まだアクティビティなし', noActivityDesc: '友人がミッションに参加したり実績を得たりしたとき、ここに表示されます。', activityJoinedMission: 'ミッションに参加しました', activityEarnedBadge: 'バッジを獲得しました', activitySubmittedHours: 'ボランティア時間を提出しました', justNow: 'たった今', minutesAgo: '分前', hoursAgoLabel: '時間前', daysAgo: '日前', noMissionsFound: '検索に一致するミッションがありません', noMissionsFoundDesc: 'フィルターや検索キーワードを調整してみてください。', getStartedTitle: 'インパクトを起こす準備はできていますか？', getStartedDesc: '地域のボランティアミッションを探して、貢献の旅を始めましょう。', findFriends: '友達を探す', joinMissionPrompt: 'ミッションに参加して最初のバッジを獲得しましょう！', leaderboardEmptyHours: 'まだランキングはありません — 最初になりましょう！', leaderboardEmptyBadges: 'まだバッジはありません — 旅を始めましょう！',
     statusUpcoming: '開催予定', statusCompleted: '完了', statusSuspended: '停止中', exportCSV: 'CSVエクスポート', exportedCSV: 'CSVエクスポート完了', endTimeLabel: '終了時間', missionImageUrl: 'カバー画像URL', missionImagePlaceholder: 'https://example.com/image.jpg（任意）', allCategories: 'すべてのカテゴリ', clearFilters: 'フィルタークリア',
-    certVolRecognitionProg: 'ボランティア認定プログラム', certOfVolServiceLabel: 'ボランティア活動証明書', certIssuedTo: '証明書受賞者', certHasCompleted: 'が達成した', certVolHoursOf: '時間のボランティア活動（対象組織：', certDateIssuedLabel: '発行日', certCertIdLabel: '証明書番号', certSaveAsPDFBtn: '⬇ PDFとして保存',
+    certVolRecognitionProg: 'ボランティア認定プログラム', certOfVolServiceLabel: 'ボランティア活動証明書', certIssuedTo: 'この証書は', certHasCompleted: 'が', certVolHoursOf: '時間のボランティア活動を達成したことを証明します。所属NGO：', certDateIssuedLabel: '発行日', certCertIdLabel: '証明書番号', certSaveAsPDFBtn: '⬇ PDFとして保存',
     inactiveStatus: '無効', certActivate: '▶ 有効化', requiredLabel: '時間必要', createdLabel: '作成日', volunteerRequestsEmpty: 'ボランティアが申請するとここに表示されます。',
     myMissionsTitle: '自分のミッション', myMissionsUpcoming: '予定', myMissionsCompleted: '完了',
-    certIssuedByLabel: '発行者', certAuthCertLabel: '公式デジタル証明書', certEligibleBadge: '受け取り可能', certHoursRequired: '時間必要', certVolunteersEarned: '人のボランティアが取得', certClaimBtn: '証明書を受け取る', certChangeLogo: 'ロゴを変更', statsConfidential: '機密 — 個人使用', downloadNgoReportBtn: 'NGOレポートをダウンロード', ngoImpactReportTitle: 'NGO影響レポート', ngoVerifiedPartner: '認証済みNGOパートナー', ngoVolunteerActivitiesTitle: 'ボランティア活動', ngoApprovedHoursTitle: '承認済みボランティア時間', ngoCertProgramsTitle: '証明書プログラム', statsConfidentialNGO: '機密 — 内部使用', ngoTotalVolunteers: '総ボランティア数', ngoActivitiesCreated: '作成した活動数', ngoHoursApproved: '承認済み時間', ngoCertsIssuedCount: '発行済み証明書', ngoNoActivitiesYet: 'まだ活動が作成されていません', ngoNoApprovedHoursYet: 'まだ承認済み時間がありません', ngoNoCertProgramsYet: '証明書プログラムはまだ作成されていません', ngoImpactReportGenerated: 'NGO影響レポートが生成されました！', sdg1Desc: 'あらゆる形の貧困を世界中で終わらせる。7億人以上が今も極度の貧困の中で暮らしています。ボランティア活動はコミュニティのレジリエンスを高め、人々と必要なリソースをつなぎます。', sdg2Desc: '飢餓を終わらせ、食料安全保障を達成する。2023年には約7億3300万人が飢餓に直面しました。地域の食料プログラムと持続可能な農業が変化をもたらします。', sdg3Desc: 'すべての年齢のすべての人の健康と福祉を確保する。ボランティアは医療サービスへのアクセスを拡大し、脆弱なコミュニティを支援します。', sdg4Desc: 'すべての人に質の高い教育を確保し、生涯学習を推進する。2億4400万人以上の子どもたちが学校に通えていません。教育は世界を変える最も強力なツールです。', sdg10Desc: '国内および国間の不平等を削減する。公平なコミュニティには、誰も取り残さないための積極的な参加と包括的プログラムが必要です。', sdg11Desc: '都市と人間の居住地を安全で持続可能にする。2050年までに人類の70%が都市に住む予定です。持続可能な都市開発が私たちの共有の未来を形成します。', sdg13Desc: '気候変動に具体的な対策を取る。気候変動は地球上のすべての生態系を脅かしています。環境への行動はローカルから始まり、グローバルに広がります。', sdg17Desc: '持続可能な開発に向けてグローバルパートナーシップを活性化する。どの目標も単独では達成できません。分野を超えた協力が持続的な影響を生み出します。', sdgLearnMore: 'UN.orgで詳しく見る', sdgKindWorldHelps: 'KindWorldは、この目標を直接推進するミッションにボランティアをつなぎ、地域コミュニティで実質的な影響を生み出します。'
+    certIssuedByLabel: '発行者', certAuthCertLabel: '公式デジタル証明書', certEligibleBadge: '受け取り可能', certHoursRequired: '時間必要', certVolunteersEarned: '人のボランティアが取得', certClaimBtn: '証明書を受け取る', certChangeLogo: 'ロゴを変更', statsConfidential: '機密 — 個人使用', downloadNgoReportBtn: 'NGOレポートをダウンロード', ngoImpactReportTitle: 'NGO影響レポート', ngoVerifiedPartner: '認証済みNGOパートナー', ngoVolunteerActivitiesTitle: 'ボランティア活動', ngoApprovedHoursTitle: '承認済みボランティア時間', ngoCertProgramsTitle: '証明書プログラム', statsConfidentialNGO: '機密 — 内部使用', ngoTotalVolunteers: '総ボランティア数', ngoActivitiesCreated: '作成した活動数', ngoHoursApproved: '承認済み時間', ngoCertsIssuedCount: '発行済み証明書', ngoNoActivitiesYet: 'まだ活動が作成されていません', ngoNoApprovedHoursYet: 'まだ承認済み時間がありません', ngoNoCertProgramsYet: '証明書プログラムはまだ作成されていません', ngoImpactReportGenerated: 'NGO影響レポートが生成されました！', sdg1Desc: 'あらゆる形の貧困を世界中で終わらせる。7億人以上が今も極度の貧困の中で暮らしています。ボランティア活動はコミュニティのレジリエンスを高め、人々と必要なリソースをつなぎます。', sdg2Desc: '飢餓を終わらせ、食料安全保障を達成する。2023年には約7億3300万人が飢餓に直面しました。地域の食料プログラムと持続可能な農業が変化をもたらします。', sdg3Desc: 'すべての年齢のすべての人の健康と福祉を確保する。ボランティアは医療サービスへのアクセスを拡大し、脆弱なコミュニティを支援します。', sdg4Desc: 'すべての人に質の高い教育を確保し、生涯学習を推進する。2億4400万人以上の子どもたちが学校に通えていません。教育は世界を変える最も強力なツールです。', sdg10Desc: '国内および国間の不平等を削減する。公平なコミュニティには、誰も取り残さないための積極的な参加と包括的プログラムが必要です。', sdg11Desc: '都市と人間の居住地を安全で持続可能にする。2050年までに人類の70%が都市に住む予定です。持続可能な都市開発が私たちの共有の未来を形成します。', sdg13Desc: '気候変動に具体的な対策を取る。気候変動は地球上のすべての生態系を脅かしています。環境への行動はローカルから始まり、グローバルに広がります。', sdg17Desc: '持続可能な開発に向けてグローバルパートナーシップを活性化する。どの目標も単独では達成できません。分野を超えた協力が持続的な影響を生み出します。', sdgLearnMore: 'UN.orgで詳しく見る', sdgKindWorldHelps: 'KindWorldは、この目標を直接推進するミッションにボランティアをつなぎ、地域コミュニティで実質的な影響を生み出します。', profileChangePicture: 'プロフィール写真を変更', profileChangeLabel: '変更', profileContactChannels: '連絡チャンネル', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: '緊急連絡先', profileRelationship: '続柄', profileHealthLogistics: '健康・物流情報', profileHealthLogisticsHint: 'ここに一度保存すると、ミッション登録時に自動入力されます。', profileAllergies: 'アレルギー', profileAllergiesPlaceholder: '例：ピーナッツ、貝類', profileMedicalConditions: '病歴', profileMedicalConditionsPlaceholder: '例：喘息、糖尿病', profileDietaryRestrictions: '食事制限', profileDietaryRestrictionsPlaceholder: '例：ベジタリアン、ハラル', profileTshirtSize: 'Tシャツサイズ', profileTshirtSizePlaceholder: 'サイズを選択', profileNgoSection: 'NGOパブリックプロフィール', profileNgoSectionHint: 'この情報はミッションカードでボランティアに表示されます。', profileNgoDescription: '組織の説明', profileNgoDescriptionPlaceholder: '組織のミッション、インパクト、そして一緒にボランティアすることの意義をボランティアに伝えてください...', profileNgoWebsite: 'ウェブサイトURL', profileNgoWebsitePlaceholder: 'https://yourorganization.org', profileNgoPortfolio: 'ポートフォリオ / 実績紹介URL', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 認証用法的書類', profileNgoLegalDocsHint: '組織の法人登録書類へのリンクを提出してください（例：Google Drive、Dropbox）。KindWorld管理者がNGOのステータスを確認するために審査します。', profileNgoDocLinkPlaceholder: '法的書類へのリンク...', profileNgoDocNotePlaceholder: "書類に関する簡単なメモ（例：'法務省登録、インドネシア'）", eventSummaryLabel: 'イベントサマリー', reviewsReceived: 'NGOからのレビュー', avgRatingLabel: '平均評価', reviewsCount: 'レビュー', clickToToggleInterests: 'クリックして興味を選択/解除してください', refreshMissions: '更新'
   },
   th: {
     title: 'KindWorld',
@@ -4806,6 +5269,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: 'ลงทะเบียนเลย',
     firstName: 'ชื่อ',
     lastName: 'นามสกุล',
+    orgNameField: 'ชื่อองค์กร',
+    orgNamePlaceholder: 'เช่น มูลนิธิโลกสีเขียว',
+    ngoRegisterSubtitle: 'ลงทะเบียนองค์กรของคุณและเชื่อมต่อกับอาสาสมัครทั่วโลก',
+    ngoRegisterInfoNote: 'หลังจากลงทะเบียน กรอกโปรไฟล์องค์กรให้ครบถ้วนเพื่อเริ่มกระบวนการตรวจสอบ',
     emailAddress: 'ที่อยู่อีเมล',
     phoneNumber: 'หมายเลขโทรศัพท์',
     country: 'ประเทศ',
@@ -4944,6 +5411,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: 'ทักษะพิเศษ',
     agreeToTerms: 'ฉันยอมรับข้อกำหนดและเงื่อนไข',
     cancel: 'ยกเลิก',
+    reviewVisibilityVol: 'รีวิวนี้มองเห็นได้โดยอาสาสมัคร ผู้ดูแล NGO อื่น และผู้ดูแลแพลตฟอร์ม — ไม่เปิดเผยต่อสาธารณะ',
+    reviewVisibilityNgo: 'รีวิวของคุณจะมองเห็นได้โดย NGO และผู้ดูแลแพลตฟอร์ม',
     confirmRegistration: 'ยืนยันการลงทะเบียน',
     activeVolunteersLabel: 'อาสาสมัครที่ใช้งานอยู่',
     partnerNGOsLabel: 'องค์กรพันธมิตร',
@@ -4993,6 +5462,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: 'เข้าร่วมฟรี',
     noCommitments: 'ไม่มีข้อผูกมัด',
     startImpactImmediately: 'เริ่มสร้างผลกระทบทันที',
+    whyKindWorldTitle: 'ทำไมต้อง KindWorld?',
+    whyKindWorldSubtitle: 'เราไม่ใช่แค่แพลตฟอร์มอาสาสมัครทั่วไป',
+    whyItem1Title: 'ผลกระทบที่ผ่านการยืนยัน',
+    whyItem1Desc: 'ทุกชั่วโมงที่คุณบันทึกได้รับการยืนยันจากองค์กร — ผลกระทบของคุณเป็นจริงและวัดได้',
+    whyItem2Title: 'การยอมรับที่คงอยู่',
+    whyItem2Desc: 'รับใบรับรองและเหรียญดิจิทัลที่แชร์บน LinkedIn และเรซูเม่ได้',
+    whyItem3Title: 'ขับเคลื่อนโดยชุมชน',
+    whyItem3Desc: 'เชื่อมต่อกับอาสาสมัคร องค์กร และผู้สร้างการเปลี่ยนแปลงทั่วโลก',
+    whyItem4Title: 'ภารกิจที่สอดคล้องกับ SDGs',
+    whyItem4Desc: 'ทุกภารกิจเชื่อมโยงโดยตรงกับเป้าหมายการพัฒนาที่ยั่งยืนของ UN',
+    earlyAdopterTitle: 'เข้าร่วมในฐานะผู้ใช้งานแรก',
+    earlyAdopterSubtitle: 'เป็นหนึ่งในคนกลุ่มแรกที่กำหนดอนาคตของการเป็นอาสาสมัคร',
+    earlyAdopterBadgeLabel: '🌟 เหรียญสมาชิกผู้ก่อตั้ง',
+    earlyAdopterBadgeDesc: 'รับเหรียญพิเศษที่แสดงบนโปรไฟล์ของคุณตลอดไป',
+    earlyAdopterFeedbackLabel: '🗣️ กำหนดรูปแบบแพลตฟอร์ม',
+    earlyAdopterFeedbackDesc: 'ความคิดเห็นของคุณส่งผลโดยตรงต่อสิ่งที่เราสร้างต่อไป',
+    earlyAdopterCommunityLabel: '🤝 การเข้าถึงชุมชนแบบพิเศษ',
+    earlyAdopterCommunityDesc: 'เข้าถึงฟีเจอร์ใหม่ ภารกิจ และพันธมิตรองค์กรก่อนใคร',
+    earlyAdopterCTA: 'เข้าร่วมชุมชนแรก',
+    earlyAdopterNote: 'ที่นั่งจำกัด — เข้าร่วมตอนนี้ก่อนที่เราจะเปิดสาธารณะ',
+    earlyAccessLabel: '🚀 การเข้าถึงล่วงหน้า',
+    sdgTapHint: 'แตะเป้าหมายเพื่อเรียนรู้เพิ่มเติม',
+    sdgEyebrow: 'UN · เป้าหมายการพัฒนาที่ยั่งยืน',
     footerTagline: 'เสริมพลังอาสาสมัครทั่วโลก',
     footerCopyright: 'KindWorld. สงวนลิขสิทธิ์',
     ngoDashboardTitle: 'แดชบอร์ดองค์กร',
@@ -5075,6 +5567,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: 'คุณแน่ใจหรือไม่ว่าต้องการลบภารกิจนี้?',
     noUpcomingMissions: 'ไม่มีภารกิจที่กำลังจะมาถึง',
     noPastMissions: 'ยังไม่มีภารกิจที่ผ่านมา',
+    searchMissions: 'ค้นหาภารกิจ...',
+    noCompletedMissions: 'ยังไม่มีภารกิจที่เสร็จสิ้น',
     noRegisteredNGOs: 'ยังไม่มีองค์กรที่ลงทะเบียน',
     missionRemovedSuffix: 'ถูกลบออกจากแพลตฟอร์มแล้ว',
     journeyStartsHere: 'การเดินทางของคุณเริ่มต้นที่นี่!',
@@ -5111,6 +5605,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: 'รอการอนุมัติ',
     ngoPendingLogout: 'ออกจากระบบ',
     ngoPendingSignedIn: 'เข้าสู่ระบบในฐานะ',
+    ngoOnboardingTitle: 'กรอกข้อมูลโปรไฟล์ NGO ของคุณ',
+    ngoOnboardingSubtitle: 'กรอกข้อมูลด้านล่างเพื่อให้ทีมผู้ดูแลสามารถตรวจสอบองค์กรของคุณได้',
+    ngoOnboardingDescLabel: 'ภารกิจ / คำอธิบาย',
+    ngoOnboardingDescPlaceholder: 'อธิบายภารกิจขององค์กร สิ่งที่คุณทำ และชุมชนที่คุณให้บริการ…',
+    ngoOnboardingWebsiteLabel: 'URL เว็บไซต์',
+    ngoOnboardingLegalLabel: 'เอกสารจดทะเบียนตามกฎหมาย',
+    ngoOnboardingLegalHint: 'วางลิงก์ไปยังเอกสารการจดทะเบียน/จัดตั้งอย่างเป็นทางการขององค์กร (Google Drive, Dropbox ฯลฯ)',
+    ngoOnboardingPortfolioLabel: 'ผลงาน / ผลงานที่ผ่านมา',
+    ngoOnboardingPortfolioOptional: '(ไม่บังคับ)',
+    ngoOnboardingPortfolioPlaceholder: 'ลิงก์ไปยังรูปภาพ รายงาน โซเชียลมีเดีย…',
+    ngoOnboardingRequiredFields: '⚠️ กรุณากรอกข้อมูลในช่องที่จำเป็นทั้งหมดก่อนส่ง',
+    ngoOnboardingSubmitBtn: '🚀 ส่งเพื่อการตรวจสอบ',
+    ngoOnboardingSubmitSuccess: '✅ ส่งโปรไฟล์เพื่อตรวจสอบโดยผู้ดูแลแล้ว! คุณจะได้รับแจ้งเมื่ออนุมัติแล้ว',
+    ngoOnboardingReviewMsg: 'ส่งใบสมัครของคุณแล้ว ทีมผู้ดูแลจะตรวจสอบเอกสารของคุณและติดต่อกลับเร็วๆ นี้',
     ngoName: 'ชื่อองค์กร',
     ngoEmail: 'อีเมล',
     ngoDescription: 'คำอธิบาย',
@@ -5284,7 +5792,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'ภาษาที่ต้องการ',
     continueSetup: 'ดำเนินการต่อ',
     skipForNow: 'ข้ามไปก่อน',
-    settings: 'การตั้งค่า', settingsTitle: 'การตั้งค่า', settingsAppearance: 'รูปลักษณ์', settingsAppearanceDesc: 'ปรับแต่งรูปลักษณ์ของ KindWorld', settingsLanguage: 'ภาษาและภูมิภาค', settingsLanguageDesc: 'เลือกภาษาที่คุณต้องการ', settingsManageDesc: 'จัดการการตั้งค่าบัญชีของคุณ', settingsNotifications: 'การแจ้งเตือน', settingsNotifDesc: 'เลือกสิ่งที่คุณต้องการรับการแจ้งเตือน', settingsMissionUpdates: 'อัปเดตภารกิจ', settingsMissionUpdatesDesc: 'รับการแจ้งเตือนเมื่อภารกิจที่คุณเข้าร่วมได้รับการอัปเดตหรือยกเลิก', settingsAnnouncements: 'ประกาศจากองค์กร', settingsAnnouncementsDesc: 'รับประกาศจากองค์กรที่คุณเข้าร่วมภารกิจ', settingsFriendReqNotif: 'คำขอเป็นเพื่อน', settingsFriendReqNotifDesc: 'รับแจ้งเตือนเมื่อมีคนส่งคำขอเป็นเพื่อนมาให้คุณ', settingsHourAlert: 'การยืนยันชั่วโมง', settingsHourAlertDesc: 'แจ้งเตือนเมื่อชั่วโมงอาสาสมัครที่ส่งได้รับการอนุมัติหรือปฏิเสธ', settingsWeeklyDigest: 'สรุปผลกระทบรายสัปดาห์', settingsWeeklyDigestDesc: 'สรุปรายสัปดาห์ของกิจกรรมอาสาสมัครและไฮไลต์แพลตฟอร์มของคุณ', settingsPrivacy: 'ความเป็นส่วนตัว', settingsPrivacyDesc: 'ควบคุมผู้ที่สามารถเห็นข้อมูลของคุณ', settingsPublicProfile: 'โปรไฟล์สาธารณะ', settingsPublicProfileDesc: 'ทุกคนใน KindWorld สามารถดูโปรไฟล์และสถิติอาสาสมัครของคุณ', settingsShowLeaderboard: 'แสดงในกระดานอันดับ', settingsShowLeaderboardDesc: 'ปรากฏในการจัดอันดับกระดานอันดับของชุมชน', settingsShareActivity: 'แชร์กิจกรรม', settingsShareActivityDesc: 'ให้เพื่อนเห็นเมื่อคุณเข้าร่วมภารกิจหรือได้รับตรา', settingsAllowContact: 'อนุญาตให้องค์กรติดต่อฉัน', settingsAllowContactDesc: 'องค์กรสามารถติดต่อคุณโดยตรงสำหรับโอกาสอาสาสมัครที่เกี่ยวข้อง', settingsAccount: 'บัญชี', settingsAccountDesc: 'จัดการข้อมูลบัญชีของคุณ', settingsExportData: 'ส่งออกข้อมูลของฉัน', settingsExportDesc: 'ดาวน์โหลดสำเนากิจกรรมอาสาสมัครของคุณเป็น PDF', settingsSignOut: 'ออกจากระบบ', settingsSignOutDesc: 'คุณจะถูกนำกลับไปยังหน้าหลัก',
+    settings: 'การตั้งค่า', settingsTitle: 'การตั้งค่า', settingsAppearance: 'รูปลักษณ์', settingsAppearanceDesc: 'ปรับแต่งรูปลักษณ์ของ KindWorld', settingsLanguage: 'ภาษาและภูมิภาค', settingsLanguageDesc: 'เลือกภาษาที่คุณต้องการ', settingsManageDesc: 'จัดการการตั้งค่าบัญชีของคุณ', settingsNotifications: 'การแจ้งเตือน', settingsNotifDesc: 'เลือกสิ่งที่คุณต้องการรับการแจ้งเตือน', settingsMissionUpdates: 'อัปเดตภารกิจ', settingsMissionUpdatesDesc: 'รับการแจ้งเตือนเมื่อภารกิจที่คุณเข้าร่วมได้รับการอัปเดตหรือยกเลิก', settingsAnnouncements: 'ประกาศจากองค์กร', settingsAnnouncementsDesc: 'รับประกาศจากองค์กรที่คุณเข้าร่วมภารกิจ', settingsFriendReqNotif: 'คำขอเป็นเพื่อน', settingsFriendReqNotifDesc: 'รับแจ้งเตือนเมื่อมีคนส่งคำขอเป็นเพื่อนมาให้คุณ', settingsHourAlert: 'การยืนยันชั่วโมง', settingsHourAlertDesc: 'แจ้งเตือนเมื่อชั่วโมงอาสาสมัครที่ส่งได้รับการอนุมัติหรือปฏิเสธ', settingsWeeklyDigest: 'สรุปผลกระทบรายสัปดาห์', settingsWeeklyDigestDesc: 'สรุปรายสัปดาห์ของกิจกรรมอาสาสมัครและไฮไลต์แพลตฟอร์มของคุณ', settingsPrivacy: 'ความเป็นส่วนตัว', settingsPrivacyDesc: 'ควบคุมผู้ที่สามารถเห็นข้อมูลของคุณ', settingsPublicProfile: 'โปรไฟล์สาธารณะ', settingsPublicProfileDesc: 'ทุกคนใน KindWorld สามารถดูโปรไฟล์และสถิติอาสาสมัครของคุณ', settingsShowLeaderboard: 'แสดงในกระดานอันดับ', settingsShowLeaderboardDesc: 'ปรากฏในการจัดอันดับกระดานอันดับของชุมชน', settingsShareActivity: 'แชร์กิจกรรม', settingsShareActivityDesc: 'ให้เพื่อนเห็นเมื่อคุณเข้าร่วมภารกิจหรือได้รับตรา', settingsAllowContact: 'อนุญาตให้องค์กรติดต่อฉัน', settingsAllowContactDesc: 'องค์กรสามารถติดต่อคุณโดยตรงสำหรับโอกาสอาสาสมัครที่เกี่ยวข้อง', settingsAccount: 'บัญชี', settingsAccountDesc: 'จัดการข้อมูลบัญชีของคุณ', settingsExportData: 'ส่งออกข้อมูลของฉัน', settingsExportDesc: 'ดาวน์โหลดสำเนากิจกรรมอาสาสมัครของคุณเป็น PDF', exportMyDataTitle: 'ข้อมูลอาสาสมัครของฉัน', exportProfileSection: 'โปรไฟล์', exportActivitySection: 'กิจกรรม', exportGeneratedBy: 'สร้างโดย KindWorld', settingsSignOut: 'ออกจากระบบ', settingsSignOutDesc: 'คุณจะถูกนำกลับไปยังหน้าหลัก',
     leaderboard: 'ลีดเดอร์บอร์ด', leaderboardTitle: 'อาสาสมัครยอดเยี่ยม', leaderboardDesc: 'เชิดชูสมาชิกที่มีผลกระทบมากที่สุดในชุมชนของเรา', topByHours: 'ตามชั่วโมง', topByBadges: 'ตามเหรียญ', yourRank: 'อันดับของคุณ', rankLabel: 'อันดับ', notRankedYet: 'ทำภารกิจให้สำเร็จเพื่อปรากฏในลีดเดอร์บอร์ด!',
     notifications: 'การแจ้งเตือน', markAllRead: 'ทำเครื่องหมายอ่านทั้งหมด', noNotifications: 'ยังไม่มีการแจ้งเตือน', notificationsDesc: 'การอัปเดตกิจกรรมของคุณจะปรากฏที่นี่',
     userNotFound: 'ไม่พบผู้ใช้', cannotAddSelf: 'คุณไม่สามารถเพิ่มตัวเองเป็นเพื่อน', alreadyFriends: 'คุณเป็นเพื่อนกันแล้ว', yourProgress: 'ความคืบหน้าของคุณ', hoursToNextBadge: 'ชั่วโมงอาสาสมัคร', missionsToNextBadge: 'ภารกิจที่เสร็จสิ้น', orgsToNextBadge: 'องค์กรที่ช่วยเหลือ', centuryClubDesc: 'ถึง 100 ชั่วโมงเพื่อรับเหรียญ Century Club', missionMasterDesc: 'ทำภารกิจ 10 ครั้งเพื่อรับเหรียญ Mission Master', communityBuilderDesc: 'ช่วย 5 องค์กรเพื่อรัปเหรียญ Community Builder',
@@ -5294,7 +5802,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     certVolRecognitionProg: 'โครงการยกย่องอาสาสมัคร', certOfVolServiceLabel: 'ใบรับรองการบริการอาสาสมัคร', certIssuedTo: 'มอบใบรับรองแก่', certHasCompleted: 'ได้เสร็จสิ้น', certVolHoursOf: 'ชั่วโมงการบริการอาสาสมัคร กับ', certDateIssuedLabel: 'วันที่ออก', certCertIdLabel: 'รหัสใบรับรอง', certSaveAsPDFBtn: '⬇ บันทึกเป็น PDF',
     inactiveStatus: 'ไม่ใช้งาน', certActivate: '▶ เปิดใช้งาน', requiredLabel: 'ที่ต้องการ', createdLabel: 'สร้างเมื่อ', volunteerRequestsEmpty: 'คำขอของอาสาสมัครจะปรากฏที่นี่หลังจากที่พวกเขาสมัคร',
     myMissionsTitle: 'ภารกิจของฉัน', myMissionsUpcoming: 'กำลังจะมา', myMissionsCompleted: 'เสร็จแล้ว',
-    certIssuedByLabel: 'ออกโดย', certAuthCertLabel: 'ใบรับรองดิจิทัลที่ได้รับอนุมัติ', certEligibleBadge: 'มีสิทธิ์', certHoursRequired: 'ชั่วโมงที่ต้องการ', certVolunteersEarned: 'อาสาสมัครได้รับ', certClaimBtn: 'รับใบรับรอง', certChangeLogo: 'เปลี่ยนโลโก้', statsConfidential: 'ลับ — สำหรับการใช้งานส่วนตัว', downloadNgoReportBtn: 'ดาวน์โหลดรายงาน NGO', ngoImpactReportTitle: 'รายงานผลกระทบ NGO', ngoVerifiedPartner: 'พันธมิตร NGO ที่ตรวจสอบแล้ว', ngoVolunteerActivitiesTitle: 'กิจกรรมอาสาสมัคร', ngoApprovedHoursTitle: 'ชั่วโมงอาสาสมัครที่อนุมัติ', ngoCertProgramsTitle: 'โปรแกรมใบรับรอง', statsConfidentialNGO: 'ลับ — สำหรับการใช้งานภายใน', ngoTotalVolunteers: 'อาสาสมัครทั้งหมด', ngoActivitiesCreated: 'กิจกรรมที่สร้าง', ngoHoursApproved: 'ชั่วโมงที่อนุมัติ', ngoCertsIssuedCount: 'ใบรับรองที่ออก', ngoNoActivitiesYet: 'ยังไม่มีกิจกรรมที่สร้าง', ngoNoApprovedHoursYet: 'ยังไม่มีชั่วโมงที่อนุมัติ', ngoNoCertProgramsYet: 'ยังไม่มีโปรแกรมใบรับรองที่สร้าง', ngoImpactReportGenerated: 'รายงานผลกระทบ NGO ถูกสร้างแล้ว!', sdg1Desc: 'ยุติความยากจนในทุกรูปแบบทั่วโลก มากกว่า 700 ล้านคนยังคงใช้ชีวิตในความยากจนขั้นรุนแรง การอาสาสมัครช่วยสร้างความยืดหยุ่นของชุมชนและเชื่อมโยงผู้คนกับทรัพยากรที่จำเป็น', sdg2Desc: 'ยุติความหิวโหยและบรรลุความมั่นคงด้านอาหาร ในปี 2566 เกือบ 733 ล้านคนเผชิญกับความหิวโหย โครงการอาหารชุมชนและเกษตรกรรมยั่งยืนสร้างการเปลี่ยนแปลงที่ยั่งยืน', sdg3Desc: 'รับประกันชีวิตที่มีสุขภาพดีและส่งเสริมความเป็นอยู่ที่ดีสำหรับทุกวัย อาสาสมัครขยายการเข้าถึงบริการสุขภาพและสนับสนุนชุมชนที่เปราะบาง', sdg4Desc: 'รับประกันการศึกษาที่มีคุณภาพและส่งเสริมการเรียนรู้ตลอดชีวิตสำหรับทุกคน เด็กกว่า 244 ล้านคนอยู่นอกระบบการศึกษา การศึกษาคือเครื่องมือที่ทรงพลังที่สุดในการเปลี่ยนแปลงโลก', sdg10Desc: 'ลดความไม่เท่าเทียมภายในและระหว่างประเทศ ชุมชนที่เป็นธรรมต้องการการมีส่วนร่วมและโครงการที่ครอบคลุมซึ่งไม่ทิ้งใครไว้ข้างหลัง', sdg11Desc: 'ทำให้เมืองมีความครอบคลุม ปลอดภัย และยั่งยืน ภายในปี 2593 70% ของมนุษยชาติจะอาศัยอยู่ในเมือง การพัฒนาเมืองอย่างยั่งยืนกำหนดอนาคตร่วมกันของเรา', sdg13Desc: 'ดำเนินการอย่างเร่งด่วนเพื่อต่อสู้กับการเปลี่ยนแปลงสภาพภูมิอากาศ การเปลี่ยนแปลงสภาพภูมิอากาศคุกคามทุกระบบนิเวศบนโลก การดำเนินการด้านสิ่งแวดล้อมเริ่มต้นในท้องถิ่นและขยายไปทั่วโลก', sdg17Desc: 'ฟื้นฟูหุ้นส่วนระดับโลกเพื่อการพัฒนาที่ยั่งยืน ไม่มีเป้าหมายใดที่บรรลุได้ด้วยตนเอง การทำงานร่วมกันข้ามภาคส่วนสร้างผลกระทบที่ยั่งยืน', sdgLearnMore: 'เรียนรู้เพิ่มเติมที่ UN.org', sdgKindWorldHelps: 'KindWorld เชื่อมโยงอาสาสมัครกับภารกิจที่ส่งเสริมเป้าหมายนี้โดยตรง สร้างผลกระทบที่แท้จริงในชุมชนท้องถิ่น'
+    certIssuedByLabel: 'ออกโดย', certAuthCertLabel: 'ใบรับรองดิจิทัลที่ได้รับอนุมัติ', certEligibleBadge: 'มีสิทธิ์', certHoursRequired: 'ชั่วโมงที่ต้องการ', certVolunteersEarned: 'อาสาสมัครได้รับ', certClaimBtn: 'รับใบรับรอง', certChangeLogo: 'เปลี่ยนโลโก้', statsConfidential: 'ลับ — สำหรับการใช้งานส่วนตัว', downloadNgoReportBtn: 'ดาวน์โหลดรายงาน NGO', ngoImpactReportTitle: 'รายงานผลกระทบ NGO', ngoVerifiedPartner: 'พันธมิตร NGO ที่ตรวจสอบแล้ว', ngoVolunteerActivitiesTitle: 'กิจกรรมอาสาสมัคร', ngoApprovedHoursTitle: 'ชั่วโมงอาสาสมัครที่อนุมัติ', ngoCertProgramsTitle: 'โปรแกรมใบรับรอง', statsConfidentialNGO: 'ลับ — สำหรับการใช้งานภายใน', ngoTotalVolunteers: 'อาสาสมัครทั้งหมด', ngoActivitiesCreated: 'กิจกรรมที่สร้าง', ngoHoursApproved: 'ชั่วโมงที่อนุมัติ', ngoCertsIssuedCount: 'ใบรับรองที่ออก', ngoNoActivitiesYet: 'ยังไม่มีกิจกรรมที่สร้าง', ngoNoApprovedHoursYet: 'ยังไม่มีชั่วโมงที่อนุมัติ', ngoNoCertProgramsYet: 'ยังไม่มีโปรแกรมใบรับรองที่สร้าง', ngoImpactReportGenerated: 'รายงานผลกระทบ NGO ถูกสร้างแล้ว!', sdg1Desc: 'ยุติความยากจนในทุกรูปแบบทั่วโลก มากกว่า 700 ล้านคนยังคงใช้ชีวิตในความยากจนขั้นรุนแรง การอาสาสมัครช่วยสร้างความยืดหยุ่นของชุมชนและเชื่อมโยงผู้คนกับทรัพยากรที่จำเป็น', sdg2Desc: 'ยุติความหิวโหยและบรรลุความมั่นคงด้านอาหาร ในปี 2566 เกือบ 733 ล้านคนเผชิญกับความหิวโหย โครงการอาหารชุมชนและเกษตรกรรมยั่งยืนสร้างการเปลี่ยนแปลงที่ยั่งยืน', sdg3Desc: 'รับประกันชีวิตที่มีสุขภาพดีและส่งเสริมความเป็นอยู่ที่ดีสำหรับทุกวัย อาสาสมัครขยายการเข้าถึงบริการสุขภาพและสนับสนุนชุมชนที่เปราะบาง', sdg4Desc: 'รับประกันการศึกษาที่มีคุณภาพและส่งเสริมการเรียนรู้ตลอดชีวิตสำหรับทุกคน เด็กกว่า 244 ล้านคนอยู่นอกระบบการศึกษา การศึกษาคือเครื่องมือที่ทรงพลังที่สุดในการเปลี่ยนแปลงโลก', sdg10Desc: 'ลดความไม่เท่าเทียมภายในและระหว่างประเทศ ชุมชนที่เป็นธรรมต้องการการมีส่วนร่วมและโครงการที่ครอบคลุมซึ่งไม่ทิ้งใครไว้ข้างหลัง', sdg11Desc: 'ทำให้เมืองมีความครอบคลุม ปลอดภัย และยั่งยืน ภายในปี 2593 70% ของมนุษยชาติจะอาศัยอยู่ในเมือง การพัฒนาเมืองอย่างยั่งยืนกำหนดอนาคตร่วมกันของเรา', sdg13Desc: 'ดำเนินการอย่างเร่งด่วนเพื่อต่อสู้กับการเปลี่ยนแปลงสภาพภูมิอากาศ การเปลี่ยนแปลงสภาพภูมิอากาศคุกคามทุกระบบนิเวศบนโลก การดำเนินการด้านสิ่งแวดล้อมเริ่มต้นในท้องถิ่นและขยายไปทั่วโลก', sdg17Desc: 'ฟื้นฟูหุ้นส่วนระดับโลกเพื่อการพัฒนาที่ยั่งยืน ไม่มีเป้าหมายใดที่บรรลุได้ด้วยตนเอง การทำงานร่วมกันข้ามภาคส่วนสร้างผลกระทบที่ยั่งยืน', sdgLearnMore: 'เรียนรู้เพิ่มเติมที่ UN.org', sdgKindWorldHelps: 'KindWorld เชื่อมโยงอาสาสมัครกับภารกิจที่ส่งเสริมเป้าหมายนี้โดยตรง สร้างผลกระทบที่แท้จริงในชุมชนท้องถิ่น', profileChangePicture: 'เปลี่ยนรูปโปรไฟล์', profileChangeLabel: 'เปลี่ยน', profileContactChannels: 'ช่องทางติดต่อ', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: 'ผู้ติดต่อฉุกเฉิน', profileRelationship: 'ความสัมพันธ์', profileHealthLogistics: 'สุขภาพและโลจิสติกส์', profileHealthLogisticsHint: 'บันทึกครั้งเดียวที่นี่ — กรอกอัตโนมัติเมื่อลงทะเบียนภารกิจ', profileAllergies: 'ภูมิแพ้', profileAllergiesPlaceholder: 'เช่น ถั่ว, อาหารทะเล', profileMedicalConditions: 'โรคประจำตัว', profileMedicalConditionsPlaceholder: 'เช่น หอบหืด, เบาหวาน', profileDietaryRestrictions: 'ข้อจำกัดด้านอาหาร', profileDietaryRestrictionsPlaceholder: 'เช่น มังสวิรัติ, ฮาลาล', profileTshirtSize: 'ไซส์เสื้อยืด', profileTshirtSizePlaceholder: 'เลือกไซส์', profileNgoSection: 'โปรไฟล์สาธารณะของ NGO', profileNgoSectionHint: 'ข้อมูลนี้แสดงให้อาสาสมัครเห็นในการ์ดภารกิจ', profileNgoDescription: 'คำอธิบายองค์กร', profileNgoDescriptionPlaceholder: 'บอกอาสาสมัครเกี่ยวกับพันธกิจ ผลกระทบ และสิ่งที่ทำให้การทำอาสาสมัครกับคุณมีความหมาย...', profileNgoWebsite: 'URL เว็บไซต์', profileNgoWebsitePlaceholder: 'https://yourorganization.org', profileNgoPortfolio: 'URL พอร์ตโฟลิโอ / ผลงาน', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 เอกสารทางกฎหมายสำหรับการยืนยัน', profileNgoLegalDocsHint: 'ส่งลิงก์ไปยังเอกสารการจดทะเบียนตามกฎหมายขององค์กรของคุณ (เช่น Google Drive, Dropbox) ผู้ดูแลระบบ KindWorld จะตรวจสอบเพื่อยืนยันสถานะ NGO ของคุณ', profileNgoDocLinkPlaceholder: 'ลิงก์ไปยังเอกสารทางกฎหมายของคุณ...', profileNgoDocNotePlaceholder: 'หมายเหตุสั้นๆ เกี่ยวกับเอกสาร (เช่น การจดทะเบียนกระทรวงกฎหมาย, ไทย)', eventSummaryLabel: 'สรุปกิจกรรม', reviewsReceived: 'รีวิวจาก NGO', avgRatingLabel: 'คะแนนเฉลี่ย', reviewsCount: 'รีวิว', clickToToggleInterests: 'คลิกเพื่อเลือก/ยกเลิกความสนใจของคุณ', refreshMissions: 'รีเฟรช'
   },
   vi: {
     title: 'KindWorld',
@@ -5351,6 +5859,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: 'Đăng ký ngay',
     firstName: 'Tên',
     lastName: 'Họ',
+    orgNameField: 'Tên Tổ chức',
+    orgNamePlaceholder: 'VD: Quỹ Trái Đất Xanh',
+    ngoRegisterSubtitle: 'Đăng ký NGO của bạn và kết nối với tình nguyện viên trên toàn thế giới',
+    ngoRegisterInfoNote: 'Sau khi đăng ký, hãy hoàn thiện hồ sơ NGO để bắt đầu quá trình xác minh.',
     emailAddress: 'Địa chỉ email',
     phoneNumber: 'Số điện thoại',
     country: 'Quốc gia',
@@ -5489,6 +6001,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: 'Kỹ năng đặc biệt',
     agreeToTerms: 'Tôi đồng ý với các điều khoản và điều kiện',
     cancel: 'Hủy',
+    reviewVisibilityVol: 'Đánh giá này hiển thị với tình nguyện viên, các admin NGO khác và admin nền tảng — không công khai.',
+    reviewVisibilityNgo: 'Đánh giá của bạn sẽ hiển thị với NGO và admin nền tảng.',
     confirmRegistration: 'Xác nhận đăng ký',
     activeVolunteersLabel: 'Tình nguyện viên hoạt động',
     partnerNGOsLabel: 'Tổ chức đối tác',
@@ -5538,6 +6052,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: 'Miễn phí tham gia',
     noCommitments: 'Không có cam kết',
     startImpactImmediately: 'Bắt đầu tạo tác động ngay lập tức',
+    whyKindWorldTitle: 'Tại sao chọn KindWorld?',
+    whyKindWorldSubtitle: 'Chúng tôi không chỉ là một nền tảng tình nguyện thông thường',
+    whyItem1Title: 'Tác động đã được xác minh',
+    whyItem1Desc: 'Mỗi giờ bạn ghi lại đều được tổ chức xác minh — tác động của bạn là thật và có thể đo lường.',
+    whyItem2Title: 'Sự công nhận lâu dài',
+    whyItem2Desc: 'Nhận chứng chỉ và huy hiệu kỹ thuật số có thể chia sẻ trên LinkedIn và CV.',
+    whyItem3Title: 'Được thúc đẩy bởi cộng đồng',
+    whyItem3Desc: 'Kết nối với các tình nguyện viên, tổ chức và người tạo ra sự thay đổi trên toàn thế giới.',
+    whyItem4Title: 'Nhiệm vụ theo SDGs',
+    whyItem4Desc: 'Mỗi nhiệm vụ gắn trực tiếp với Mục tiêu Phát triển Bền vững của LHQ.',
+    earlyAdopterTitle: 'Tham gia với tư cách Người dùng sớm',
+    earlyAdopterSubtitle: 'Là một trong những người đầu tiên định hình tương lai tình nguyện',
+    earlyAdopterBadgeLabel: '🌟 Huy hiệu Thành viên Sáng lập',
+    earlyAdopterBadgeDesc: 'Nhận huy hiệu độc quyền hiển thị trên hồ sơ của bạn mãi mãi.',
+    earlyAdopterFeedbackLabel: '🗣️ Định hình nền tảng',
+    earlyAdopterFeedbackDesc: 'Phản hồi của bạn ảnh hưởng trực tiếp đến những gì chúng tôi xây dựng tiếp theo.',
+    earlyAdopterCommunityLabel: '🤝 Truy cập cộng đồng ưu tiên',
+    earlyAdopterCommunityDesc: 'Truy cập sớm vào các tính năng mới, nhiệm vụ và quan hệ đối tác NGO.',
+    earlyAdopterCTA: 'Tham gia cộng đồng sớm',
+    earlyAdopterNote: 'Số lượng hạn chế — tham gia ngay trước khi chúng tôi mở cho công chúng.',
+    earlyAccessLabel: '🚀 Truy Cập Sớm',
+    sdgTapHint: 'Nhấn vào mục tiêu để tìm hiểu thêm',
+    sdgEyebrow: 'LHQ · Mục tiêu Phát triển Bền vững',
     footerTagline: 'Trao quyền cho tình nguyện viên trên toàn thế giới',
     footerCopyright: 'KindWorld. Bảo lưu mọi quyền.',
     ngoDashboardTitle: 'Bảng điều khiển tổ chức',
@@ -5620,6 +6157,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: 'Bạn có chắc chắn muốn xóa nhiệm vụ này không?',
     noUpcomingMissions: 'Không có nhiệm vụ sắp tới',
     noPastMissions: 'Chưa có nhiệm vụ nào đã qua',
+    searchMissions: 'Tìm kiếm nhiệm vụ...',
+    noCompletedMissions: 'Chưa có nhiệm vụ nào hoàn thành',
     noRegisteredNGOs: 'Chưa có tổ chức nào được đăng ký',
     missionRemovedSuffix: 'đã bị xóa khỏi nền tảng',
     journeyStartsHere: 'Hành trình của bạn bắt đầu từ đây!',
@@ -5656,6 +6195,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: 'Chờ phê duyệt',
     ngoPendingLogout: 'Đăng xuất',
     ngoPendingSignedIn: 'Đã đăng nhập với tư cách',
+    ngoOnboardingTitle: 'Hoàn thiện hồ sơ NGO của bạn',
+    ngoOnboardingSubtitle: 'Điền thông tin bên dưới để đội ngũ quản trị viên của chúng tôi có thể xác minh tổ chức của bạn.',
+    ngoOnboardingDescLabel: 'Sứ mệnh / Mô tả',
+    ngoOnboardingDescPlaceholder: 'Mô tả sứ mệnh của tổ chức, những gì bạn làm và các cộng đồng bạn phục vụ…',
+    ngoOnboardingWebsiteLabel: 'URL Website',
+    ngoOnboardingLegalLabel: 'Tài liệu đăng ký pháp lý',
+    ngoOnboardingLegalHint: 'Dán liên kết đến tài liệu đăng ký/thành lập chính thức của tổ chức (Google Drive, Dropbox, v.v.)',
+    ngoOnboardingPortfolioLabel: 'Danh mục / Công việc trước đây',
+    ngoOnboardingPortfolioOptional: '(tùy chọn)',
+    ngoOnboardingPortfolioPlaceholder: 'Liên kết đến ảnh, báo cáo, mạng xã hội…',
+    ngoOnboardingRequiredFields: '⚠️ Vui lòng điền đầy đủ các trường bắt buộc trước khi gửi.',
+    ngoOnboardingSubmitBtn: '🚀 Gửi để xác minh',
+    ngoOnboardingSubmitSuccess: '✅ Hồ sơ đã được gửi để quản trị viên xem xét! Bạn sẽ được thông báo sau khi được chấp thuận.',
+    ngoOnboardingReviewMsg: 'Đơn đăng ký của bạn đã được gửi. Đội ngũ quản trị của chúng tôi sẽ xem xét tài liệu và liên hệ với bạn sớm.',
     ngoName: 'Tên tổ chức',
     ngoEmail: 'Email',
     ngoDescription: 'Mô tả',
@@ -5829,7 +6382,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Ngôn ngữ ưa thích',
     continueSetup: 'Tiếp tục',
     skipForNow: 'Bỏ qua lúc này',
-    settings: 'Cài đặt', settingsTitle: 'Cài đặt', settingsAppearance: 'Giao diện', settingsAppearanceDesc: 'Tuỳ chỉnh giao diện KindWorld', settingsLanguage: 'Ngôn ngữ & Khu vực', settingsLanguageDesc: 'Chọn ngôn ngữ ưa thích của bạn', settingsManageDesc: 'Quản lý tùy chọn tài khoản của bạn', settingsNotifications: 'Thông báo', settingsNotifDesc: 'Chọn những gì bạn muốn nhận thông báo', settingsMissionUpdates: 'Cập nhật nhiệm vụ', settingsMissionUpdatesDesc: 'Nhận thông báo khi nhiệm vụ bạn tham gia được cập nhật hoặc hủy', settingsAnnouncements: 'Thông báo từ tổ chức', settingsAnnouncementsDesc: 'Nhận thông báo từ các tổ chức có nhiệm vụ bạn đã tham gia', settingsFriendReqNotif: 'Lời mời kết bạn', settingsFriendReqNotifDesc: 'Thông báo cho tôi khi ai đó gửi lời mời kết bạn', settingsHourAlert: 'Xác minh giờ', settingsHourAlertDesc: 'Cảnh báo khi giờ tình nguyện đã gửi được chấp thuận hoặc từ chối', settingsWeeklyDigest: 'Tóm tắt tác động hàng tuần', settingsWeeklyDigestDesc: 'Tóm tắt hàng tuần về hoạt động tình nguyện và điểm nổi bật của nền tảng', settingsPrivacy: 'Quyền riêng tư', settingsPrivacyDesc: 'Kiểm soát ai có thể xem thông tin của bạn', settingsPublicProfile: 'Hồ sơ công khai', settingsPublicProfileDesc: 'Bất kỳ ai trên KindWorld đều có thể xem hồ sơ và thống kê tình nguyện của bạn', settingsShowLeaderboard: 'Hiển thị trên bảng xếp hạng', settingsShowLeaderboardDesc: 'Xuất hiện trong bảng xếp hạng cộng đồng', settingsShareActivity: 'Chia sẻ hoạt động', settingsShareActivityDesc: 'Cho bạn bè thấy khi bạn tham gia nhiệm vụ hoặc nhận huy hiệu', settingsAllowContact: 'Cho phép tổ chức liên hệ tôi', settingsAllowContactDesc: 'Các tổ chức có thể liên hệ trực tiếp với bạn về các cơ hội tình nguyện phù hợp', settingsAccount: 'Tài khoản', settingsAccountDesc: 'Quản lý dữ liệu tài khoản của bạn', settingsExportData: 'Xuất dữ liệu của tôi', settingsExportDesc: 'Tải xuống bản sao hoạt động tình nguyện của bạn dưới dạng PDF', settingsSignOut: 'Đăng xuất', settingsSignOutDesc: 'Bạn sẽ được đưa trở lại trang chính',
+    settings: 'Cài đặt', settingsTitle: 'Cài đặt', settingsAppearance: 'Giao diện', settingsAppearanceDesc: 'Tuỳ chỉnh giao diện KindWorld', settingsLanguage: 'Ngôn ngữ & Khu vực', settingsLanguageDesc: 'Chọn ngôn ngữ ưa thích của bạn', settingsManageDesc: 'Quản lý tùy chọn tài khoản của bạn', settingsNotifications: 'Thông báo', settingsNotifDesc: 'Chọn những gì bạn muốn nhận thông báo', settingsMissionUpdates: 'Cập nhật nhiệm vụ', settingsMissionUpdatesDesc: 'Nhận thông báo khi nhiệm vụ bạn tham gia được cập nhật hoặc hủy', settingsAnnouncements: 'Thông báo từ tổ chức', settingsAnnouncementsDesc: 'Nhận thông báo từ các tổ chức có nhiệm vụ bạn đã tham gia', settingsFriendReqNotif: 'Lời mời kết bạn', settingsFriendReqNotifDesc: 'Thông báo cho tôi khi ai đó gửi lời mời kết bạn', settingsHourAlert: 'Xác minh giờ', settingsHourAlertDesc: 'Cảnh báo khi giờ tình nguyện đã gửi được chấp thuận hoặc từ chối', settingsWeeklyDigest: 'Tóm tắt tác động hàng tuần', settingsWeeklyDigestDesc: 'Tóm tắt hàng tuần về hoạt động tình nguyện và điểm nổi bật của nền tảng', settingsPrivacy: 'Quyền riêng tư', settingsPrivacyDesc: 'Kiểm soát ai có thể xem thông tin của bạn', settingsPublicProfile: 'Hồ sơ công khai', settingsPublicProfileDesc: 'Bất kỳ ai trên KindWorld đều có thể xem hồ sơ và thống kê tình nguyện của bạn', settingsShowLeaderboard: 'Hiển thị trên bảng xếp hạng', settingsShowLeaderboardDesc: 'Xuất hiện trong bảng xếp hạng cộng đồng', settingsShareActivity: 'Chia sẻ hoạt động', settingsShareActivityDesc: 'Cho bạn bè thấy khi bạn tham gia nhiệm vụ hoặc nhận huy hiệu', settingsAllowContact: 'Cho phép tổ chức liên hệ tôi', settingsAllowContactDesc: 'Các tổ chức có thể liên hệ trực tiếp với bạn về các cơ hội tình nguyện phù hợp', settingsAccount: 'Tài khoản', settingsAccountDesc: 'Quản lý dữ liệu tài khoản của bạn', settingsExportData: 'Xuất dữ liệu của tôi', settingsExportDesc: 'Tải xuống bản sao hoạt động tình nguyện của bạn dưới dạng PDF', exportMyDataTitle: 'Dữ liệu tình nguyện của tôi', exportProfileSection: 'Hồ sơ', exportActivitySection: 'Hoạt động', exportGeneratedBy: 'Được tạo bởi KindWorld', settingsSignOut: 'Đăng xuất', settingsSignOutDesc: 'Bạn sẽ được đưa trở lại trang chính',
     leaderboard: 'Bảng Xếp Hạng', leaderboardTitle: 'Tình Nguyện Viên Xuất Sắc', leaderboardDesc: 'Tôn vinh những thành viên có ảnh hưởng nhất trong cộng đồng', topByHours: 'Theo Giờ', topByBadges: 'Theo Huy Hiệu', yourRank: 'Thứ Hạng Của Bạn', rankLabel: 'Hạng', notRankedYet: 'Hoàn thành nhiệm vụ để xuất hiện trên bảng xếp hạng!',
     notifications: 'Thông Báo', markAllRead: 'Đánh dấu tất cả đã đọc', noNotifications: 'Chưa có thông báo', notificationsDesc: 'Cập nhật hoạt động của bạn sẽ xuất hiện ở đây',
     userNotFound: 'Không tìm thấy người dùng.', cannotAddSelf: 'Bạn không thể tự thêm mình làm bạn bè.', alreadyFriends: 'Hai bạn đã là bạn bè.', yourProgress: 'Tiến Độ Của Bạn', hoursToNextBadge: 'Giờ Tình Nguyện', missionsToNextBadge: 'Nhiệm Vụ Hoàn Thành', orgsToNextBadge: 'Tổ Chức Được Giúp', centuryClubDesc: 'Đạt 100 giờ để nhận huy hiệu Century Club', missionMasterDesc: 'Hoàn thành 10 nhiệm vụ để nhận huy hiệu Mission Master', communityBuilderDesc: 'Giúp 5 tổ chức để nhận huy hiệu Community Builder',
@@ -5839,7 +6392,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     certVolRecognitionProg: 'Chương trình Công nhận Tình nguyện viên', certOfVolServiceLabel: 'Chứng nhận Dịch vụ Tình nguyện', certIssuedTo: 'Chứng chỉ trao cho', certHasCompleted: 'đã hoàn thành', certVolHoursOf: 'giờ tình nguyện tại', certDateIssuedLabel: 'Ngày Cấp', certCertIdLabel: 'Mã Chứng chỉ', certSaveAsPDFBtn: '⬇ Lưu thành PDF',
     inactiveStatus: 'Không hoạt động', certActivate: '▶ Kích hoạt', requiredLabel: 'bắt buộc', createdLabel: 'Ngày tạo', volunteerRequestsEmpty: 'Yêu cầu của tình nguyện viên sẽ xuất hiện ở đây sau khi họ đăng ký.',
     myMissionsTitle: 'Nhiệm Vụ Của Tôi', myMissionsUpcoming: 'Sắp tới', myMissionsCompleted: 'Đã hoàn thành',
-    certIssuedByLabel: 'Cấp bởi', certAuthCertLabel: 'Chứng chỉ số hợp lệ', certEligibleBadge: 'Đủ điều kiện', certHoursRequired: 'giờ yêu cầu', certVolunteersEarned: 'tình nguyện viên đã đạt', certClaimBtn: 'Nhận Chứng chỉ', certChangeLogo: 'Thay Logo', statsConfidential: 'Bảo mật — Dùng Cá Nhân', downloadNgoReportBtn: 'Tải Báo Cáo Tổ Chức', ngoImpactReportTitle: 'Báo Cáo Tác Động Tổ Chức', ngoVerifiedPartner: 'Đối tác Tổ chức Xác minh', ngoVolunteerActivitiesTitle: 'Hoạt động Tình Nguyện', ngoApprovedHoursTitle: 'Giờ Tình Nguyện Được Duyệt', ngoCertProgramsTitle: 'Chương trình Chứng chỉ', statsConfidentialNGO: 'Bảo mật — Dùng Nội bộ', ngoTotalVolunteers: 'Tổng Tình Nguyện Viên', ngoActivitiesCreated: 'Hoạt động Đã tạo', ngoHoursApproved: 'Giờ Được Duyệt', ngoCertsIssuedCount: 'Chứng chỉ Đã Cấp', ngoNoActivitiesYet: 'Chưa có hoạt động nào được tạo', ngoNoApprovedHoursYet: 'Chưa có giờ nào được duyệt', ngoNoCertProgramsYet: 'Chưa có chương trình chứng chỉ nào được tạo', ngoImpactReportGenerated: 'Báo cáo Tác động Tổ chức đã được tạo!', sdg1Desc: 'Chấm dứt nghèo đói dưới mọi hình thức trên toàn thế giới. Hơn 700 triệu người vẫn sống trong cảnh nghèo cùng cực. Tình nguyện giúp xây dựng sức bền cộng đồng và kết nối mọi người với tài nguyên thiết yếu.', sdg2Desc: 'Chấm dứt nạn đói và đảm bảo an ninh lương thực. Gần 733 triệu người phải đối mặt với nạn đói năm 2023. Các chương trình thực phẩm cộng đồng và nông nghiệp bền vững tạo ra thay đổi lâu dài.', sdg3Desc: 'Đảm bảo cuộc sống lành mạnh và thúc đẩy phúc lợi cho mọi lứa tuổi. Tình nguyện viên mở rộng khả năng tiếp cận dịch vụ y tế và hỗ trợ các cộng đồng dễ bị tổn thương.', sdg4Desc: 'Đảm bảo giáo dục chất lượng và thúc đẩy học tập suốt đời cho tất cả mọi người. Hơn 244 triệu trẻ em không được đến trường. Giáo dục là công cụ mạnh mẽ nhất để thay đổi thế giới.', sdg10Desc: 'Giảm bất bình đẳng trong và giữa các quốc gia. Cộng đồng công bằng đòi hỏi sự tham gia tích cực và các chương trình toàn diện không để ai bị bỏ lại phía sau.', sdg11Desc: 'Làm cho các thành phố mang tính toàn diện, an toàn và bền vững. Đến năm 2050, 70% nhân loại sẽ sống ở các thành phố — phát triển đô thị bền vững định hình tương lai chung của chúng ta.', sdg13Desc: 'Hành động khẩn cấp để chống lại biến đổi khí hậu. Biến đổi khí hậu đe dọa mọi hệ sinh thái trên Trái Đất. Hành động môi trường bắt đầu từ địa phương và lan rộng toàn cầu.', sdg17Desc: 'Hồi sinh quan hệ đối tác toàn cầu vì sự phát triển bền vững. Không có mục tiêu nào đạt được một mình — sự hợp tác liên ngành tạo ra tác động lâu dài.', sdgLearnMore: 'Tìm hiểu thêm tại UN.org', sdgKindWorldHelps: 'KindWorld kết nối tình nguyện viên với các nhiệm vụ trực tiếp thúc đẩy mục tiêu này, tạo ra tác động thực sự trong các cộng đồng địa phương.'
+    certIssuedByLabel: 'Cấp bởi', certAuthCertLabel: 'Chứng chỉ số hợp lệ', certEligibleBadge: 'Đủ điều kiện', certHoursRequired: 'giờ yêu cầu', certVolunteersEarned: 'tình nguyện viên đã đạt', certClaimBtn: 'Nhận Chứng chỉ', certChangeLogo: 'Thay Logo', statsConfidential: 'Bảo mật — Dùng Cá Nhân', downloadNgoReportBtn: 'Tải Báo Cáo Tổ Chức', ngoImpactReportTitle: 'Báo Cáo Tác Động Tổ Chức', ngoVerifiedPartner: 'Đối tác Tổ chức Xác minh', ngoVolunteerActivitiesTitle: 'Hoạt động Tình Nguyện', ngoApprovedHoursTitle: 'Giờ Tình Nguyện Được Duyệt', ngoCertProgramsTitle: 'Chương trình Chứng chỉ', statsConfidentialNGO: 'Bảo mật — Dùng Nội bộ', ngoTotalVolunteers: 'Tổng Tình Nguyện Viên', ngoActivitiesCreated: 'Hoạt động Đã tạo', ngoHoursApproved: 'Giờ Được Duyệt', ngoCertsIssuedCount: 'Chứng chỉ Đã Cấp', ngoNoActivitiesYet: 'Chưa có hoạt động nào được tạo', ngoNoApprovedHoursYet: 'Chưa có giờ nào được duyệt', ngoNoCertProgramsYet: 'Chưa có chương trình chứng chỉ nào được tạo', ngoImpactReportGenerated: 'Báo cáo Tác động Tổ chức đã được tạo!', sdg1Desc: 'Chấm dứt nghèo đói dưới mọi hình thức trên toàn thế giới. Hơn 700 triệu người vẫn sống trong cảnh nghèo cùng cực. Tình nguyện giúp xây dựng sức bền cộng đồng và kết nối mọi người với tài nguyên thiết yếu.', sdg2Desc: 'Chấm dứt nạn đói và đảm bảo an ninh lương thực. Gần 733 triệu người phải đối mặt với nạn đói năm 2023. Các chương trình thực phẩm cộng đồng và nông nghiệp bền vững tạo ra thay đổi lâu dài.', sdg3Desc: 'Đảm bảo cuộc sống lành mạnh và thúc đẩy phúc lợi cho mọi lứa tuổi. Tình nguyện viên mở rộng khả năng tiếp cận dịch vụ y tế và hỗ trợ các cộng đồng dễ bị tổn thương.', sdg4Desc: 'Đảm bảo giáo dục chất lượng và thúc đẩy học tập suốt đời cho tất cả mọi người. Hơn 244 triệu trẻ em không được đến trường. Giáo dục là công cụ mạnh mẽ nhất để thay đổi thế giới.', sdg10Desc: 'Giảm bất bình đẳng trong và giữa các quốc gia. Cộng đồng công bằng đòi hỏi sự tham gia tích cực và các chương trình toàn diện không để ai bị bỏ lại phía sau.', sdg11Desc: 'Làm cho các thành phố mang tính toàn diện, an toàn và bền vững. Đến năm 2050, 70% nhân loại sẽ sống ở các thành phố — phát triển đô thị bền vững định hình tương lai chung của chúng ta.', sdg13Desc: 'Hành động khẩn cấp để chống lại biến đổi khí hậu. Biến đổi khí hậu đe dọa mọi hệ sinh thái trên Trái Đất. Hành động môi trường bắt đầu từ địa phương và lan rộng toàn cầu.', sdg17Desc: 'Hồi sinh quan hệ đối tác toàn cầu vì sự phát triển bền vững. Không có mục tiêu nào đạt được một mình — sự hợp tác liên ngành tạo ra tác động lâu dài.', sdgLearnMore: 'Tìm hiểu thêm tại UN.org', sdgKindWorldHelps: 'KindWorld kết nối tình nguyện viên với các nhiệm vụ trực tiếp thúc đẩy mục tiêu này, tạo ra tác động thực sự trong các cộng đồng địa phương.', profileChangePicture: 'Đổi ảnh hồ sơ', profileChangeLabel: 'Đổi', profileContactChannels: 'Kênh liên hệ', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: 'Liên hệ khẩn cấp', profileRelationship: 'Mối quan hệ', profileHealthLogistics: 'Sức khỏe & Hậu cần', profileHealthLogisticsHint: 'Lưu một lần tại đây — tự động điền khi đăng ký nhiệm vụ.', profileAllergies: 'Dị ứng', profileAllergiesPlaceholder: 'VD: Đậu phộng, Hải sản', profileMedicalConditions: 'Tình trạng y tế', profileMedicalConditionsPlaceholder: 'VD: Hen suyễn, Tiểu đường', profileDietaryRestrictions: 'Hạn chế ăn uống', profileDietaryRestrictionsPlaceholder: 'VD: Ăn chay, Halal', profileTshirtSize: 'Kích cỡ áo thun', profileTshirtSizePlaceholder: 'Chọn kích cỡ', profileNgoSection: 'Hồ sơ công khai NGO', profileNgoSectionHint: 'Thông tin này được hiển thị cho tình nguyện viên trên thẻ nhiệm vụ.', profileNgoDescription: 'Mô tả tổ chức', profileNgoDescriptionPlaceholder: 'Cho tình nguyện viên biết về sứ mệnh, tác động và điều gì làm cho việc tình nguyện cùng bạn trở nên có ý nghĩa...', profileNgoWebsite: 'URL trang web', profileNgoWebsitePlaceholder: 'https://tochucban.org', profileNgoPortfolio: 'URL danh mục / triển lãm', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 Tài liệu pháp lý để xác minh', profileNgoLegalDocsHint: 'Gửi liên kết đến tài liệu đăng ký pháp lý của tổ chức bạn (VD: Google Drive, Dropbox). Quản trị viên KindWorld sẽ xem xét để xác minh tình trạng NGO của bạn.', profileNgoDocLinkPlaceholder: 'Liên kết đến tài liệu pháp lý của bạn...', profileNgoDocNotePlaceholder: "Ghi chú ngắn về tài liệu (VD: 'Đăng ký Bộ Tư pháp, Việt Nam')", eventSummaryLabel: 'Tóm tắt Sự kiện', reviewsReceived: 'Đánh giá từ NGO', avgRatingLabel: 'Đánh giá trung bình', reviewsCount: 'đánh giá', clickToToggleInterests: 'Nhấp để chọn/bỏ chọn sở thích của bạn', refreshMissions: 'Làm mới'
   },
   ko: {
     title: 'KindWorld',
@@ -5896,6 +6449,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: '지금 등록하세요',
     firstName: '이름',
     lastName: '성',
+    orgNameField: '기관명',
+    orgNamePlaceholder: '예: 그린어스 재단',
+    ngoRegisterSubtitle: 'NGO를 등록하고 전 세계 봉사자들과 연결하세요',
+    ngoRegisterInfoNote: '등록 후 NGO 프로필을 완성하여 인증 절차를 시작하세요.',
     emailAddress: '이메일 주소',
     phoneNumber: '전화번호',
     country: '국가',
@@ -6034,6 +6591,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: '특기',
     agreeToTerms: '약관에 동의합니다',
     cancel: '취소',
+    reviewVisibilityVol: '이 리뷰는 자원봉사자, 다른 NGO 관리자 및 플랫폼 관리자에게 표시됩니다 — 일반 공개는 되지 않습니다.',
+    reviewVisibilityNgo: '귀하의 리뷰는 NGO와 플랫폼 관리자에게 표시됩니다.',
     confirmRegistration: '등록 확인',
     activeVolunteersLabel: '활동 중인 봉사자',
     partnerNGOsLabel: '파트너 조직',
@@ -6083,6 +6642,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: '무료 가입',
     noCommitments: '약속 없음',
     startImpactImmediately: '즉시 영향력 만들기 시작',
+    whyKindWorldTitle: '왜 KindWorld인가요?',
+    whyKindWorldSubtitle: '우리는 단순한 봉사 플랫폼이 아닙니다',
+    whyItem1Title: '검증된 임팩트',
+    whyItem1Desc: '기록한 모든 시간은 NGO에 의해 검증됩니다 — 당신의 임팩트는 실제이고 측정 가능합니다.',
+    whyItem2Title: '지속되는 인정',
+    whyItem2Desc: 'LinkedIn과 이력서에 공유할 수 있는 디지털 인증서와 배지를 획득하세요.',
+    whyItem3Title: '커뮤니티 중심',
+    whyItem3Desc: '전 세계의 봉사자, NGO, 변화를 만드는 사람들과 연결하세요.',
+    whyItem4Title: 'SDG 연계 미션',
+    whyItem4Desc: '모든 미션은 UN 지속 가능 발전 목표와 직접적으로 연결됩니다.',
+    earlyAdopterTitle: '얼리 어답터로 참여하기',
+    earlyAdopterSubtitle: '봉사의 미래를 만들어가는 첫 번째 그룹이 되세요',
+    earlyAdopterBadgeLabel: '🌟 창립 멤버 배지',
+    earlyAdopterBadgeDesc: '프로필에 영구적으로 표시되는 독점 배지를 받으세요.',
+    earlyAdopterFeedbackLabel: '🗣️ 플랫폼을 만들어가기',
+    earlyAdopterFeedbackDesc: '당신의 피드백이 우리가 다음에 무엇을 만들지에 직접 영향을 미칩니다.',
+    earlyAdopterCommunityLabel: '🤝 우선 커뮤니티 접근',
+    earlyAdopterCommunityDesc: '새로운 기능, 미션, NGO 파트너십에 조기 접근하세요.',
+    earlyAdopterCTA: '얼리 커뮤니티 참여',
+    earlyAdopterNote: '자리가 제한되어 있습니다 — 공개 전에 지금 참여하세요.',
+    earlyAccessLabel: '🚀 얼리 액세스',
+    sdgTapHint: '목표를 눌러 자세히 알아보기',
+    sdgEyebrow: 'UN · 지속 가능 발전 목표',
     footerTagline: '전 세계 봉사자에게 힘을 실어줍니다',
     footerCopyright: 'KindWorld. 모든 권리 보유.',
     ngoDashboardTitle: '조직 대시보드',
@@ -6165,6 +6747,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: '이 미션을 삭제하시겠습니까?',
     noUpcomingMissions: '예정된 미션이 없습니다',
     noPastMissions: '아직 지난 미션이 없습니다',
+    searchMissions: '미션 검색...',
+    noCompletedMissions: '아직 완료된 미션이 없습니다',
     noRegisteredNGOs: '아직 등록된 NGO가 없습니다',
     missionRemovedSuffix: '이(가) 플랫폼에서 삭제되었습니다',
     journeyStartsHere: '당신의 여정이 여기서 시작됩니다!',
@@ -6201,6 +6785,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: '승인 대기 중',
     ngoPendingLogout: '로그아웃',
     ngoPendingSignedIn: '로그인됨',
+    ngoOnboardingTitle: 'NGO 프로필을 완성하세요',
+    ngoOnboardingSubtitle: '관리팀이 귀 기관을 확인할 수 있도록 아래 세부 정보를 입력해 주세요.',
+    ngoOnboardingDescLabel: '미션 / 설명',
+    ngoOnboardingDescPlaceholder: '조직의 미션, 활동 내용, 서비스하는 커뮤니티에 대해 설명해 주세요…',
+    ngoOnboardingWebsiteLabel: '웹사이트 URL',
+    ngoOnboardingLegalLabel: '법인 등록 서류',
+    ngoOnboardingLegalHint: '조직의 공식 등록/설립 서류 링크를 붙여넣으세요 (Google Drive, Dropbox 등)',
+    ngoOnboardingPortfolioLabel: '포트폴리오 / 이전 활동',
+    ngoOnboardingPortfolioOptional: '(선택 사항)',
+    ngoOnboardingPortfolioPlaceholder: '사진, 보고서, 소셜 미디어 링크…',
+    ngoOnboardingRequiredFields: '⚠️ 제출 전에 모든 필수 항목을 채워주세요.',
+    ngoOnboardingSubmitBtn: '🚀 심사 제출하기',
+    ngoOnboardingSubmitSuccess: '✅ 프로필이 관리자 검토를 위해 제출되었습니다! 승인 후 알림을 받을 것입니다.',
+    ngoOnboardingReviewMsg: '신청이 제출되었습니다. 관리팀이 귀하의 서류를 검토하고 곧 연락할 것입니다.',
     ngoName: '조직 이름',
     ngoEmail: '이메일',
     ngoDescription: '설명',
@@ -6374,17 +6972,17 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: '선호 언어',
     continueSetup: '계속',
     skipForNow: '나중에 하기',
-    settings: '설정', settingsTitle: '설정', settingsAppearance: '외관', settingsAppearanceDesc: 'KindWorld 외관을 맞춤 설정하세요', settingsLanguage: '언어 및 지역', settingsLanguageDesc: '선호하는 언어를 선택하세요', settingsManageDesc: '계정 환경설정을 관리합니다', settingsNotifications: '알림', settingsNotifDesc: '알림받고 싶은 항목을 선택하세요', settingsMissionUpdates: '미션 업데이트', settingsMissionUpdatesDesc: '참여한 미션이 업데이트되거나 취소될 때 알림을 받습니다', settingsAnnouncements: '단체 공지', settingsAnnouncementsDesc: '참여한 미션의 단체로부터 공지사항을 받습니다', settingsFriendReqNotif: '친구 요청', settingsFriendReqNotifDesc: '누군가 친구 요청을 보낼 때 알림을 받습니다', settingsHourAlert: '시간 확인', settingsHourAlertDesc: '제출한 봉사 시간이 승인 또는 거절될 때 알림을 받습니다', settingsWeeklyDigest: '주간 임팩트 다이제스트', settingsWeeklyDigestDesc: '봉사 활동과 플랫폼 하이라이트의 주간 요약', settingsPrivacy: '개인정보', settingsPrivacyDesc: '내 정보를 볼 수 있는 사람을 관리합니다', settingsPublicProfile: '공개 프로필', settingsPublicProfileDesc: 'KindWorld의 누구든 내 프로필과 봉사 통계를 볼 수 있습니다', settingsShowLeaderboard: '리더보드 표시', settingsShowLeaderboardDesc: '커뮤니티 리더보드 순위에 표시됩니다', settingsShareActivity: '활동 공유', settingsShareActivityDesc: '미션 참여나 뱃지 획득 시 친구들의 피드에 표시됩니다', settingsAllowContact: '단체의 연락 허용', settingsAllowContactDesc: '관련 봉사 기회에 대해 단체가 직접 연락할 수 있습니다', settingsAccount: '계정', settingsAccountDesc: '계정 데이터를 관리합니다', settingsExportData: '내 데이터 내보내기', settingsExportDesc: '봉사 활동 사본을 PDF로 다운로드합니다', settingsSignOut: '로그아웃', settingsSignOutDesc: '랜딩 페이지로 돌아갑니다',
+    settings: '설정', settingsTitle: '설정', settingsAppearance: '외관', settingsAppearanceDesc: 'KindWorld 외관을 맞춤 설정하세요', settingsLanguage: '언어 및 지역', settingsLanguageDesc: '선호하는 언어를 선택하세요', settingsManageDesc: '계정 환경설정을 관리합니다', settingsNotifications: '알림', settingsNotifDesc: '알림받고 싶은 항목을 선택하세요', settingsMissionUpdates: '미션 업데이트', settingsMissionUpdatesDesc: '참여한 미션이 업데이트되거나 취소될 때 알림을 받습니다', settingsAnnouncements: '단체 공지', settingsAnnouncementsDesc: '참여한 미션의 단체로부터 공지사항을 받습니다', settingsFriendReqNotif: '친구 요청', settingsFriendReqNotifDesc: '누군가 친구 요청을 보낼 때 알림을 받습니다', settingsHourAlert: '시간 확인', settingsHourAlertDesc: '제출한 봉사 시간이 승인 또는 거절될 때 알림을 받습니다', settingsWeeklyDigest: '주간 임팩트 다이제스트', settingsWeeklyDigestDesc: '봉사 활동과 플랫폼 하이라이트의 주간 요약', settingsPrivacy: '개인정보', settingsPrivacyDesc: '내 정보를 볼 수 있는 사람을 관리합니다', settingsPublicProfile: '공개 프로필', settingsPublicProfileDesc: 'KindWorld의 누구든 내 프로필과 봉사 통계를 볼 수 있습니다', settingsShowLeaderboard: '리더보드 표시', settingsShowLeaderboardDesc: '커뮤니티 리더보드 순위에 표시됩니다', settingsShareActivity: '활동 공유', settingsShareActivityDesc: '미션 참여나 뱃지 획득 시 친구들의 피드에 표시됩니다', settingsAllowContact: '단체의 연락 허용', settingsAllowContactDesc: '관련 봉사 기회에 대해 단체가 직접 연락할 수 있습니다', settingsAccount: '계정', settingsAccountDesc: '계정 데이터를 관리합니다', settingsExportData: '내 데이터 내보내기', settingsExportDesc: '봉사 활동 사본을 PDF로 다운로드합니다', exportMyDataTitle: '내 봉사활동 데이터', exportProfileSection: '프로필', exportActivitySection: '활동', exportGeneratedBy: 'KindWorld 생성', settingsSignOut: '로그아웃', settingsSignOutDesc: '랜딩 페이지로 돌아갑니다',
     leaderboard: '리더보드', leaderboardTitle: '최고의 자원봉사자', leaderboardDesc: '가장 영향력 있는 커뮤니티 회원을 기립니다', topByHours: '시간순', topByBadges: '배지순', yourRank: '내 순위', rankLabel: '순위', notRankedYet: '미션을 완료하여 리더보드에 등장하세요!',
     notifications: '알림', markAllRead: '모두 읽음으로 표시', noNotifications: '알림 없음', notificationsDesc: '활동 업데이트가 여기에 표시됩니다',
     userNotFound: '사용자를 찾을 수 없습니다.', cannotAddSelf: '자신을 친구로 추가할 수 없습니다.', alreadyFriends: '이미 친구입니다.', yourProgress: '내 진행 상황', hoursToNextBadge: '자원봉사 시간', missionsToNextBadge: '완료한 미션', orgsToNextBadge: '도움 준 단체', centuryClubDesc: '100시간 달성으로 Century Club 배지 획득', missionMasterDesc: '미션 10개 완료로 Mission Master 배지 획득', communityBuilderDesc: '5개 단체 지원으로 Community Builder 배지 획득',
     profileCompletion: '프로필 완성도', completeProfileDesc: '프로필을 완성하여 모든 기능을 잊금 해제하세요', profileComplete: '프로필이 100% 완성되었습니다!', completeNow: '지금 완성하기', duplicate: '복제',
     announce: '공지', sendAnnouncement: '공지 보내기', announcementSubject: '제목', announcementSubjectPlaceholder: '예: 미션 중요 업데이트', announcementMessage: '메시지', announcementMessagePlaceholder: '자원봉사자에게 메시지를 작성하세요...', announcementsFromNGOs: 'NGO의 공지사항', impactDashboard: 'Đ대시보드 영향', volunteersByCategory: '카테고리별 자원봉사자', volunteersPerMonth: '월별 자원봉사자', noDataYet: '아직 데이터가 없습니다. 미션을 게시하여 영향력을 확인하세요!', submitHours: '시간 제출', hoursVolunteered: '자원봉사 시간', submissionNotes: '메모(선택)', submissionNotesPlaceholder: '기여 내용을 설명하세요...', hoursSubmittedSuccess: '시간이 검토를 위해 제출되었습니다!', pleaseEnterHours: '유효한 시간 수를 입력하세요.', hoursApproved: '시간 승인', hoursRejected: '시간 거절', hoursPending: '검토 대기', activityFeedTitle: '활동 피드', noActivityYet: '활동 없음', noActivityDesc: '친구들이 미션에 참여하거나 업적을 획득하면 여기서 볼 수 있습니다.', activityJoinedMission: '미션에 참여함', activityEarnedBadge: '배지를 획득함', activitySubmittedHours: '자원봉사 시간을 제출함', justNow: '방금', minutesAgo: '분 전', hoursAgoLabel: '시간 전', daysAgo: '일 전', noMissionsFound: '검색과 일치하는 미션이 없습니다', noMissionsFoundDesc: '필터나 검색어를 조정해 보세요.', getStartedTitle: '임팩트를 만들 준비가 되셔나요?', getStartedDesc: '지역의 봉사 미션을 탐색하고 나눔의 여정을 시작하세요.', findFriends: '친구 찾기', joinMissionPrompt: '미션에 참여하여 첫 번째 배지를 획득하세요!', leaderboardEmptyHours: '아직 순위에 오른 봉사자가 없습니다 — 첫 번째가 되세요!', leaderboardEmptyBadges: '아직 배지가 없습니다 — 여정을 시작하세요!',
     statusUpcoming: '예정됨', statusCompleted: '완료됨', statusSuspended: '정지됨', exportCSV: 'CSV 내보내기', exportedCSV: 'CSV 내보내기 성공', endTimeLabel: '종료 시간', missionImageUrl: '커버 이미지 URL', missionImagePlaceholder: 'https://example.com/image.jpg (선택사항)', allCategories: '모든 카테고리', clearFilters: '필터 초기화',
-    certVolRecognitionProg: '봉사자 인정 프로그램', certOfVolServiceLabel: '봉사 활동 증명서', certIssuedTo: '수여 대상자', certHasCompleted: '이 달성한', certVolHoursOf: '시간의 봉사 활동 (소속 기관:', certDateIssuedLabel: '발급일', certCertIdLabel: '증명서 ID', certSaveAsPDFBtn: '⬇ PDF로 저장',
+    certVolRecognitionProg: '봉사자 인정 프로그램', certOfVolServiceLabel: '봉사 활동 증명서', certIssuedTo: '이 증서는', certHasCompleted: '가', certVolHoursOf: '시간의 봉사 활동을 완수했음을 증명합니다. 소속 기관：', certDateIssuedLabel: '발급일', certCertIdLabel: '증명서 ID', certSaveAsPDFBtn: '⬇ PDF로 저장',
     inactiveStatus: '비활성', certActivate: '▶ 활성화', requiredLabel: '필요', createdLabel: '생성일', volunteerRequestsEmpty: '봉사자 신청이 들어오면 여기에 표시됩니다.',
     myMissionsTitle: '내 미션', myMissionsUpcoming: '예정', myMissionsCompleted: '완료',
-    certIssuedByLabel: '발급:', certAuthCertLabel: '공인 디지털 증명서', certEligibleBadge: '자격 있음', certHoursRequired: '시간 필요', certVolunteersEarned: '봉사자 달성', certClaimBtn: '증명서 수령', certChangeLogo: '로고 변경', statsConfidential: '기밀 — 개인용', downloadNgoReportBtn: 'NGO 보고서 다운로드', ngoImpactReportTitle: 'NGO 영향 보고서', ngoVerifiedPartner: '인증된 NGO 파트너', ngoVolunteerActivitiesTitle: '봉사 활동', ngoApprovedHoursTitle: '승인된 봉사 시간', ngoCertProgramsTitle: '증명서 프로그램', statsConfidentialNGO: '기밀 — 내부용', ngoTotalVolunteers: '총 봉사자', ngoActivitiesCreated: '생성된 활동', ngoHoursApproved: '승인된 시간', ngoCertsIssuedCount: '발급된 증명서', ngoNoActivitiesYet: '아직 생성된 활동이 없습니다', ngoNoApprovedHoursYet: '아직 승인된 시간이 없습니다', ngoNoCertProgramsYet: '아직 생성된 증명서 프로그램이 없습니다', ngoImpactReportGenerated: 'NGO 영향 보고서가 생성되었습니다!', sdg1Desc: '모든 형태의 빈곤을 전 세계적으로 종식시키기. 7억 명 이상이 여전히 극심한 빈곤 속에 살고 있습니다. 자원봉사는 지역사회 회복력을 강화하고 사람들을 필수 자원과 연결하는 데 도움을 줍니다.', sdg2Desc: '기아를 종식하고 식량 안보를 달성하기. 2023년 약 7억 3,300만 명이 기아에 직면했습니다. 지역사회 식품 프로그램과 지속 가능한 농업이 지속적인 변화를 만들어냅니다.', sdg3Desc: '모든 연령대의 건강한 삶을 보장하고 웰빙을 증진하기. 자원봉사자들은 의료 서비스 접근성을 확대하고 취약한 지역사회를 지원합니다.', sdg4Desc: '모두를 위한 양질의 교육을 보장하고 평생 학습을 증진하기. 2억 4,400만 명 이상의 어린이가 학교에 다니지 못합니다. 교육은 세상을 바꾸는 가장 강력한 도구입니다.', sdg10Desc: '국내 및 국가 간 불평등을 줄이기. 공평한 지역사회는 아무도 뒤처지지 않도록 하는 적극적인 참여와 포용적 프로그램이 필요합니다.', sdg11Desc: '도시를 포용적이고 안전하며 지속 가능하게 만들기. 2050년까지 인류의 70%가 도시에서 살 것입니다 — 지속 가능한 도시 개발이 우리의 공동 미래를 형성합니다.', sdg13Desc: '기후 변화에 맞서 긴급 조치를 취하기. 기후 변화는 지구상의 모든 생태계를 위협합니다. 환경 행동은 지역에서 시작하여 전 세계로 확장됩니다.', sdg17Desc: '지속 가능한 발전을 위한 글로벌 파트너십을 강화하기. 어떤 목표도 혼자서는 달성할 수 없습니다 — 분야를 초월한 협력이 지속적인 영향을 만들어냅니다.', sdgLearnMore: 'UN.org에서 자세히 알아보기', sdgKindWorldHelps: 'KindWorld는 이 목표를 직접 촉진하는 미션에 자원봉사자를 연결하여 지역 커뮤니티에서 실질적인 영향을 만들어냅니다.'
+    certIssuedByLabel: '발급:', certAuthCertLabel: '공인 디지털 증명서', certEligibleBadge: '자격 있음', certHoursRequired: '시간 필요', certVolunteersEarned: '봉사자 달성', certClaimBtn: '증명서 수령', certChangeLogo: '로고 변경', statsConfidential: '기밀 — 개인용', downloadNgoReportBtn: 'NGO 보고서 다운로드', ngoImpactReportTitle: 'NGO 영향 보고서', ngoVerifiedPartner: '인증된 NGO 파트너', ngoVolunteerActivitiesTitle: '봉사 활동', ngoApprovedHoursTitle: '승인된 봉사 시간', ngoCertProgramsTitle: '증명서 프로그램', statsConfidentialNGO: '기밀 — 내부용', ngoTotalVolunteers: '총 봉사자', ngoActivitiesCreated: '생성된 활동', ngoHoursApproved: '승인된 시간', ngoCertsIssuedCount: '발급된 증명서', ngoNoActivitiesYet: '아직 생성된 활동이 없습니다', ngoNoApprovedHoursYet: '아직 승인된 시간이 없습니다', ngoNoCertProgramsYet: '아직 생성된 증명서 프로그램이 없습니다', ngoImpactReportGenerated: 'NGO 영향 보고서가 생성되었습니다!', sdg1Desc: '모든 형태의 빈곤을 전 세계적으로 종식시키기. 7억 명 이상이 여전히 극심한 빈곤 속에 살고 있습니다. 자원봉사는 지역사회 회복력을 강화하고 사람들을 필수 자원과 연결하는 데 도움을 줍니다.', sdg2Desc: '기아를 종식하고 식량 안보를 달성하기. 2023년 약 7억 3,300만 명이 기아에 직면했습니다. 지역사회 식품 프로그램과 지속 가능한 농업이 지속적인 변화를 만들어냅니다.', sdg3Desc: '모든 연령대의 건강한 삶을 보장하고 웰빙을 증진하기. 자원봉사자들은 의료 서비스 접근성을 확대하고 취약한 지역사회를 지원합니다.', sdg4Desc: '모두를 위한 양질의 교육을 보장하고 평생 학습을 증진하기. 2억 4,400만 명 이상의 어린이가 학교에 다니지 못합니다. 교육은 세상을 바꾸는 가장 강력한 도구입니다.', sdg10Desc: '국내 및 국가 간 불평등을 줄이기. 공평한 지역사회는 아무도 뒤처지지 않도록 하는 적극적인 참여와 포용적 프로그램이 필요합니다.', sdg11Desc: '도시를 포용적이고 안전하며 지속 가능하게 만들기. 2050년까지 인류의 70%가 도시에서 살 것입니다 — 지속 가능한 도시 개발이 우리의 공동 미래를 형성합니다.', sdg13Desc: '기후 변화에 맞서 긴급 조치를 취하기. 기후 변화는 지구상의 모든 생태계를 위협합니다. 환경 행동은 지역에서 시작하여 전 세계로 확장됩니다.', sdg17Desc: '지속 가능한 발전을 위한 글로벌 파트너십을 강화하기. 어떤 목표도 혼자서는 달성할 수 없습니다 — 분야를 초월한 협력이 지속적인 영향을 만들어냅니다.', sdgLearnMore: 'UN.org에서 자세히 알아보기', sdgKindWorldHelps: 'KindWorld는 이 목표를 직접 촉진하는 미션에 자원봉사자를 연결하여 지역 커뮤니티에서 실질적인 영향을 만들어냅니다.', profileChangePicture: '프로필 사진 변경', profileChangeLabel: '변경', profileContactChannels: '연락 채널', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: '비상 연락처', profileRelationship: '관계', profileHealthLogistics: '건강 및 물류', profileHealthLogisticsHint: '여기에 한 번 저장하면 미션 등록 시 자동으로 채워집니다.', profileAllergies: '알레르기', profileAllergiesPlaceholder: '예: 땅콩, 해산물', profileMedicalConditions: '의학적 상태', profileMedicalConditionsPlaceholder: '예: 천식, 당뇨병', profileDietaryRestrictions: '식이 제한', profileDietaryRestrictionsPlaceholder: '예: 채식, 할랄', profileTshirtSize: '티셔츠 사이즈', profileTshirtSizePlaceholder: '사이즈 선택', profileNgoSection: 'NGO 공개 프로필', profileNgoSectionHint: '이 정보는 미션 카드에서 자원봉사자에게 표시됩니다.', profileNgoDescription: '조직 설명', profileNgoDescriptionPlaceholder: '자원봉사자들에게 조직의 사명, 영향력, 그리고 함께하는 자원봉사의 의미에 대해 알려주세요...', profileNgoWebsite: '웹사이트 URL', profileNgoWebsitePlaceholder: 'https://yourorganization.org', profileNgoPortfolio: '포트폴리오 / 작품 전시 URL', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 인증을 위한 법적 문서', profileNgoLegalDocsHint: '조직의 법적 등록 문서 링크를 제출하세요 (예: Google Drive, Dropbox). KindWorld 관리자가 NGO 상태를 확인하기 위해 검토합니다.', profileNgoDocLinkPlaceholder: '법적 문서 링크...', profileNgoDocNotePlaceholder: "문서에 대한 간단한 메모 (예: '법무부 등록, 인도네시아')", eventSummaryLabel: '이벤트 요약', reviewsReceived: 'NGO 리뷰', avgRatingLabel: '평균 평점', reviewsCount: '리뷰', clickToToggleInterests: '관심사를 선택/해제하려면 클릭하세요', refreshMissions: '새로 고침'
   },
   de: {
     title: 'KindWorld',
@@ -6441,6 +7039,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     registerNow: 'Jetzt registrieren',
     firstName: 'Vorname',
     lastName: 'Nachname',
+    orgNameField: 'Organisationsname',
+    orgNamePlaceholder: 'z.B. Grüne Erde Stiftung',
+    ngoRegisterSubtitle: 'Registrieren Sie Ihre NGO und verbinden Sie sich mit Freiwilligen weltweit',
+    ngoRegisterInfoNote: 'Vervollständigen Sie nach der Registrierung Ihr NGO-Profil, um den Verifizierungsprozess zu starten.',
     emailAddress: 'E-Mail-Adresse',
     phoneNumber: 'Telefonnummer',
     country: 'Land',
@@ -6579,6 +7181,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     specialSkills: 'Besondere Fähigkeiten',
     agreeToTerms: 'Ich stimme den Bedingungen zu',
     cancel: 'Abbrechen',
+    reviewVisibilityVol: 'Diese Bewertung ist für den Freiwilligen, andere NGO-Admins und Plattform-Admins sichtbar — nicht für die Öffentlichkeit.',
+    reviewVisibilityNgo: 'Ihre Bewertung ist für die NGO und die Plattform-Admins sichtbar.',
     confirmRegistration: 'Anmeldung bestätigen',
     activeVolunteersLabel: 'Aktive Freiwillige',
     partnerNGOsLabel: 'Partnerorganisationen',
@@ -6628,6 +7232,29 @@ const localTranslations: Record<string, Record<string, string>> = {
     freeToJoin: 'Kostenlose Teilnahme',
     noCommitments: 'Keine Verpflichtungen',
     startImpactImmediately: 'Sofort Wirkung erzielen',
+    whyKindWorldTitle: 'Warum KindWorld?',
+    whyKindWorldSubtitle: 'Wir sind nicht nur eine weitere Freiwilligenplattform',
+    whyItem1Title: 'Verifizierte Wirkung',
+    whyItem1Desc: 'Jede Stunde, die Sie protokollieren, wird von NGOs verifiziert — Ihre Wirkung ist real und messbar.',
+    whyItem2Title: 'Dauerhafte Anerkennung',
+    whyItem2Desc: 'Verdienen Sie digitale Zertifikate und Abzeichen, teilbar auf LinkedIn und Ihrem Lebenslauf.',
+    whyItem3Title: 'Community-getrieben',
+    whyItem3Desc: 'Verbinden Sie sich mit Freiwilligen, NGOs und Changemakern aus der ganzen Welt.',
+    whyItem4Title: 'SDG-ausgerichtete Missionen',
+    whyItem4Desc: 'Jede Mission ist direkt mit den UN-Zielen für nachhaltige Entwicklung verknüpft.',
+    earlyAdopterTitle: 'Als Early Adopter beitreten',
+    earlyAdopterSubtitle: 'Seien Sie unter den Ersten, die die Zukunft des Ehrenamts gestalten',
+    earlyAdopterBadgeLabel: '🌟 Gründungsmitglied-Abzeichen',
+    earlyAdopterBadgeDesc: 'Erhalten Sie ein exklusives Abzeichen, das dauerhaft in Ihrem Profil angezeigt wird.',
+    earlyAdopterFeedbackLabel: '🗣️ Plattform mitgestalten',
+    earlyAdopterFeedbackDesc: 'Ihr Feedback beeinflusst direkt, was wir als nächstes entwickeln.',
+    earlyAdopterCommunityLabel: '🤝 Vorrangiger Community-Zugang',
+    earlyAdopterCommunityDesc: 'Früher Zugang zu neuen Funktionen, Missionen und NGO-Partnerschaften.',
+    earlyAdopterCTA: 'Der Early Community beitreten',
+    earlyAdopterNote: 'Begrenzte Plätze — treten Sie jetzt bei, bevor wir für die Öffentlichkeit öffnen.',
+    earlyAccessLabel: '🚀 Früher Zugang',
+    sdgTapHint: 'Ziel antippen für mehr Infos',
+    sdgEyebrow: 'UN · Ziel für nachhaltige Entwicklung',
     footerTagline: 'Freiwillige weltweit stärken',
     footerCopyright: 'KindWorld. Alle Rechte vorbehalten.',
     ngoDashboardTitle: 'Organisations-Dashboard',
@@ -6710,6 +7337,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     confirmDeleteMission: 'Sind Sie sicher, dass Sie diese Mission entfernen möchten?',
     noUpcomingMissions: 'Keine bevorstehenden Missionen',
     noPastMissions: 'Noch keine vergangenen Missionen',
+    searchMissions: 'Missionen suchen...',
+    noCompletedMissions: 'Noch keine abgeschlossenen Missionen',
     noRegisteredNGOs: 'Noch keine registrierten NGOs',
     missionRemovedSuffix: 'wurde von der Plattform entfernt',
     journeyStartsHere: 'Deine Reise beginnt hier!',
@@ -6746,6 +7375,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     ngoPendingStatus: 'Genehmigung ausstehend',
     ngoPendingLogout: 'Abmelden',
     ngoPendingSignedIn: 'Angemeldet als',
+    ngoOnboardingTitle: 'Ihr NGO-Profil vervollständigen',
+    ngoOnboardingSubtitle: 'Füllen Sie die nachstehenden Details aus, damit unser Verwaltungsteam Ihre Organisation überprüfen kann.',
+    ngoOnboardingDescLabel: 'Mission / Beschreibung',
+    ngoOnboardingDescPlaceholder: 'Beschreiben Sie die Mission Ihrer Organisation, was Sie tun und welche Gemeinschaften Sie betreuen…',
+    ngoOnboardingWebsiteLabel: 'Website-URL',
+    ngoOnboardingLegalLabel: 'Gesetzliche Registrierungsdokumente',
+    ngoOnboardingLegalHint: 'Fügen Sie einen Link zu den offiziellen Registrierungs-/Gründungsdokumenten Ihrer Organisation ein (Google Drive, Dropbox usw.)',
+    ngoOnboardingPortfolioLabel: 'Portfolio / Frühere Arbeiten',
+    ngoOnboardingPortfolioOptional: '(optional)',
+    ngoOnboardingPortfolioPlaceholder: 'Link zu Fotos, Berichten, sozialen Medien…',
+    ngoOnboardingRequiredFields: '⚠️ Bitte füllen Sie alle erforderlichen Felder aus, bevor Sie senden.',
+    ngoOnboardingSubmitBtn: '🚀 Zur Überprüfung einreichen',
+    ngoOnboardingSubmitSuccess: '✅ Profil zur Überprüfung durch den Administrator eingereicht! Sie werden nach Genehmigung benachrichtigt.',
+    ngoOnboardingReviewMsg: 'Ihre Bewerbung wurde eingereicht. Unser Verwaltungsteam wird Ihre Unterlagen prüfen und sich in Kürze bei Ihnen melden.',
     ngoName: 'Organisationsname',
     ngoEmail: 'E-Mail',
     ngoDescription: 'Beschreibung',
@@ -6919,7 +7562,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Bevorzugte Sprache',
     continueSetup: 'Weiter',
     skipForNow: 'Vorerst überspringen',
-    settings: 'Einstellungen', settingsTitle: 'Einstellungen', settingsAppearance: 'Erscheinungsbild', settingsAppearanceDesc: 'Passen Sie das Aussehen von KindWorld an', settingsLanguage: 'Sprache & Region', settingsLanguageDesc: 'Wählen Sie Ihre bevorzugte Sprache', settingsManageDesc: 'Verwalten Sie Ihre Kontoeinstellungen', settingsNotifications: 'Benachrichtigungen', settingsNotifDesc: 'Wählen Sie, worüber Sie benachrichtigt werden möchten', settingsMissionUpdates: 'Missionsaktualisierungen', settingsMissionUpdatesDesc: 'Benachrichtigung wenn eine Mission aktualisiert oder abgebrochen wird', settingsAnnouncements: 'Ankündigungen von Organisationen', settingsAnnouncementsDesc: 'Erhalten Sie Ankündigungen von Organisationen deren Missionen Sie beigetreten sind', settingsFriendReqNotif: 'Freundschaftsanfragen', settingsFriendReqNotifDesc: 'Benachrichtige mich wenn jemand eine Freundschaftsanfrage sendet', settingsHourAlert: 'Stundenbestätigungen', settingsHourAlertDesc: 'Warnung wenn meine eingereichten Freiwilligenstunden genehmigt oder abgelehnt werden', settingsWeeklyDigest: 'Wöchentlicher Impact-Bericht', settingsWeeklyDigestDesc: 'Eine wöchentliche Zusammenfassung Ihrer Freiwilligenaktivitäten und Plattform-Highlights', settingsPrivacy: 'Datenschutz', settingsPrivacyDesc: 'Steuern Sie wer Ihre Informationen sehen kann', settingsPublicProfile: 'Öffentliches Profil', settingsPublicProfileDesc: 'Jeder auf KindWorld kann Ihr Profil und Ihre Freiwilligenstatistiken sehen', settingsShowLeaderboard: 'Im Leaderboard anzeigen', settingsShowLeaderboardDesc: 'Im Community-Leaderboard erscheinen', settingsShareActivity: 'Aktivitäten teilen', settingsShareActivityDesc: 'Freunde sehen wenn Sie Missionen beitreten oder Abzeichen verdienen', settingsAllowContact: 'Organisationen dürfen mich kontaktieren', settingsAllowContactDesc: 'Organisationen können Sie direkt für relevante Freiwilligenmöglichkeiten kontaktieren', settingsAccount: 'Konto', settingsAccountDesc: 'Verwalten Sie Ihre Kontodaten', settingsExportData: 'Meine Daten exportieren', settingsExportDesc: 'Laden Sie eine Kopie Ihrer Freiwilligenaktivität als PDF herunter', settingsSignOut: 'Abmelden', settingsSignOutDesc: 'Sie werden zur Startseite weitergeleitet',
+    settings: 'Einstellungen', settingsTitle: 'Einstellungen', settingsAppearance: 'Erscheinungsbild', settingsAppearanceDesc: 'Passen Sie das Aussehen von KindWorld an', settingsLanguage: 'Sprache & Region', settingsLanguageDesc: 'Wählen Sie Ihre bevorzugte Sprache', settingsManageDesc: 'Verwalten Sie Ihre Kontoeinstellungen', settingsNotifications: 'Benachrichtigungen', settingsNotifDesc: 'Wählen Sie, worüber Sie benachrichtigt werden möchten', settingsMissionUpdates: 'Missionsaktualisierungen', settingsMissionUpdatesDesc: 'Benachrichtigung wenn eine Mission aktualisiert oder abgebrochen wird', settingsAnnouncements: 'Ankündigungen von Organisationen', settingsAnnouncementsDesc: 'Erhalten Sie Ankündigungen von Organisationen deren Missionen Sie beigetreten sind', settingsFriendReqNotif: 'Freundschaftsanfragen', settingsFriendReqNotifDesc: 'Benachrichtige mich wenn jemand eine Freundschaftsanfrage sendet', settingsHourAlert: 'Stundenbestätigungen', settingsHourAlertDesc: 'Warnung wenn meine eingereichten Freiwilligenstunden genehmigt oder abgelehnt werden', settingsWeeklyDigest: 'Wöchentlicher Impact-Bericht', settingsWeeklyDigestDesc: 'Eine wöchentliche Zusammenfassung Ihrer Freiwilligenaktivitäten und Plattform-Highlights', settingsPrivacy: 'Datenschutz', settingsPrivacyDesc: 'Steuern Sie wer Ihre Informationen sehen kann', settingsPublicProfile: 'Öffentliches Profil', settingsPublicProfileDesc: 'Jeder auf KindWorld kann Ihr Profil und Ihre Freiwilligenstatistiken sehen', settingsShowLeaderboard: 'Im Leaderboard anzeigen', settingsShowLeaderboardDesc: 'Im Community-Leaderboard erscheinen', settingsShareActivity: 'Aktivitäten teilen', settingsShareActivityDesc: 'Freunde sehen wenn Sie Missionen beitreten oder Abzeichen verdienen', settingsAllowContact: 'Organisationen dürfen mich kontaktieren', settingsAllowContactDesc: 'Organisationen können Sie direkt für relevante Freiwilligenmöglichkeiten kontaktieren', settingsAccount: 'Konto', settingsAccountDesc: 'Verwalten Sie Ihre Kontodaten', settingsExportData: 'Meine Daten exportieren', settingsExportDesc: 'Laden Sie eine Kopie Ihrer Freiwilligenaktivität als PDF herunter', exportMyDataTitle: 'Meine Freiwilligendaten', exportProfileSection: 'Profil', exportActivitySection: 'Aktivität', exportGeneratedBy: 'Erstellt von KindWorld', settingsSignOut: 'Abmelden', settingsSignOutDesc: 'Sie werden zur Startseite weitergeleitet',
     leaderboard: 'Bestenliste', leaderboardTitle: 'Top-Freiwillige', leaderboardDesc: 'Wir feiern unsere wirkungsvollsten Community-Mitglieder', topByHours: 'Nach Stunden', topByBadges: 'Nach Abzeichen', yourRank: 'Dein Rang', rankLabel: 'Rang', notRankedYet: 'Schließe Missionen ab, um in der Bestenliste zu erscheinen!',
     notifications: 'Benachrichtigungen', markAllRead: 'Alle als gelesen markieren', noNotifications: 'Keine Benachrichtigungen', notificationsDesc: 'Deine Aktivitätsupdates erscheinen hier',
     userNotFound: 'Benutzer nicht gefunden.', cannotAddSelf: 'Du kannst dich nicht selbst als Freund hinzufügen.', alreadyFriends: 'Ihr seid bereits befreundet.', yourProgress: 'Dein Fortschritt', hoursToNextBadge: 'Freiwilligenstunden', missionsToNextBadge: 'Abgeschlossene Missionen', orgsToNextBadge: 'Unterstützte Organisationen', centuryClubDesc: '100 Stunden für das Century Club Abzeichen', missionMasterDesc: '10 Missionen für das Mission Master Abzeichen', communityBuilderDesc: '5 Organisationen für das Community Builder Abzeichen',
@@ -6929,10 +7572,50 @@ const localTranslations: Record<string, Record<string, string>> = {
     certVolRecognitionProg: 'Freiwilligen-Anerkennungsprogramm', certOfVolServiceLabel: 'Freiwilligendienst-Zertifikat', certIssuedTo: 'Zertifikat verliehen an', certHasCompleted: 'hat absolviert', certVolHoursOf: 'Freiwilligenstunden bei', certDateIssuedLabel: 'Ausstellungsdatum', certCertIdLabel: 'Zertifikats-ID', certSaveAsPDFBtn: '⬇ Als PDF speichern',
     inactiveStatus: 'Inaktiv', certActivate: '▶ Aktivieren', requiredLabel: 'erforderlich', createdLabel: 'Erstellt am', volunteerRequestsEmpty: 'Bewerbungen von Freiwilligen erscheinen hier, sobald sie sich bewerben.',
     myMissionsTitle: 'Meine Missionen', myMissionsUpcoming: 'Bevorstehend', myMissionsCompleted: 'Abgeschlossen',
-    certIssuedByLabel: 'Ausgestellt von', certAuthCertLabel: 'Autorisiertes digitales Zertifikat', certEligibleBadge: 'Berechtigt', certHoursRequired: 'Stunden benötigt', certVolunteersEarned: 'Freiwillige haben erworben', certClaimBtn: 'Zertifikat beanspruchen', certChangeLogo: 'Logo ändern', statsConfidential: 'Vertraulich — Nur für den persönlichen Gebrauch', downloadNgoReportBtn: 'NGO-Bericht herunterladen', ngoImpactReportTitle: 'NGO-Auswirkungsbericht', ngoVerifiedPartner: 'Verifizierter NGO-Partner', ngoVolunteerActivitiesTitle: 'Freiwilligenaktivitäten', ngoApprovedHoursTitle: 'Genehmigte Freiwilligenstunden', ngoCertProgramsTitle: 'Zertifikatsprogramme', statsConfidentialNGO: 'Vertraulich — Nur für den internen Gebrauch', ngoTotalVolunteers: 'Gesamte Freiwillige', ngoActivitiesCreated: 'Erstellte Aktivitäten', ngoHoursApproved: 'Genehmigte Stunden', ngoCertsIssuedCount: 'Ausgestellte Zertifikate', ngoNoActivitiesYet: 'Noch keine Aktivitäten erstellt', ngoNoApprovedHoursYet: 'Noch keine genehmigten Stunden', ngoNoCertProgramsYet: 'Keine Zertifikatsprogramme erstellt', ngoImpactReportGenerated: 'NGO-Auswirkungsbericht erstellt!', sdg1Desc: 'Armut in all ihren Formen überall beenden. Mehr als 700 Millionen Menschen leben noch in extremer Armut. Ehrenamtliches Engagement stärkt die Resilienz von Gemeinschaften und verbindet Menschen mit wichtigen Ressourcen.', sdg2Desc: 'Den Hunger beenden und Ernährungssicherheit erreichen. Fast 733 Millionen Menschen litten 2023 an Hunger. Kommunale Lebensmittelprogramme und nachhaltige Landwirtschaft schaffen dauerhaften Wandel.', sdg3Desc: 'Gesundes Leben und Wohlbefinden für alle in jedem Alter gewährleisten. Freiwillige erweitern den Zugang zu Gesundheitsdiensten und unterstützen gefährdete Gemeinschaften.', sdg4Desc: 'Hochwertige Bildung und lebenslanges Lernen für alle gewährleisten. Mehr als 244 Millionen Kinder gehen nicht zur Schule. Bildung ist das wirkungsvollste Mittel zur Weltveränderung.', sdg10Desc: 'Ungleichheit innerhalb von und zwischen Ländern verringern. Gerechte Gemeinschaften erfordern aktive Beteiligung und inklusive Programme, die niemanden zurücklassen.', sdg11Desc: 'Städte und menschliche Siedlungen inklusiv, sicher und nachhaltig machen. Bis 2050 werden 70% der Menschheit in Städten leben — nachhaltige Stadtentwicklung gestaltet unsere gemeinsame Zukunft.', sdg13Desc: 'Dringende Maßnahmen zur Bekämpfung des Klimawandels ergreifen. Der Klimawandel bedroht alle Ökosysteme der Erde. Umweltmaßnahmen beginnen lokal und wachsen global.', sdg17Desc: 'Globale Partnerschaften für nachhaltige Entwicklung neu beleben. Kein Ziel wird alleine erreicht — sektorübergreifende Zusammenarbeit schafft nachhaltigen Wandel.', sdgLearnMore: 'Mehr auf UN.org erfahren', sdgKindWorldHelps: 'KindWorld verbindet Freiwillige mit Missionen, die dieses Ziel direkt vorantreiben, und schafft echte Wirkung in lokalen Gemeinschaften.'
+    certIssuedByLabel: 'Ausgestellt von', certAuthCertLabel: 'Autorisiertes digitales Zertifikat', certEligibleBadge: 'Berechtigt', certHoursRequired: 'Stunden benötigt', certVolunteersEarned: 'Freiwillige haben erworben', certClaimBtn: 'Zertifikat beanspruchen', certChangeLogo: 'Logo ändern', statsConfidential: 'Vertraulich — Nur für den persönlichen Gebrauch', downloadNgoReportBtn: 'NGO-Bericht herunterladen', ngoImpactReportTitle: 'NGO-Auswirkungsbericht', ngoVerifiedPartner: 'Verifizierter NGO-Partner', ngoVolunteerActivitiesTitle: 'Freiwilligenaktivitäten', ngoApprovedHoursTitle: 'Genehmigte Freiwilligenstunden', ngoCertProgramsTitle: 'Zertifikatsprogramme', statsConfidentialNGO: 'Vertraulich — Nur für den internen Gebrauch', ngoTotalVolunteers: 'Gesamte Freiwillige', ngoActivitiesCreated: 'Erstellte Aktivitäten', ngoHoursApproved: 'Genehmigte Stunden', ngoCertsIssuedCount: 'Ausgestellte Zertifikate', ngoNoActivitiesYet: 'Noch keine Aktivitäten erstellt', ngoNoApprovedHoursYet: 'Noch keine genehmigten Stunden', ngoNoCertProgramsYet: 'Keine Zertifikatsprogramme erstellt', ngoImpactReportGenerated: 'NGO-Auswirkungsbericht erstellt!', sdg1Desc: 'Armut in all ihren Formen überall beenden. Mehr als 700 Millionen Menschen leben noch in extremer Armut. Ehrenamtliches Engagement stärkt die Resilienz von Gemeinschaften und verbindet Menschen mit wichtigen Ressourcen.', sdg2Desc: 'Den Hunger beenden und Ernährungssicherheit erreichen. Fast 733 Millionen Menschen litten 2023 an Hunger. Kommunale Lebensmittelprogramme und nachhaltige Landwirtschaft schaffen dauerhaften Wandel.', sdg3Desc: 'Gesundes Leben und Wohlbefinden für alle in jedem Alter gewährleisten. Freiwillige erweitern den Zugang zu Gesundheitsdiensten und unterstützen gefährdete Gemeinschaften.', sdg4Desc: 'Hochwertige Bildung und lebenslanges Lernen für alle gewährleisten. Mehr als 244 Millionen Kinder gehen nicht zur Schule. Bildung ist das wirkungsvollste Mittel zur Weltveränderung.', sdg10Desc: 'Ungleichheit innerhalb von und zwischen Ländern verringern. Gerechte Gemeinschaften erfordern aktive Beteiligung und inklusive Programme, die niemanden zurücklassen.', sdg11Desc: 'Städte und menschliche Siedlungen inklusiv, sicher und nachhaltig machen. Bis 2050 werden 70% der Menschheit in Städten leben — nachhaltige Stadtentwicklung gestaltet unsere gemeinsame Zukunft.', sdg13Desc: 'Dringende Maßnahmen zur Bekämpfung des Klimawandels ergreifen. Der Klimawandel bedroht alle Ökosysteme der Erde. Umweltmaßnahmen beginnen lokal und wachsen global.', sdg17Desc: 'Globale Partnerschaften für nachhaltige Entwicklung neu beleben. Kein Ziel wird alleine erreicht — sektorübergreifende Zusammenarbeit schafft nachhaltigen Wandel.', sdgLearnMore: 'Mehr auf UN.org erfahren', sdgKindWorldHelps: 'KindWorld verbindet Freiwillige mit Missionen, die dieses Ziel direkt vorantreiben, und schafft echte Wirkung in lokalen Gemeinschaften.', profileChangePicture: 'Profilbild ändern', profileChangeLabel: 'Ändern', profileContactChannels: 'Kontaktkanäle', profileLineId: 'Line ID', profileWhatsApp: 'WhatsApp', profileEmergencyContact: 'Notfallkontakt', profileRelationship: 'Beziehung', profileHealthLogistics: 'Gesundheit & Logistik', profileHealthLogisticsHint: 'Einmal hier gespeichert — wird automatisch beim Anmelden für Missionen ausgefüllt.', profileAllergies: 'Allergien', profileAllergiesPlaceholder: 'z.B. Erdnüsse, Meeresfrüchte', profileMedicalConditions: 'Medizinische Zustände', profileMedicalConditionsPlaceholder: 'z.B. Asthma, Diabetes', profileDietaryRestrictions: 'Diätische Einschränkungen', profileDietaryRestrictionsPlaceholder: 'z.B. Vegetarisch, Halal', profileTshirtSize: 'T-Shirt-Größe', profileTshirtSizePlaceholder: 'Größe auswählen', profileNgoSection: 'Öffentliches NGO-Profil', profileNgoSectionHint: 'Diese Informationen werden Freiwilligen auf Missionskarten angezeigt.', profileNgoDescription: 'Organisationsbeschreibung', profileNgoDescriptionPlaceholder: 'Erzählen Sie Freiwilligen von der Mission, dem Einfluss Ihrer Organisation und was das Ehrenamt bei Ihnen bedeutungsvoll macht...', profileNgoWebsite: 'Website-URL', profileNgoWebsitePlaceholder: 'https://ihreorganisation.de', profileNgoPortfolio: 'Portfolio / Showcase-URL', profileNgoPortfolioPlaceholder: 'https://drive.google.com/...', profileNgoLegalDocs: '📄 Rechtliche Dokumente zur Verifizierung', profileNgoLegalDocsHint: 'Senden Sie einen Link zu den Rechtsregistrierungsdokumenten Ihrer Organisation (z.B. Google Drive, Dropbox). Der KindWorld-Administrator wird diese prüfen, um Ihren NGO-Status zu verifizieren.', profileNgoDocLinkPlaceholder: 'Link zu Ihren rechtlichen Dokumenten...', profileNgoDocNotePlaceholder: "Kurze Notiz zu den Dokumenten (z.B. 'Justizministerium-Registrierung, Indonesien')", eventSummaryLabel: 'Veranstaltungszusammenfassung', reviewsReceived: 'Bewertungen von NGOs', avgRatingLabel: 'Durchschnittsbewertung', reviewsCount: 'Bewertung(en)', clickToToggleInterests: 'Klicken Sie, um Ihre Interessen auszuwählen/abzuwählen', refreshMissions: 'Aktualisieren'
   }
 }
 
+
+// Animated number counter — counts from 0 to `value` on mount
+function AnimatedNumber({ value, color, fontSize = '44px' }: { value: number; color: string; fontSize?: string }) {
+  const [display, setDisplay] = useState(0)
+  useEffect(() => {
+    if (value === 0) { setDisplay(0); return }
+    const duration = 1300
+    const start = Date.now()
+    const tick = () => {
+      const elapsed = Date.now() - start
+      const progress = Math.min(elapsed / duration, 1)
+      const ease = 1 - Math.pow(1 - progress, 3)
+      setDisplay(Math.round(value * ease))
+      if (progress < 1) requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  }, [value])
+  return <span style={{ fontSize, fontWeight: '700', color, letterSpacing: '-1px', display: 'block', marginBottom: '8px' }}>{display.toLocaleString()}</span>
+}
+
+// Circular progress ring SVG — shows progress toward a goal
+function ProgressRing({ value, goal = 100, color }: { value: number; goal?: number; color: string }) {
+  const r = 34
+  const circ = 2 * Math.PI * r
+  const [offset, setOffset] = useState(circ)
+  useEffect(() => {
+    const t = setTimeout(() => setOffset(circ * (1 - Math.min(value / goal, 1))), 120)
+    return () => clearTimeout(t)
+  }, [value, goal, circ])
+  return (
+    <svg width="80" height="80" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(0,0,0,0.07)" strokeWidth="3.5" />
+      <circle cx="40" cy="40" r={r} fill="none" stroke={color} strokeWidth="3.5"
+        strokeDasharray={circ} strokeDashoffset={offset}
+        strokeLinecap="round" transform="rotate(-90 40 40)"
+        style={{ transition: 'stroke-dashoffset 1.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+      />
+    </svg>
+  )
+}
 
 export default function KindWorldApp() {
   // Add CSS animations and global styles
@@ -6969,6 +7652,9 @@ export default function KindWorldApp() {
       from { opacity: 0; transform: scale(0.82); }
       to { opacity: 1; transform: scale(1); }
     }
+    @keyframes confetti0 { 0%{opacity:1;transform:translateY(0) rotate(0deg)} 100%{opacity:0;transform:translateY(200px) rotate(360deg)} }
+    @keyframes confetti1 { 0%{opacity:1;transform:translateY(0) rotate(0deg)} 100%{opacity:0;transform:translateY(180px) rotate(-280deg)} }
+    @keyframes confetti2 { 0%{opacity:1;transform:translateY(0) rotate(0deg)} 100%{opacity:0;transform:translateY(220px) rotate(420deg)} }
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
@@ -7002,6 +7688,50 @@ export default function KindWorldApp() {
     }
     ::-webkit-scrollbar-thumb:hover {
       background: linear-gradient(135deg, var(--td), var(--ts));
+    }
+    @keyframes scrollDot {
+      0% { transform: translateY(0); opacity: 0.8; }
+      60% { transform: translateY(12px); opacity: 0.2; }
+      100% { transform: translateY(0); opacity: 0.8; }
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(80px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--tp) !important;
+      box-shadow: 0 0 0 3px rgba(var(--tp-rgb), 0.15) !important;
+      outline: none !important;
+    }
+    button:not([disabled]):active {
+      transform: scale(0.96) !important;
+      filter: brightness(0.93) !important;
+    }
+    .kw-avatar {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kw-avatar:hover {
+      transform: scale(1.1) !important;
+      box-shadow: 0 0 0 3px rgba(var(--tp-rgb), 0.35) !important;
+    }
+    .kw-gradient-text {
+      background: linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .kw-card-accent {
+      position: relative;
+      overflow: hidden;
+    }
+    .kw-card-accent::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2.5px;
+      background: linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%);
+      border-radius: 24px 24px 0 0;
+      opacity: 0.7;
     }
   `
   
@@ -7235,6 +7965,7 @@ export default function KindWorldApp() {
   const [registerForm, setRegisterForm] = useState({
     firstName: '',
     lastName: '',
+    orgName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -7253,6 +7984,41 @@ export default function KindWorldApp() {
   const [certRequests, setCertRequests] = useState<CertRequest[]>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_cert_requests') || '[]') } catch { return [] }
   })
+  const [noShowRecords, setNoShowRecords] = useState<NoShowRecord[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_noshow') || '[]') } catch { return [] }
+  })
+  const [volunteerReviews, setVolunteerReviews] = useState<VolunteerReview[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_vol_reviews') || '[]') } catch { return [] }
+  })
+  const [ngoReviews, setNgoReviews] = useState<NgoReview[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_ngo_reviews') || '[]') } catch { return [] }
+  })
+  const [directMessages, setDirectMessages] = useState<DirectMessage[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_direct_msgs') || '[]') } catch { return [] }
+  })
+  const [friendMessages, setFriendMessages] = useState<FriendMessage[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_friend_msgs') || '[]') } catch { return [] }
+  })
+  const [showFriendChat, setShowFriendChat] = useState<{id: number, name: string, email: string} | null>(null)
+  const [friendChatInput, setFriendChatInput] = useState('')
+  const [friendChatImageUrl, setFriendChatImageUrl] = useState('')
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [adminEmails, setAdminEmails] = useState<AdminEmail[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_admin_emails') || '[]') } catch { return [] }
+  })
+  const [showCelebration, setShowCelebration] = useState<{type: 'hours'|'badge'|'milestone'|'certificate', title: string, subtitle: string, icon: string} | null>(null)
+  const [rejectionReasonInput, setRejectionReasonInput] = useState('')
+  const [showRejectModal, setShowRejectModal] = useState<any>(null)
+  const [showReviewModal, setShowReviewModal] = useState<{type:'vol'|'ngo', missionId:number, missionTitle:string, targetEmail:string, targetName:string} | null>(null)
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' })
+  const [showDirectMsgModal, setShowDirectMsgModal] = useState<{toEmail:string, toName:string} | null>(null)
+  const [directMsgForm, setDirectMsgForm] = useState({ subject: '', body: '' })
+  const [showInbox, setShowInbox] = useState(false)
+  const [showAdminEmailModal, setShowAdminEmailModal] = useState(false)
+  const [adminEmailForm, setAdminEmailForm] = useState({ subject: '', body: '', targetGroup: 'all' as 'all'|'volunteers'|'ngos', scheduledAt: '' })
+  const [isSendingEmails, setIsSendingEmails] = useState(false)
+  const [selectedAdminNgo, setSelectedAdminNgo] = useState<any>(null)
+  const [onboardingStep, setOnboardingStep] = useState(0)
   const [newCertProgForm, setNewCertProgForm] = useState({ name: '', hours: 50, logo: '' })
   const [newActivity, setNewActivity] = useState({
     title: '',
@@ -7261,8 +8027,8 @@ export default function KindWorldApp() {
     date: '',
     startTime: '',
     endTime: '',
-    hours: 0,
-    maxParticipants: 0,
+    hours: 1,
+    maxParticipants: 10,
     category: 'Community',
     difficulty: 'Easy',
     region: 'SEA',
@@ -7335,6 +8101,7 @@ export default function KindWorldApp() {
     tshirtSize: 'M',
     transportation: 'own',
     specialSkills: '',
+    notes: '',
     agreeTerms: false
   })
   // Pending verifications - starts empty, gets populated when volunteers complete missions
@@ -7352,7 +8119,25 @@ export default function KindWorldApp() {
     name: '',
     email: '',
     phone: '',
-    city: ''
+    city: '',
+    lineId: '',
+    whatsapp: '',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    emergencyContactRelation: '',
+    allergies: '',
+    medicalConditions: '',
+    dietaryRestrictions: '',
+    tshirtSize: '',
+    // NGO-only
+    ngoOrgName: '',
+    ngoDescription: '',
+    ngoWebsite: '',
+    ngoDocumentUrl: '',
+    ngoPortfolioUrl: '',
+    ngoDocumentNote: '',
+    // Volunteer interests
+    interests: [] as string[]
   })
   const [showUserDetailModal, setShowUserDetailModal] = useState(false)
   const [selectedUserDetail, setSelectedUserDetail] = useState<any>(null)
@@ -7484,10 +8269,13 @@ export default function KindWorldApp() {
     }
     return []
   })
-  const [friendRequests, setFriendRequests] = useState<{id: number, name: string, email: string, hours: number}[]>([
-    { id: 101, name: 'Emma Wilson', email: 'emma.w@email.com', hours: 85 },
-    { id: 102, name: 'James Lee', email: 'james.lee@email.com', hours: 120 }
-  ])
+  const [friendRequests, setFriendRequests] = useState<{id: number, name: string, email: string, hours: number}[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('kindworld_friend_requests')
+      if (saved) { try { return JSON.parse(saved) } catch { return [] } }
+    }
+    return []
+  })
 
   const t = (key: string): string => {
     const lang = localTranslations[language]
@@ -8034,7 +8822,7 @@ export default function KindWorldApp() {
       })
     } else if (mission && isCurrentlyJoined && user) {
       // Remove registration record
-      setMissionRegistrations(prev => prev.filter(r => !(r.missionId === missionId && r.volunteer.id === user.id)))
+      setMissionRegistrations(prev => prev.filter(r => !(r.missionId === missionId && r.volunteer?.id === user.id)))
       setNotifications(prev => [...prev, `Left "${mission.title}"`])
     }
   }
@@ -8341,7 +9129,7 @@ export default function KindWorldApp() {
   }, [allUsers])
 
   // Pending NGO applications for admin approval
-  const [pendingNGOs, setPendingNGOs] = useState<{id: number, name: string, email: string, organization: string, description: string, website?: string, status: 'pending' | 'approved' | 'rejected', appliedDate: string}[]>(() => {
+  const [pendingNGOs, setPendingNGOs] = useState<{id: number, name: string, email: string, organization: string, description: string, website?: string, documentUrl?: string, portfolioUrl?: string, status: 'pending' | 'approved' | 'rejected', appliedDate: string}[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('kindworld_pending_ngos')
       if (saved) {
@@ -8370,7 +9158,7 @@ export default function KindWorldApp() {
     }
   }, [pendingNGOs])
 
-  // Reload pendingNGOs from localStorage when user switches (e.g. NGO registers then admin logs in)
+  // Reload pendingNGOs from localStorage when user switches or navigates to dashboard
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -8378,7 +9166,7 @@ export default function KindWorldApp() {
         if (saved) setPendingNGOs(JSON.parse(saved))
       } catch {}
     }
-  }, [user?.email])
+  }, [user?.email, currentPage])
 
   // Build chart data from actual approved submissions for the current user
   const userApprovedSubs = hourSubmissions.filter(
@@ -8433,7 +9221,7 @@ export default function KindWorldApp() {
       title: 'Ocean Cleanup Initiative',
       description: 'Join us in protecting marine life by cleaning up plastic waste from Santa Monica Beach. Help preserve our oceans for future generations.',
       location: 'Santa Monica Beach, CA',
-      date: '2025-01-15',
+      date: '2026-03-20',
       hours: 4,
       participants: '45/60',
       maxParticipants: 60,
@@ -8451,7 +9239,7 @@ export default function KindWorldApp() {
       title: 'Community Food Drive',
       description: 'Help distribute nutritious meals to homeless individuals and families in need. Make a direct impact on hunger in our community.',
       location: 'Downtown Community Center',
-      date: '2025-01-18',
+      date: '2026-03-25',
       hours: 3,
       participants: '28/40',
       maxParticipants: 40,
@@ -8469,7 +9257,7 @@ export default function KindWorldApp() {
       title: 'Urban Forest Expansion',
       description: 'Plant native trees to improve air quality and create green spaces. Help combat climate change one tree at a time.',
       location: 'Central City Park',
-      date: '2025-01-20',
+      date: '2026-04-01',
       hours: 5,
       participants: '67/80',
       maxParticipants: 80,
@@ -8487,7 +9275,7 @@ export default function KindWorldApp() {
       title: 'Senior Care Companion Program',
       description: 'Spend quality time with elderly residents, providing companionship and emotional support to brighten their day.',
       location: 'Sunshine Senior Living Center',
-      date: '2025-01-22',
+      date: '2026-04-08',
       hours: 2,
       participants: '15/25',
       maxParticipants: 25,
@@ -8505,7 +9293,7 @@ export default function KindWorldApp() {
       title: 'Youth Education Mentorship',
       description: 'Tutor underprivileged children in mathematics and reading skills. Help shape the next generation through education.',
       location: 'Community Learning Hub',
-      date: '2025-01-25',
+      date: '2026-04-15',
       hours: 3,
       participants: '32/50',
       maxParticipants: 50,
@@ -8523,7 +9311,7 @@ export default function KindWorldApp() {
       title: 'Animal Shelter Support',
       description: 'Care for rescued animals and assist with adoption events. Help give abandoned pets a second chance at happiness.',
       location: 'Happy Paws Animal Sanctuary',
-      date: '2025-01-28',
+      date: '2026-04-22',
       hours: 4,
       participants: '23/35',
       maxParticipants: 35,
@@ -8541,7 +9329,7 @@ export default function KindWorldApp() {
       title: 'Bali Beach Conservation',
       description: 'Help protect Bali\'s beautiful coastline by removing plastic waste and educating tourists about marine conservation.',
       location: 'Kuta Beach, Bali, Indonesia',
-      date: '2025-02-05',
+      date: '2026-05-01',
       hours: 4,
       participants: '32/50',
       maxParticipants: 50,
@@ -8559,7 +9347,7 @@ export default function KindWorldApp() {
       title: 'Tokyo Elderly Care Visit',
       description: 'Spend time with elderly residents in Tokyo nursing homes, sharing conversations and activities to combat loneliness.',
       location: 'Shibuya Senior Center, Tokyo',
-      date: '2025-02-10',
+      date: '2026-05-10',
       hours: 3,
       participants: '18/30',
       maxParticipants: 30,
@@ -8577,7 +9365,7 @@ export default function KindWorldApp() {
       title: 'Bangkok Street Food Distribution',
       description: 'Help prepare and distribute meals to homeless individuals in Bangkok\'s urban areas.',
       location: 'Khao San Road, Bangkok',
-      date: '2025-02-12',
+      date: '2026-05-20',
       hours: 4,
       participants: '25/40',
       maxParticipants: 40,
@@ -8595,7 +9383,7 @@ export default function KindWorldApp() {
       title: 'Jakarta Youth Coding Workshop',
       description: 'Teach basic programming skills to underprivileged children in Jakarta to help bridge the digital divide.',
       location: 'Jakarta Digital Hub',
-      date: '2025-02-15',
+      date: '2026-06-01',
       hours: 5,
       participants: '40/60',
       maxParticipants: 60,
@@ -8617,7 +9405,16 @@ export default function KindWorldApp() {
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          return parsed
+          // Migrate: update default missions (id 1-10) that still have stale 2025 dates
+          const dateMap: Record<number, string> = {
+            1: '2026-03-20', 2: '2026-03-25', 3: '2026-04-01', 4: '2026-04-08',
+            5: '2026-04-15', 6: '2026-04-22', 7: '2026-05-01', 8: '2026-05-10',
+            9: '2026-05-20', 10: '2026-06-01'
+          }
+          const migrated = parsed.map((m: any) =>
+            dateMap[m.id] && m.date.startsWith('2025') ? { ...m, date: dateMap[m.id] } : m
+          )
+          return migrated
         } catch (e) {
           return defaultMissions
         }
@@ -8665,6 +9462,17 @@ export default function KindWorldApp() {
       } catch {}
     }
   }, [user?.email, currentPage === 'certificates'])
+
+  // Auto-save new state to localStorage
+  useEffect(() => { localStorage.setItem('kindworld_noshow', JSON.stringify(noShowRecords)) }, [noShowRecords])
+  useEffect(() => { localStorage.setItem('kindworld_vol_reviews', JSON.stringify(volunteerReviews)) }, [volunteerReviews])
+  useEffect(() => { localStorage.setItem('kindworld_ngo_reviews', JSON.stringify(ngoReviews)) }, [ngoReviews])
+  useEffect(() => { localStorage.setItem('kindworld_direct_msgs', JSON.stringify(directMessages)) }, [directMessages])
+  useEffect(() => { localStorage.setItem('kindworld_admin_emails', JSON.stringify(adminEmails)) }, [adminEmails])
+  useEffect(() => { localStorage.setItem('kindworld_friend_msgs', JSON.stringify(friendMessages)) }, [friendMessages])
+
+  // Scroll to top on every page navigation or auth mode switch
+  useEffect(() => { window.scrollTo(0, 0) }, [currentPage, authMode])
 
   // Reload missions from localStorage when user logs in or page changes (to sync between NGO and student accounts)
   useEffect(() => {
@@ -8880,6 +9688,12 @@ export default function KindWorldApp() {
         overflow: 'hidden',
         background: 'linear-gradient(135deg, #f8fafc 0%, var(--tl2) 50%, var(--tl3) 100%)'
       }}>
+        {/* Decorative gradient blobs */}
+        <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: '55%', right: '-8%', width: '680px', height: '680px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(var(--tp-rgb),0.09) 0%, transparent 65%)', filter: 'blur(50px)', animation: 'float 10s ease-in-out infinite' }} />
+          <div style={{ position: 'absolute', top: '15%', left: '-6%', width: '520px', height: '520px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(var(--ts-rgb),0.07) 0%, transparent 65%)', filter: 'blur(60px)', animation: 'float 14s ease-in-out infinite reverse' }} />
+          <div style={{ position: 'absolute', bottom: '5%', right: '30%', width: '360px', height: '360px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(236,72,153,0.06) 0%, transparent 65%)', filter: 'blur(50px)', animation: 'float 8s ease-in-out infinite 2s' }} />
+        </div>
         {/* Navigation Bar */}
         <nav style={{
           position: 'fixed',
@@ -8961,23 +9775,7 @@ export default function KindWorldApp() {
               ) : (
                 <>
                   <button
-                    onClick={() => setCurrentPage('signin')}
-                    style={{
-                      color: '#4b5563',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '15px',
-                      fontWeight: '500',
-                      transition: 'color 0.2s ease'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.color = 'var(--tp)'}
-                    onMouseOut={(e) => e.currentTarget.style.color = '#4b5563'}
-                  >
-                    {t('signIn')}
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage('signin')}
+                    onClick={() => { setAuthMode('signin'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
                     style={{
                       padding: '12px 28px',
                       background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)',
@@ -9103,7 +9901,7 @@ export default function KindWorldApp() {
                     </p>
                     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                       <button
-                        onClick={() => setCurrentPage('signin')}
+                        onClick={() => { setAuthMode('signin'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
                         style={{
                           padding: '16px 36px',
                           background: 'white',
@@ -9215,7 +10013,7 @@ export default function KindWorldApp() {
                 height: '8px',
                 background: 'rgba(255,255,255,0.8)',
                 borderRadius: '100px',
-                animation: 'float 2s ease-in-out infinite'
+                animation: 'scrollDot 1.8s ease-in-out infinite'
               }} />
             </div>
           </div>
@@ -9288,7 +10086,7 @@ export default function KindWorldApp() {
             backgroundSize: 'cover',
             backgroundPosition: 'center'
           }} />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(30, 27, 75, 0.92))' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(var(--tdk1-rgb), 0.88), rgba(var(--tdk2-rgb), 0.92))' }} />
 
           <div style={{ maxWidth: '1400px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
             <div style={{ textAlign: 'center', marginBottom: '80px' }}>
@@ -9303,7 +10101,7 @@ export default function KindWorldApp() {
                 marginBottom: '20px',
                 border: '1px solid rgba(255, 255, 255, 0.15)'
               }}>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: '#c4b5fd', letterSpacing: '1px' }}>{t('howItWorks')}</span>
+                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--ta)', letterSpacing: '1px' }}>{t('howItWorks')}</span>
               </div>
               <h2 style={{ fontSize: '44px', fontWeight: '700', color: '#ffffff', marginBottom: '16px', letterSpacing: '-0.02em' }}>
                 {t('journeyToImpact')}
@@ -9313,7 +10111,7 @@ export default function KindWorldApp() {
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', alignItems: 'stretch' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', alignItems: 'stretch' }}>
               {[
                 { icon: '🎯', titleKey: 'discoverMissions', descKey: 'discoverMissionsDesc' },
                 { icon: '⏱️', titleKey: 'trackProgress', descKey: 'trackProgressDesc' },
@@ -9420,7 +10218,7 @@ export default function KindWorldApp() {
             }}>
               <div style={{
                 fontSize: '72px',
-                color: 'var(--tl2)',
+                color: 'var(--ta)',
                 lineHeight: 1,
                 fontFamily: 'Georgia, serif',
                 marginBottom: '8px'
@@ -9511,20 +10309,25 @@ export default function KindWorldApp() {
 
         {/* SDG Alignment Section */}
         <AnimatedSection>
-        <section style={{ padding: '120px 24px', background: '#f9fafb', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: 0, left: '8%', right: '8%', height: '1px', background: 'linear-gradient(90deg, transparent, #e5e7eb 30%, #e5e7eb 70%, transparent)' }} />
-          <div style={{ position: 'absolute', bottom: 0, left: '8%', right: '8%', height: '1px', background: 'linear-gradient(90deg, transparent, #e5e7eb 30%, #e5e7eb 70%, transparent)' }} />
+        <section style={{ padding: '120px 24px', background: 'linear-gradient(180deg, #fff9ef 0%, #fff4e0 55%, #fff9f4 100%)', position: 'relative', overflow: 'hidden' }}>
+          {/* Rainbow top bar */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '5px', background: 'linear-gradient(90deg, #e5243b 0%, #dda63a 14%, #4c9f38 28%, #c5192d 42%, #dd1367 56%, #fd9d24 70%, #3f7e44 84%, #19486a 100%)' }} />
+          {/* Soft warm glow */}
+          <div style={{ position: 'absolute', top: '-80px', left: '50%', transform: 'translateX(-50%)', width: '800px', height: '500px', background: 'radial-gradient(ellipse, rgba(251,146,60,0.13) 0%, transparent 68%)', pointerEvents: 'none' }} />
 
-          <div style={{ maxWidth: '1040px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '1000px', margin: '0 auto', position: 'relative' }}>
             {/* Header */}
-            <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-              <p style={{ fontSize: '11px', fontWeight: '500', letterSpacing: '4px', color: '#9ca3af', textTransform: 'uppercase', margin: '0 0 24px' }}>
-                United Nations · Global Goals
-              </p>
-              <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', fontWeight: '300', color: '#111827', margin: '0 0 18px', lineHeight: 1.2, letterSpacing: '-0.5px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(251,146,60,0.13)', borderRadius: '100px', padding: '7px 20px', marginBottom: '24px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f97316', display: 'inline-block' }} />
+                <p style={{ fontSize: '11px', fontWeight: '700', letterSpacing: '2.5px', color: '#c2410c', textTransform: 'uppercase', margin: 0 }}>
+                  United Nations · Global Goals
+                </p>
+              </div>
+              <h2 style={{ fontSize: 'clamp(32px, 3.5vw, 50px)', fontWeight: '700', color: '#1c0a00', margin: '0 0 18px', lineHeight: 1.15, letterSpacing: '-0.5px' }}>
                 {t('sdgTitle')}
               </h2>
-              <p style={{ fontSize: '16px', color: '#6b7280', fontWeight: '300', maxWidth: '480px', margin: '0 auto', lineHeight: 1.75 }}>
+              <p style={{ fontSize: '17px', color: '#92400e', fontWeight: '400', maxWidth: '500px', margin: '0 auto', lineHeight: 1.85, opacity: 0.72 }}>
                 {t('sdgSubtitle')}
               </p>
             </div>
@@ -9543,62 +10346,66 @@ export default function KindWorldApp() {
               const active = sdgs.find(s => s.num === selectedSdgNum) || null
 
               return <>
-                {/* Grid — 2 px gap = visible hairline grid */}
+                {/* Grid */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                  gap: '2px',
-                  background: '#dde1e7',
-                  border: '2px solid #dde1e7',
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                  marginBottom: '28px',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '16px',
+                  marginBottom: '36px',
                 }}>
                   {sdgs.map((sdg, index) => (
                     <div
                       key={index}
                       onClick={() => setSelectedSdgNum(sdg.num)}
                       style={{
-                        background: `${sdg.color}10`,
-                        padding: '32px 28px 28px',
+                        background: sdg.color,
+                        borderRadius: '22px',
+                        padding: '28px 24px 22px',
                         cursor: 'pointer',
                         position: 'relative',
                         overflow: 'hidden',
-                        transition: 'background 0.25s ease',
+                        transition: 'transform 0.28s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.28s ease',
                         display: 'flex',
                         flexDirection: 'column',
-                        minHeight: '172px',
+                        minHeight: '200px',
+                        userSelect: 'none',
+                        boxShadow: `0 8px 28px ${sdg.color}55`,
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = `${sdg.color}22` }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = `${sdg.color}10` }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-8px) scale(1.03)'
+                        e.currentTarget.style.boxShadow = `0 28px 52px ${sdg.color}80`
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)'
+                        e.currentTarget.style.boxShadow = `0 8px 28px ${sdg.color}55`
+                      }}
                     >
-                      {/* 4 px solid colour bar at top */}
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: sdg.color }} />
+                      {/* Inner shine */}
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', background: 'linear-gradient(rgba(255,255,255,0.22), transparent)', borderRadius: '22px 22px 0 0', pointerEvents: 'none' }} />
 
-                      {/* Large thin number in SDG colour */}
-                      <div style={{ fontSize: '54px', fontWeight: '200', color: sdg.color, lineHeight: 1, letterSpacing: '-3px', marginBottom: '16px' }}>
+                      {/* SDG micro-label */}
+                      <div style={{ fontSize: '10px', fontWeight: '700', color: 'rgba(255,255,255,0.7)', letterSpacing: '1.5px', textTransform: 'uppercase', position: 'relative' }}>
+                        SDG {String(sdg.num).padStart(2, '0')}
+                      </div>
+
+                      {/* Large thin number */}
+                      <div style={{ fontSize: '72px', fontWeight: '200', color: 'rgba(255,255,255,0.95)', lineHeight: 1, letterSpacing: '-4px', margin: '8px 0 auto', position: 'relative' }}>
                         {String(sdg.num).padStart(2, '0')}
                       </div>
 
-                      {/* Goal name — dark for readability, small SDG-coloured dot accent */}
-                      <div style={{ marginTop: 'auto' }}>
-                        <div style={{ width: '16px', height: '2px', background: sdg.color, marginBottom: '8px', opacity: 0.7 }} />
-                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#1f2937', letterSpacing: '1.5px', textTransform: 'uppercase', lineHeight: 1.55 }}>
+                      {/* Thin rule + goal name */}
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '12px', marginTop: '12px', position: 'relative' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,1)', letterSpacing: '0.3px', textTransform: 'uppercase', lineHeight: 1.4 }}>
                           {t(sdg.nameKey)}
                         </div>
-                      </div>
-
-                      {/* Arrow */}
-                      <div style={{ position: 'absolute', bottom: '18px', right: '20px', fontSize: '14px', color: sdg.color, opacity: 0.55, fontWeight: '400' }}>
-                        →
                       </div>
                     </div>
                   ))}
                 </div>
 
                 {/* Hint */}
-                <p style={{ textAlign: 'center', fontSize: '10px', fontWeight: '500', color: '#d1d5db', letterSpacing: '3px', textTransform: 'uppercase', margin: 0 }}>
-                  {language === 'en' ? 'Select a goal to explore' : language === 'id' ? 'Pilih tujuan untuk dijelajahi' : language === 'zh-cn' ? '选择目标以了解更多' : language === 'zh-tw' ? '選擇目標以了解更多' : language === 'es' ? 'Selecciona un objetivo' : language === 'fr' ? 'Sélectionner un objectif' : language === 'pt' ? 'Selecione um objetivo' : language === 'ja' ? '目標を選択して詳細を確認' : language === 'th' ? 'เลือกเป้าหมายเพื่อสำรวจ' : language === 'vi' ? 'Chọn một mục tiêu để khám phá' : language === 'ko' ? '목표를 선택하여 탐색' : language === 'de' ? 'Ziel auswählen' : 'Select a goal to explore'}
+                <p style={{ textAlign: 'center', fontSize: '11px', fontWeight: '600', color: '#d97706', letterSpacing: '2.5px', textTransform: 'uppercase', margin: 0 }}>
+                  ↑ &nbsp;{t('sdgTapHint')}
                 </p>
 
                 {/* Modal */}
@@ -9641,7 +10448,7 @@ export default function KindWorldApp() {
 
                         {/* Eyebrow */}
                         <p style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '3px', color: active.color, textTransform: 'uppercase', margin: '0 0 12px', opacity: 0.75 }}>
-                          UN · Sustainable Development Goal
+                          {t('sdgEyebrow')}
                         </p>
 
                         {/* Large thin number */}
@@ -9689,6 +10496,84 @@ export default function KindWorldApp() {
         </section>
         </AnimatedSection>
 
+        {/* Why KindWorld Section */}
+        <AnimatedSection>
+        <section style={{ padding: '100px 24px', background: '#ffffff' }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+              <h2 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '700', color: '#111827', marginBottom: '16px', lineHeight: '1.2' }}>
+                {t('whyKindWorldTitle')}
+              </h2>
+              <p style={{ fontSize: '20px', color: '#6b7280', maxWidth: '560px', margin: '0 auto', lineHeight: '1.6' }}>
+                {t('whyKindWorldSubtitle')}
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '32px' }}>
+              {[
+                { icon: '✅', titleKey: 'whyItem1Title', descKey: 'whyItem1Desc' },
+                { icon: '🏅', titleKey: 'whyItem2Title', descKey: 'whyItem2Desc' },
+                { icon: '🌐', titleKey: 'whyItem3Title', descKey: 'whyItem3Desc' },
+                { icon: '🎯', titleKey: 'whyItem4Title', descKey: 'whyItem4Desc' },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  style={{ background: '#f9fafb', borderRadius: '20px', padding: '40px 32px', border: '1px solid #e5e7eb', transition: 'all 0.3s ease' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-6px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 20px 40px rgba(0,0,0,0.08)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}
+                >
+                  <div style={{ fontSize: '40px', marginBottom: '16px' }}>{item.icon}</div>
+                  <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', marginBottom: '12px' }}>{t(item.titleKey)}</h3>
+                  <p style={{ fontSize: '15px', color: '#6b7280', lineHeight: '1.7', margin: 0 }}>{t(item.descKey)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        </AnimatedSection>
+
+        {/* Early Adopter Section */}
+        <AnimatedSection>
+        <section style={{ padding: '100px 24px', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e40af 100%)', color: 'white', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(99,102,241,0.2) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(59,130,246,0.2) 0%, transparent 50%)' }}></div>
+          <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+              <span style={{ display: 'inline-block', background: 'rgba(255,255,255,0.15)', borderRadius: '9999px', padding: '6px 20px', fontSize: '13px', fontWeight: '600', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '20px' }}>
+                {t('earlyAccessLabel')}
+              </span>
+              <h2 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '700', marginBottom: '16px', lineHeight: '1.2' }}>
+                {t('earlyAdopterTitle')}
+              </h2>
+              <p style={{ fontSize: '20px', opacity: 0.85, maxWidth: '560px', margin: '0 auto', lineHeight: '1.6' }}>
+                {t('earlyAdopterSubtitle')}
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '56px' }}>
+              {[
+                { labelKey: 'earlyAdopterBadgeLabel', descKey: 'earlyAdopterBadgeDesc' },
+                { labelKey: 'earlyAdopterFeedbackLabel', descKey: 'earlyAdopterFeedbackDesc' },
+                { labelKey: 'earlyAdopterCommunityLabel', descKey: 'earlyAdopterCommunityDesc' },
+              ].map((item, idx) => (
+                <div key={idx} style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '16px', padding: '32px', border: '1px solid rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)' }}>
+                  <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '10px' }}>{t(item.labelKey)}</div>
+                  <div style={{ fontSize: '15px', opacity: 0.8, lineHeight: '1.6' }}>{t(item.descKey)}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <button
+                onClick={() => { setAuthMode('register'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
+                style={{ padding: '18px 56px', background: 'white', color: '#1e1b4b', border: 'none', borderRadius: '9999px', cursor: 'pointer', fontSize: '18px', fontWeight: '700', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', transition: 'all 0.3s ease' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 28px 48px rgba(0,0,0,0.4)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 20px 40px rgba(0,0,0,0.3)' }}
+              >
+                {t('earlyAdopterCTA')}
+              </button>
+              <p style={{ marginTop: '20px', fontSize: '13px', opacity: 0.65 }}>{t('earlyAdopterNote')}</p>
+            </div>
+          </div>
+        </section>
+        </AnimatedSection>
+
         {/* Final CTA Section */}
         <AnimatedSection>
         <section style={{ padding: '120px 24px', background: 'linear-gradient(135deg, var(--ts), var(--tp))', color: 'white', position: 'relative', overflow: 'hidden' }}>
@@ -9705,7 +10590,7 @@ export default function KindWorldApp() {
             </p>
             <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
-                onClick={() => setCurrentPage('signin')}
+                onClick={() => { setAuthMode('signin'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
                 style={{
                   padding: '20px 48px',
                   background: 'white',
@@ -9730,7 +10615,7 @@ export default function KindWorldApp() {
                 {t('startVolunteeringToday')}
               </button>
               <button
-                onClick={() => setCurrentPage('signin')}
+                onClick={() => { setSelectedRole('ngo'); setAuthMode('register'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
                 style={{
                   padding: '20px 48px',
                   background: 'transparent',
@@ -9924,28 +10809,44 @@ export default function KindWorldApp() {
         </section>
 
         {/* Founder's Quote */}
-        <section style={{ padding: '80px 24px', background: 'white' }}>
-          <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+        <section style={{ padding: '80px 24px', background: '#fdfcfb' }}>
+          <div style={{ maxWidth: '760px', margin: '0 auto' }}>
             <div style={{
-              fontSize: '72px',
-              color: 'var(--tl2)',
-              lineHeight: 1,
-              fontFamily: 'Georgia, serif',
-              marginBottom: '8px'
-            }}>"</div>
-            <p style={{
-              fontSize: '28px',
-              fontWeight: '300',
-              color: '#1f2937',
-              lineHeight: '1.8',
-              fontStyle: 'italic',
-              marginBottom: '32px'
+              borderLeft: '4px solid',
+              borderImage: 'linear-gradient(to bottom, var(--tp), var(--ts)) 1',
+              padding: '40px 48px',
+              background: 'white',
+              borderRadius: '0 20px 20px 0',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.07)',
+              position: 'relative'
             }}>
-              {t('founderQuote')}
-            </p>
-            <div style={{ width: '48px', height: '2px', background: 'linear-gradient(135deg, var(--tp), var(--ts))', margin: '0 auto 24px auto' }} />
-            <p style={{ fontSize: '17px', fontWeight: '600', color: '#1f2937', margin: 0 }}>{t('founderName')}</p>
-            <p style={{ fontSize: '14px', color: 'var(--tp)', margin: '4px 0 0 0', fontWeight: '500' }}>{t('founderRole')}</p>
+              <div style={{
+                position: 'absolute', top: '24px', left: '48px',
+                fontSize: '96px', lineHeight: 1, color: 'var(--tl2)',
+                fontFamily: 'Georgia, serif', opacity: 0.6, userSelect: 'none'
+              }}>"</div>
+              <p style={{
+                fontSize: '26px',
+                fontWeight: '400',
+                color: '#1f2937',
+                lineHeight: '1.85',
+                fontStyle: 'italic',
+                marginBottom: '32px',
+                marginTop: '40px',
+                fontFamily: 'Georgia, serif',
+                position: 'relative',
+                zIndex: 1
+              }}>
+                {t('founderQuote')}
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ width: '40px', height: '2px', background: 'linear-gradient(135deg, var(--tp), var(--ts))', flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: '16px', fontWeight: '700', color: '#1f2937', margin: 0 }}>{t('founderName')}</p>
+                  <p style={{ fontSize: '13px', color: 'var(--tp)', margin: '2px 0 0 0', fontWeight: '600', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{t('founderRole')}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -10106,7 +11007,7 @@ export default function KindWorldApp() {
             </p>
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
-                onClick={() => setCurrentPage('signin')}
+                onClick={() => { setAuthMode('signin'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
                 style={{
                   padding: '18px 48px',
                   background: 'white',
@@ -10176,7 +11077,8 @@ export default function KindWorldApp() {
 
     const handleRegister = () => {
       setRegisterError('')
-      if (!registerForm.firstName || !registerForm.lastName || !registerForm.email || !registerForm.password) {
+      const nameValid = selectedRole === 'ngo' ? !!registerForm.orgName : (!!registerForm.firstName && !!registerForm.lastName)
+      if (!nameValid || !registerForm.email || !registerForm.password) {
         setRegisterError('Please fill in all required fields.')
         return
       }
@@ -10201,11 +11103,11 @@ export default function KindWorldApp() {
         const newUserId = `user_${Date.now()}`
         const newUserData: User = {
           id: newUserId,
-          name: `${registerForm.firstName} ${registerForm.lastName}`,
+          name: selectedRole === 'ngo' ? registerForm.orgName : `${registerForm.firstName} ${registerForm.lastName}`,
           role: selectedRole,
           hours: 0,
           email: registerForm.email.toLowerCase().trim(),
-          avatar: `https://ui-avatars.com/api/?name=${registerForm.firstName}+${registerForm.lastName}&background=4f46e5&color=fff`,
+          avatar: `https://ui-avatars.com/api/?name=${selectedRole === 'ngo' ? encodeURIComponent(registerForm.orgName) : `${registerForm.firstName}+${registerForm.lastName}`}&background=4f46e5&color=fff`,
           joinDate: new Date().toISOString().split('T')[0],
           badges: [],
           userBadges: [],
@@ -10225,7 +11127,7 @@ export default function KindWorldApp() {
             email: newUserData.email.toLowerCase().trim(),
             hours: 0,
             joinDate: newUserData.joinDate,
-            status: actualRole === 'ngo' ? 'verified' : 'active',
+            status: actualRole === 'ngo' ? 'pending' : 'active',
             completedMissions: 0,
             badges: 0,
             userBadges: [],
@@ -10244,7 +11146,7 @@ export default function KindWorldApp() {
               id: Date.now(),
               name: newUserData.name,
               email: newUserData.email,
-              organization: `${registerForm.firstName} ${registerForm.lastName}`,
+              organization: registerForm.orgName || `${registerForm.firstName} ${registerForm.lastName}`,
               description: `New NGO application from ${newUserData.name}`,
               status: 'pending' as const,
               appliedDate: new Date().toISOString().split('T')[0]
@@ -10257,12 +11159,13 @@ export default function KindWorldApp() {
         }
         setCurrentPage('dashboard')
         const welcomeMsg = selectedRole === 'ngo'
-          ? 'Welcome! Your NGO account is ready. You can start creating activities now. 🏢'
+          ? 'Welcome! Please complete your NGO profile to submit for admin verification. 🏢'
           : 'Welcome to KindWorld! 🎉'
         setNotifications([welcomeMsg, 'Your account has been created successfully.'])
         setRegisterForm({
           firstName: '',
           lastName: '',
+          orgName: '',
           email: '',
           password: '',
           confirmPassword: '',
@@ -10278,12 +11181,12 @@ export default function KindWorldApp() {
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #f8fafc 0%, var(--tl2) 50%, var(--tl3) 100%)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '40px 20px',
+        padding: '80px 20px 60px',
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         position: 'relative',
-        overflow: 'hidden'
+        overflowX: 'hidden'
       }}>
         {/* Background decorations */}
         <div style={{
@@ -10403,7 +11306,7 @@ export default function KindWorldApp() {
               {authMode === 'signin' ? t('welcomeBackTitle') : t('createAccount')}
             </h1>
             <p style={{ color: '#6b7280', fontSize: '15px' }}>
-              {authMode === 'signin' ? t('signInToContinue') : t('joinKindWorld')}
+              {authMode === 'signin' ? t('signInToContinue') : selectedRole === 'ngo' ? t('ngoRegisterSubtitle') : t('joinKindWorld')}
             </p>
           </div>
 
@@ -10603,83 +11506,7 @@ export default function KindWorldApp() {
                 {isLoading ? t('signIn') + '...' : t('signIn')}
               </button>
 
-              {/* Divider */}
-              <div style={{ display: 'flex', alignItems: 'center', margin: '28px 0', gap: '16px' }}>
-                <div style={{ flex: 1, height: '1px', background: 'var(--tbrd)' }} />
-                <span style={{ color: '#9ca3af', fontSize: '13px', fontWeight: '500' }}>{t('orSignInWith')}</span>
-                <div style={{ flex: 1, height: '1px', background: 'var(--tbrd)' }} />
-              </div>
-
-              {/* Social Login Buttons */}
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '28px' }}>
-                <button
-                  onClick={handleSocialSignIn}
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    background: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: '#374151',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#f9fafb'
-                    e.currentTarget.style.borderColor = 'var(--tl3)'
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = 'white'
-                    e.currentTarget.style.borderColor = 'var(--tbrd)'
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  Google
-                </button>
-                <button
-                  onClick={handleSocialSignIn}
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    background: '#000',
-                    border: '1px solid #000',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: 'white',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#1f2937'
-                    e.currentTarget.style.transform = 'translateY(-1px)'
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = '#000'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                    <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                  </svg>
-                  Apple
-                </button>
-              </div>
+              <div style={{ marginBottom: '8px' }} />
 
               {/* Sign Up Link */}
               <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
@@ -10702,17 +11529,17 @@ export default function KindWorldApp() {
           ) : (
             <>
               {/* Registration Form */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-                {/* First Name */}
-                <div>
+              {selectedRole === 'ngo' ? (
+                /* NGO: single Organization Name field */
+                <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
-                    {t('firstName')} <span style={{ color: '#ef4444' }}>*</span>
+                    {t('orgNameField')} <span style={{ color: '#ef4444' }}>*</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="John"
-                    value={registerForm.firstName}
-                    onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
+                    placeholder=""
+                    value={registerForm.orgName}
+                    onChange={(e) => setRegisterForm({ ...registerForm, orgName: e.target.value })}
                     style={{
                       width: '100%',
                       padding: '12px 14px',
@@ -10736,43 +11563,83 @@ export default function KindWorldApp() {
                       e.target.style.boxShadow = 'none'
                     }}
                   />
+                  {/* Info note */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '12px', padding: '10px 14px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px' }}>
+                    <span style={{ fontSize: '14px', flexShrink: 0 }}>ℹ️</span>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#1d4ed8', lineHeight: '1.5' }}>{t('ngoRegisterInfoNote')}</p>
+                  </div>
                 </div>
-
-                {/* Last Name */}
-                <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
-                    {t('lastName')} <span style={{ color: '#ef4444' }}>*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Doe"
-                    value={registerForm.lastName}
-                    onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 14px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '12px',
-                      fontSize: '15px',
-                      outline: 'none',
-                      transition: 'all 0.2s ease',
-                      boxSizing: 'border-box',
-                      background: '#f9fafb',
-                      color: '#1f2937'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = 'var(--tp)'
-                      e.target.style.background = 'white'
-                      e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb), 0.1)'
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'var(--tbrd)'
-                      e.target.style.background = '#f9fafb'
-                      e.target.style.boxShadow = 'none'
-                    }}
-                  />
+              ) : (
+                /* Volunteer: first name + last name grid */
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
+                      {t('firstName')} <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder=""
+                      value={registerForm.firstName}
+                      onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '15px',
+                        outline: 'none',
+                        transition: 'all 0.2s ease',
+                        boxSizing: 'border-box',
+                        background: '#f9fafb',
+                        color: '#1f2937'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = 'var(--tp)'
+                        e.target.style.background = 'white'
+                        e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb), 0.1)'
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = 'var(--tbrd)'
+                        e.target.style.background = '#f9fafb'
+                        e.target.style.boxShadow = 'none'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
+                      {t('lastName')} <span style={{ color: '#ef4444' }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder=""
+                      value={registerForm.lastName}
+                      onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        fontSize: '15px',
+                        outline: 'none',
+                        transition: 'all 0.2s ease',
+                        boxSizing: 'border-box',
+                        background: '#f9fafb',
+                        color: '#1f2937'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = 'var(--tp)'
+                        e.target.style.background = 'white'
+                        e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb), 0.1)'
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = 'var(--tbrd)'
+                        e.target.style.background = '#f9fafb'
+                        e.target.style.boxShadow = 'none'
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Email */}
               <div style={{ marginBottom: '16px' }}>
@@ -10781,7 +11648,7 @@ export default function KindWorldApp() {
                 </label>
                 <input
                   type="email"
-                  placeholder="john.doe@example.com"
+                  placeholder=""
                   value={registerForm.email}
                   onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                   style={{
@@ -10816,7 +11683,7 @@ export default function KindWorldApp() {
                 </label>
                 <input
                   type="tel"
-                  placeholder="+62 812 3456 7890"
+                  placeholder=""
                   value={registerForm.phone}
                   onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
                   style={{
@@ -10880,7 +11747,7 @@ export default function KindWorldApp() {
                   </label>
                   <input
                     type="text"
-                    placeholder="Jakarta"
+                    placeholder=""
                     value={registerForm.residency}
                     onChange={(e) => setRegisterForm({ ...registerForm, residency: e.target.value })}
                     style={{
@@ -10917,7 +11784,7 @@ export default function KindWorldApp() {
                   </label>
                   <input
                     type="password"
-                    placeholder={t('minCharacters')}
+                    placeholder=""
                     value={registerForm.password}
                     onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                     style={{
@@ -10951,7 +11818,7 @@ export default function KindWorldApp() {
                   </label>
                   <input
                     type="password"
-                    placeholder={t('confirmPassword')}
+                    placeholder=""
                     value={registerForm.confirmPassword}
                     onChange={(e) => { setRegisterForm({ ...registerForm, confirmPassword: e.target.value }); setRegisterError('') }}
                     style={{
@@ -11068,84 +11935,6 @@ export default function KindWorldApp() {
                 )}
               </button>
 
-              {/* Divider */}
-              <div style={{ display: 'flex', alignItems: 'center', margin: '28px 0', gap: '16px' }}>
-                <div style={{ flex: 1, height: '1px', background: 'var(--tbrd)' }} />
-                <span style={{ color: '#9ca3af', fontSize: '13px', fontWeight: '500' }}>{t('orRegisterWith')}</span>
-                <div style={{ flex: 1, height: '1px', background: 'var(--tbrd)' }} />
-              </div>
-
-              {/* Social Registration Buttons */}
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '28px' }}>
-                <button
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    background: '#f9fafb',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: '#374151',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = 'white'
-                    e.currentTarget.style.borderColor = 'var(--tp)'
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(var(--tp-rgb), 0.1)'
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = '#f9fafb'
-                    e.currentTarget.style.borderColor = 'var(--tbrd)'
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  Google
-                </button>
-                <button
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    background: '#1f2937',
-                    border: '1px solid #1f2937',
-                    borderRadius: '12px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    color: 'white',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#374151'
-                    e.currentTarget.style.transform = 'translateY(-1px)'
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = '#1f2937'
-                    e.currentTarget.style.transform = 'translateY(0)'
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                    <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
-                  </svg>
-                  Apple
-                </button>
-              </div>
-
               {/* Sign In Link */}
               <p style={{ textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
                 {t('alreadyHaveAccount')}{' '}
@@ -11178,7 +11967,7 @@ export default function KindWorldApp() {
         <nav style={{
           background: 'var(--tnavbg)',
           backdropFilter: 'blur(12px)',
-          padding: '12px 20px',
+          padding: '13px 24px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -11194,11 +11983,11 @@ export default function KindWorldApp() {
             onMouseOver={(e) => e.currentTarget.style.opacity = '0.75'}
             onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
           >
-            <img src="/kindworld-logo.jpg" alt="KindWorld" style={{ width: '44px', height: '44px', borderRadius: '14px', objectFit: 'cover' }} />
+            <img src="/kindworld-logo.jpg" alt="KindWorld" style={{ width: '42px', height: '42px', borderRadius: '12px', objectFit: 'cover' }} />
             <h1 style={{
               margin: 0,
               color: '#1f2937',
-              fontSize: '22px',
+              fontSize: '21px',
               fontWeight: '600',
               letterSpacing: '-0.02em'
             }}>
@@ -11208,56 +11997,44 @@ export default function KindWorldApp() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* Navigation Buttons */}
-            <div style={{ display: 'flex', gap: '2px' }}>
+            <div style={{ display: 'flex', background: 'rgba(var(--tp-rgb),0.07)', borderRadius: '12px', padding: '4px', gap: '2px' }}>
               {(() => {
-                // Show different navigation items based on user role
                 if (user?.role === 'ngo') {
                   const ngoData = allUsers.find((u: any) => u.email === user?.email)
                   const isApproved = !ngoData || ngoData.status === 'verified' || ngoData.status === 'active'
-                  if (!isApproved) return [] // No nav links for pending NGOs
+                  if (!isApproved) return []
                   return ['dashboard', 'missions', 'certificates', 'profile', 'settings']
                 }
-                if (user?.role === 'admin') {
-                  return ['dashboard', 'missions', 'reports', 'profile', 'settings']
-                }
-                // Volunteer/student gets full navigation
+                if (user?.role === 'admin') return ['dashboard', 'missions', 'reports', 'profile', 'settings']
                 return ['dashboard', 'missions', 'badges', 'certificates', 'leaderboard', 'friends', 'profile', 'settings']
-              })().map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page as any)}
-                  style={{
-                    padding: '8px 13px',
-                    background: currentPage === page
-                      ? 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)'
-                      : 'transparent',
-                    color: currentPage === page ? 'white' : '#6b7280',
-                    border: currentPage === page ? 'none' : '1px solid transparent',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontWeight: '500',
-                    transition: 'all 0.2s ease',
-                    textTransform: 'capitalize',
-                    outline: 'none',
-                    boxShadow: currentPage === page ? '0 4px 12px rgba(var(--tp-rgb), 0.3)' : 'none'
-                  }}
-                  onMouseOver={(e) => {
-                    if (currentPage !== page) {
-                      e.currentTarget.style.background = '#f3f4f6'
-                      e.currentTarget.style.color = '#374151'
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (currentPage !== page) {
-                      e.currentTarget.style.background = 'transparent'
-                      e.currentTarget.style.color = '#6b7280'
-                    }
-                  }}
-                >
-                  {t(page)}
-                </button>
-              ))}
+              })().map((page) => {
+                const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', badgeManagement:'🛡️' }
+                const isActive = currentPage === page
+                return (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page as any)}
+                    title={t(page)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      padding: isActive ? '9px 17px' : '9px 13px',
+                      background: isActive ? 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)' : 'transparent',
+                      color: isActive ? 'white' : '#6b7280',
+                      border: 'none', borderRadius: '9px', cursor: 'pointer',
+                      fontSize: '14px', fontWeight: isActive ? '600' : '400',
+                      transition: 'all 0.15s ease', outline: 'none', whiteSpace: 'nowrap',
+                      position: 'relative',
+                      boxShadow: isActive ? '0 2px 8px rgba(var(--tp-rgb),0.28)' : 'none',
+                    }}
+                    onMouseOver={(e) => { if (!isActive) { e.currentTarget.style.background = 'rgba(var(--tp-rgb),0.1)'; e.currentTarget.style.color = 'var(--tp)' } }}
+                    onMouseOut={(e) => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280' } }}
+                  >
+                    <span style={{ fontSize: '18px', lineHeight: '1' }}>{navIcons[page] || '•'}</span>
+                    {isActive && <span style={{ textTransform: 'capitalize' }}>{t(page)}</span>}
+                    {isActive && <span style={{ position: 'absolute', bottom: '2px', left: '50%', transform: 'translateX(-50%)', width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />}
+                  </button>
+                )
+              })}
             </div>
 
             {/* Language Selector */}
@@ -11287,6 +12064,25 @@ export default function KindWorldApp() {
                 </option>
               ))}
             </select>
+
+            {/* Inbox Button — for volunteers/students */}
+            {user?.role === 'student' && (() => {
+              const unread = directMessages.filter((m:any) => m.toEmail === user?.email && !m.read).length
+              return (
+                <button
+                  onClick={() => setShowInbox(true)}
+                  style={{ position: 'relative', width: '40px', height: '40px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', transition: 'all 0.2s' }}
+                  title="Inbox"
+                >
+                  💌
+                  {unread > 0 && (
+                    <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', borderRadius: '999px', fontSize: '10px', fontWeight: '700', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
+                      {unread}
+                    </span>
+                  )}
+                </button>
+              )
+            })()}
 
             {/* Notification Bell */}
             <div style={{ position: 'relative' }}>
@@ -11336,23 +12132,23 @@ export default function KindWorldApp() {
             {/* User Profile & Logout */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{
-                  width: '34px',
-                  height: '34px',
+                <div className="kw-avatar" style={{
+                  width: '38px',
+                  height: '38px',
                   background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)',
-                  borderRadius: '10px',
+                  borderRadius: '11px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
-                  fontSize: '14px',
+                  fontSize: '15px',
                   fontWeight: '600'
                 }}>
                   {user.name.charAt(0)}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '13px', fontWeight: '600', color: '#1f2937' }}>{user.name}</span>
-                  <span style={{ fontSize: '11px', color: '#6b7280', textTransform: 'capitalize' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{user.name}</span>
+                  <span style={{ fontSize: '12px', color: '#6b7280', textTransform: 'capitalize' }}>
                     {user.role === 'student' ? 'Volunteer' : user.role.toUpperCase()}
                   </span>
                 </div>
@@ -11386,6 +12182,656 @@ export default function KindWorldApp() {
           </div>
         </nav>
 
+        {/* ── Friend Chat Modal ── */}
+        {showFriendChat && (() => {
+          const chatPartner = showFriendChat
+          const myEmail = user?.email || ''
+          const thread = friendMessages.filter(m =>
+            (m.fromEmail === myEmail && m.toEmail === chatPartner.email) ||
+            (m.fromEmail === chatPartner.email && m.toEmail === myEmail)
+          ).sort((a, b) => a.sentAt.localeCompare(b.sentAt))
+          const commonEmojis = ['😊','😂','❤️','👍','🙏','🎉','😍','🔥','💪','🌟','😭','😅','✨','🤝','💬','🌍','🏆','👏','💡','🎯']
+          const sendMessage = () => {
+            const txt = friendChatInput.trim()
+            const img = friendChatImageUrl.trim()
+            if (!txt && !img) return
+            const msg: FriendMessage = { id: Date.now().toString(), fromEmail: myEmail, fromName: user?.name || '', toEmail: chatPartner.email, text: txt, imageUrl: img || undefined, sentAt: new Date().toISOString() }
+            setFriendMessages(prev => [...prev, msg])
+            setFriendChatInput('')
+            setFriendChatImageUrl('')
+            setShowEmojiPicker(false)
+          }
+          return (
+            <div onClick={() => { setShowFriendChat(null); setShowEmojiPicker(false) }} style={{ position: 'fixed', inset: 0, zIndex: 9995, background: 'rgba(15,8,5,0.42)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: '24px' }}>
+              <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '400px', height: '520px', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+                {/* Header */}
+                <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '16px', flexShrink: 0 }}>
+                    {chatPartner.name.charAt(0)}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: '700', color: 'white', fontSize: '15px' }}>{chatPartner.name}</div>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.75)' }}>{t('myFriends') || 'Friend'}</div>
+                  </div>
+                  <button onClick={() => { setShowFriendChat(null); setShowEmojiPicker(false) }} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', color: 'white', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', flexShrink: 0 }}>✕</button>
+                </div>
+                {/* Messages */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {thread.length === 0 && (
+                    <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: '13px', padding: '32px 16px' }}>
+                      <div style={{ fontSize: '32px', marginBottom: '8px' }}>👋</div>
+                      <p>{t('sayHiTo') || 'Say hi to'} {chatPartner.name}!</p>
+                    </div>
+                  )}
+                  {thread.map(msg => {
+                    const isMine = msg.fromEmail === myEmail
+                    return (
+                      <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start' }}>
+                        {msg.imageUrl && (
+                          <img src={msg.imageUrl} alt="" style={{ maxWidth: '200px', maxHeight: '160px', borderRadius: '12px', marginBottom: msg.text ? '4px' : 0, objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                        )}
+                        {msg.text && (
+                          <div style={{ maxWidth: '72%', padding: '10px 14px', borderRadius: isMine ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: isMine ? 'linear-gradient(135deg, var(--tp), var(--ts))' : '#f3f4f6', color: isMine ? 'white' : '#1f2937', fontSize: '14px', lineHeight: '1.5', wordBreak: 'break-word' }}>
+                            {msg.text}
+                          </div>
+                        )}
+                        <span style={{ fontSize: '10px', color: '#9ca3af', marginTop: '3px' }}>
+                          {new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+                {/* Image URL preview */}
+                {friendChatImageUrl && (
+                  <div style={{ padding: '0 16px 8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src={friendChatImageUrl} alt="" style={{ height: '40px', width: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e5e7eb' }} onError={e => { (e.target as HTMLImageElement).style.opacity = '0.3' }} />
+                    <span style={{ fontSize: '11px', color: '#6b7280', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{friendChatImageUrl}</span>
+                    <button onClick={() => setFriendChatImageUrl('')} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '14px', fontWeight: '700' }}>✕</button>
+                  </div>
+                )}
+                {/* Emoji Picker */}
+                {showEmojiPicker && (
+                  <div style={{ padding: '8px 16px', borderTop: '1px solid #f3f4f6', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {commonEmojis.map(emoji => (
+                      <button key={emoji} onClick={() => { setFriendChatInput(prev => prev + emoji); setShowEmojiPicker(false) }} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', padding: '2px', lineHeight: 1, borderRadius: '4px' }}
+                        onMouseOver={e => { e.currentTarget.style.background = '#f3f4f6' }} onMouseOut={e => { e.currentTarget.style.background = 'none' }}>
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* Input area */}
+                <div style={{ padding: '12px 16px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: '8px', alignItems: 'flex-end', flexShrink: 0 }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <textarea
+                      value={friendChatInput}
+                      onChange={e => setFriendChatInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
+                      placeholder={t('typeMessage') || 'Type a message...'}
+                      rows={2}
+                      style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #e5e7eb', borderRadius: '12px', fontSize: '14px', outline: 'none', resize: 'none', lineHeight: '1.5', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                      onFocus={e => { e.target.style.borderColor = 'var(--tp)' }}
+                      onBlur={e => { e.target.style.borderColor = '#e5e7eb' }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                      <button onClick={() => setShowEmojiPicker(p => !p)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', padding: '4px', borderRadius: '6px', lineHeight: 1 }} title="Emoji">😊</button>
+                      <label style={{ cursor: 'pointer', fontSize: '18px', padding: '4px', lineHeight: 1 }} title={t('shareImage') || 'Share image'}>
+                        🖼️
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            const reader = new FileReader()
+                            reader.onload = ev => setFriendChatImageUrl(ev.target?.result as string || '')
+                            reader.readAsDataURL(file)
+                          }
+                          e.target.value = ''
+                        }} />
+                      </label>
+                      <input
+                        value={friendChatImageUrl.startsWith('data:') ? '' : friendChatImageUrl}
+                        onChange={e => setFriendChatImageUrl(e.target.value)}
+                        placeholder={t('imageUrlPlaceholder') || 'or paste image URL...'}
+                        style={{ flex: 1, padding: '5px 10px', border: '1.5px solid #e5e7eb', borderRadius: '8px', fontSize: '12px', outline: 'none' }}
+                        onFocus={e => { e.target.style.borderColor = 'var(--tp)' }}
+                        onBlur={e => { e.target.style.borderColor = '#e5e7eb' }}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={sendMessage}
+                    style={{ padding: '10px 16px', background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700', fontSize: '18px', cursor: 'pointer', flexShrink: 0, alignSelf: 'stretch' }}
+                  >
+                    ➤
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* ── Global Celebration Modal (Peak-End / SMOT) ── */}
+        {showCelebration && (
+          <div
+            onClick={() => setShowCelebration(null)}
+            style={{ position:'fixed', inset:0, zIndex:9998, background:'rgba(15,8,5,0.52)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', animation:'fadeIn 0.2s ease' }}
+          >
+            <div onClick={e=>e.stopPropagation()} style={{ background:'white', borderRadius:'28px', padding:'56px 48px', maxWidth:'440px', width:'90%', textAlign:'center', boxShadow:'0 32px 80px rgba(0,0,0,0.2)', animation:'scaleIn 0.35s cubic-bezier(0.34,1.56,0.64,1)', position:'relative', overflow:'hidden' }}>
+              {/* Confetti strips */}
+              {['#6366f1','#f59e0b','#10b981','#ec4899','#3b82f6','#f97316'].map((c,i)=>(
+                <div key={i} style={{ position:'absolute', top:'-10px', left:`${10+i*15}%`, width:'8px', height:'40px', background:c, borderRadius:'4px', animation:`confetti${i%3} 1.2s ${i*0.1}s ease-out forwards`, opacity:0 }} />
+              ))}
+              <div style={{ fontSize:'72px', marginBottom:'16px', lineHeight:1 }}>{showCelebration.icon}</div>
+              <h2 style={{ fontSize:'26px', fontWeight:'800', color:'#1f2937', margin:'0 0 12px', letterSpacing:'-0.5px' }}>{showCelebration.title}</h2>
+              <p style={{ fontSize:'16px', color:'#6b7280', lineHeight:1.7, margin:'0 0 32px' }}>{showCelebration.subtitle}</p>
+              <button onClick={()=>setShowCelebration(null)} style={{ padding:'14px 36px', background:'linear-gradient(135deg, var(--tp), var(--ts))', color:'white', border:'none', borderRadius:'14px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:'0 8px 24px rgba(var(--tp-rgb),0.35)' }}>
+                Continue 🎯
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Reject-with-Reason Modal ── */}
+        {showRejectModal && (
+          <div onClick={()=>setShowRejectModal(null)} style={{ position:'fixed', inset:0, zIndex:9997, background:'rgba(15,8,5,0.48)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
+            <div onClick={e=>e.stopPropagation()} style={{ background:'white', borderRadius:'20px', padding:'clamp(20px, 5vw, 36px)', maxWidth:'480px', width:'100%', boxShadow:'0 24px 64px rgba(0,0,0,0.18)' }}>
+              <h3 style={{ fontSize:'20px', fontWeight:'700', color:'#1f2937', margin:'0 0 8px' }}>Reject Hour Submission</h3>
+              <p style={{ fontSize:'14px', color:'#6b7280', margin:'0 0 20px' }}>Please provide a reason so the volunteer understands what happened.</p>
+              <textarea
+                value={rejectionReasonInput}
+                onChange={e=>setRejectionReasonInput(e.target.value)}
+                placeholder="e.g. Hours submitted exceed the actual mission duration. Please re-submit with correct hours."
+                rows={4}
+                style={{ width:'100%', padding:'12px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', resize:'vertical', boxSizing:'border-box', outline:'none', color:'#1f2937' }}
+              />
+              <div style={{ display:'flex', gap:'12px', marginTop:'20px' }}>
+                <button onClick={()=>setShowRejectModal(null)} style={{ flex:1, padding:'12px', background:'#f3f4f6', color:'#374151', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}>{t('cancel')}</button>
+                <button
+                  onClick={()=>{
+                    if (!rejectionReasonInput.trim()) return
+                    const v = showRejectModal
+                    if ((v as any)._fromHourSubmissions) {
+                      const updated = hourSubmissions.map((s:any) => s.id === v.id ? { ...s, status:'rejected', rejectionReason: rejectionReasonInput.trim() } : s)
+                      setHourSubmissions(updated)
+                      localStorage.setItem('kindworld_hour_submissions', JSON.stringify(updated))
+                    } else {
+                      setPendingVerifications(prev => prev.filter((pv:any) => pv.id !== v.id))
+                    }
+                    setNotifications(prev=>[...prev, `❌ Rejected hours from ${v.volunteerName} — reason sent`])
+                    setRejectionReasonInput('')
+                    setShowRejectModal(null)
+                  }}
+                  style={{ flex:1, padding:'12px', background:'#dc2626', color:'white', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}
+                >Confirm Rejection</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Review Modal (mutual) ── */}
+        {showReviewModal && (
+          <div onClick={()=>setShowReviewModal(null)} style={{ position:'fixed', inset:0, zIndex:9997, background:'rgba(15,8,5,0.48)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
+            <div onClick={e=>e.stopPropagation()} style={{ background:'white', borderRadius:'20px', padding:'clamp(20px, 5vw, 36px)', maxWidth:'480px', width:'100%', boxShadow:'0 24px 64px rgba(0,0,0,0.18)' }}>
+              <h3 style={{ fontSize:'20px', fontWeight:'700', color:'#1f2937', margin:'0 0 6px' }}>
+                {showReviewModal.type === 'vol' ? `Review for ${showReviewModal.targetName}` : `Rate "${showReviewModal.missionTitle}"`}
+              </h3>
+              <p style={{ fontSize:'13px', color:'#9ca3af', margin:'0 0 20px' }}>Mission: {showReviewModal.missionTitle}</p>
+              {/* Star rating */}
+              <div style={{ display:'flex', gap:'6px', marginBottom:'16px' }}>
+                {[1,2,3,4,5].map(s=>(
+                  <span
+                    key={s}
+                    onClick={()=>setReviewForm(f=>({...f,rating:s}))}
+                    style={{ fontSize:'36px', cursor:'pointer', color: reviewForm.rating >= s ? '#f59e0b' : '#d1d5db', transition:'color 0.15s, transform 0.1s', display:'inline-block' }}
+                    onMouseEnter={e=>(e.currentTarget.style.transform='scale(1.2)')}
+                    onMouseLeave={e=>(e.currentTarget.style.transform='scale(1)')}
+                  >★</span>
+                ))}
+              </div>
+              <p style={{ fontSize:'12px', color:'#9ca3af', margin:'-10px 0 14px' }}>
+                {reviewForm.rating === 1 ? '😟 Poor' : reviewForm.rating === 2 ? '😕 Fair' : reviewForm.rating === 3 ? '😐 Good' : reviewForm.rating === 4 ? '😊 Very Good' : '🤩 Excellent'}
+              </p>
+              <textarea
+                value={reviewForm.comment}
+                onChange={e=>setReviewForm(f=>({...f,comment:e.target.value}))}
+                placeholder="Share your experience (optional)"
+                rows={3}
+                style={{ width:'100%', padding:'12px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', resize:'vertical', boxSizing:'border-box', outline:'none', color:'#1f2937', marginBottom:'16px' }}
+              />
+              <p style={{ fontSize:'12px', color:'#9ca3af', margin:'0 0 16px', lineHeight:1.6 }}>
+                {showReviewModal.type === 'vol' ? t('reviewVisibilityVol') : t('reviewVisibilityNgo')}
+              </p>
+              <div style={{ display:'flex', gap:'12px' }}>
+                <button onClick={()=>{setShowReviewModal(null);setReviewForm({rating:5,comment:''})}} style={{ flex:1, padding:'12px', background:'#f3f4f6', color:'#374151', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}>{t('cancel')}</button>
+                <button
+                  onClick={()=>{
+                    const r = showReviewModal!
+                    const base = { id: Date.now().toString(), missionId: r.missionId, missionTitle: r.missionTitle, rating: reviewForm.rating, comment: reviewForm.comment.trim(), date: new Date().toISOString() }
+                    if (r.type === 'vol') {
+                      setVolunteerReviews(prev=>[...prev, { ...base, ngoEmail: user!.email, ngoName: user!.name, volunteerEmail: r.targetEmail, volunteerName: r.targetName }])
+                    } else {
+                      setNgoReviews(prev=>[...prev, { ...base, volunteerEmail: user!.email, volunteerName: user!.name, ngoEmail: r.targetEmail, ngoName: r.targetName }])
+                    }
+                    setNotifications(prev=>[...prev, '⭐ Review submitted!'])
+                    setShowReviewModal(null)
+                    setReviewForm({rating:5,comment:''})
+                  }}
+                  style={{ flex:1, padding:'12px', background:'linear-gradient(135deg, var(--tp), var(--ts))', color:'white', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'700', cursor:'pointer' }}
+                >Submit Review</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Direct Message Modal ── */}
+        {showDirectMsgModal && (
+          <div onClick={()=>setShowDirectMsgModal(null)} style={{ position:'fixed', inset:0, zIndex:9997, background:'rgba(15,8,5,0.48)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
+            <div onClick={e=>e.stopPropagation()} style={{ background:'white', borderRadius:'20px', padding:'clamp(20px, 5vw, 36px)', maxWidth:'500px', width:'100%', boxShadow:'0 24px 64px rgba(0,0,0,0.18)' }}>
+              <h3 style={{ fontSize:'20px', fontWeight:'700', color:'#1f2937', margin:'0 0 4px' }}>Message {showDirectMsgModal.toName}</h3>
+              <p style={{ fontSize:'13px', color:'#9ca3af', margin:'0 0 20px' }}>{showDirectMsgModal.toEmail}</p>
+              <input value={directMsgForm.subject} onChange={e=>setDirectMsgForm(f=>({...f,subject:e.target.value}))} placeholder="Subject" style={{ width:'100%', padding:'12px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', boxSizing:'border-box', marginBottom:'12px', outline:'none', color:'#1f2937' }} />
+              <textarea value={directMsgForm.body} onChange={e=>setDirectMsgForm(f=>({...f,body:e.target.value}))} placeholder="Your message..." rows={5} style={{ width:'100%', padding:'12px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', resize:'vertical', boxSizing:'border-box', outline:'none', color:'#1f2937', marginBottom:'16px' }} />
+              <div style={{ display:'flex', gap:'12px' }}>
+                <button onClick={()=>{setShowDirectMsgModal(null);setDirectMsgForm({subject:'',body:''})}} style={{ flex:1, padding:'12px', background:'#f3f4f6', color:'#374151', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}>{t('cancel')}</button>
+                <button
+                  onClick={()=>{
+                    if (!directMsgForm.subject.trim() || !directMsgForm.body.trim()) return
+                    const msg: DirectMessage = { id: Date.now().toString(), fromEmail: user!.email, fromName: user!.name, fromRole: user!.role as 'ngo'|'admin', toEmail: showDirectMsgModal!.toEmail, toName: showDirectMsgModal!.toName, subject: directMsgForm.subject.trim(), body: directMsgForm.body.trim(), sentAt: new Date().toISOString(), read: false }
+                    setDirectMessages(prev=>[...prev, msg])
+                    setNotifications(prev=>[...prev, `📨 Message sent to ${showDirectMsgModal!.toName}`])
+                    setShowDirectMsgModal(null)
+                    setDirectMsgForm({subject:'',body:''})
+                  }}
+                  style={{ flex:1, padding:'12px', background:'linear-gradient(135deg, var(--tp), var(--ts))', color:'white', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'700', cursor:'pointer' }}
+                >Send Message</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Inbox Modal (for volunteers: received direct messages) ── */}
+        {showInbox && (
+          <div onClick={()=>setShowInbox(false)} style={{ position:'fixed', inset:0, zIndex:9997, background:'rgba(15,8,5,0.48)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
+            <div onClick={e=>e.stopPropagation()} style={{ background:'white', borderRadius:'20px', padding:'32px', maxWidth:'560px', width:'100%', maxHeight:'75vh', overflow:'auto', boxShadow:'0 24px 64px rgba(0,0,0,0.18)' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px' }}>
+                <h3 style={{ fontSize:'20px', fontWeight:'700', color:'#1f2937', margin:0 }}>📨 My Inbox</h3>
+                <button onClick={()=>setShowInbox(false)} style={{ background:'#f3f4f6', border:'none', borderRadius:'8px', padding:'6px 12px', cursor:'pointer', fontSize:'14px', color:'#6b7280' }}>✕</button>
+              </div>
+              {directMessages.filter(m=>m.toEmail===user?.email).length === 0
+                ? <p style={{ textAlign:'center', color:'#9ca3af', padding:'32px 0' }}>No messages yet.</p>
+                : directMessages.filter(m=>m.toEmail===user?.email).sort((a,b)=>b.sentAt.localeCompare(a.sentAt)).map(msg=>(
+                  <div key={msg.id} style={{ background: msg.read ? '#f9fafb' : 'linear-gradient(135deg, rgba(var(--tp-rgb),0.05), rgba(var(--ts-rgb),0.05))', border:`1px solid ${msg.read ? '#e5e7eb' : 'rgba(var(--tp-rgb),0.2)'}`, borderRadius:'12px', padding:'16px', marginBottom:'12px' }}
+                    onClick={()=>setDirectMessages(prev=>prev.map(m=>m.id===msg.id?{...m,read:true}:m))}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'6px' }}>
+                      <span style={{ fontSize:'14px', fontWeight:'700', color:'#1f2937' }}>{msg.subject}</span>
+                      {!msg.read && <span style={{ fontSize:'10px', background:'var(--tp)', color:'white', borderRadius:'6px', padding:'2px 8px', fontWeight:'700' }}>NEW</span>}
+                    </div>
+                    <p style={{ fontSize:'13px', color:'#4b5563', margin:'0 0 6px', lineHeight:1.6 }}>{msg.body}</p>
+                    <span style={{ fontSize:'11px', color:'#9ca3af' }}>From {msg.fromName} · {new Date(msg.sentAt).toLocaleDateString()}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        )}
+
+        {/* ── Admin Email Blast Modal ── */}
+        {showAdminEmailModal && (
+          <div onClick={()=>setShowAdminEmailModal(false)} style={{ position:'fixed', inset:0, zIndex:9997, background:'rgba(15,8,5,0.48)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
+            <div onClick={e=>e.stopPropagation()} style={{ background:'white', borderRadius:'20px', padding:'clamp(20px, 5vw, 36px)', maxWidth:'600px', width:'100%', maxHeight:'85vh', overflow:'auto', boxShadow:'0 24px 64px rgba(0,0,0,0.18)' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px' }}>
+                <h3 style={{ fontSize:'20px', fontWeight:'700', color:'#1f2937', margin:0 }}>📧 Compose Email Blast</h3>
+                <button onClick={()=>setShowAdminEmailModal(false)} style={{ background:'#f3f4f6', border:'none', borderRadius:'8px', width:'32px', height:'32px', cursor:'pointer', fontSize:'16px', color:'#6b7280' }}>×</button>
+              </div>
+              <div style={{ display:'grid', gap:'16px' }}>
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Target Group</label>
+                  <select value={adminEmailForm.targetGroup} onChange={e=>setAdminEmailForm(f=>({...f,targetGroup:e.target.value as any}))} style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background:'white', cursor:'pointer' }}>
+                    <option value="all">👥 Everyone (Volunteers + NGOs)</option>
+                    <option value="volunteers">🙋 Volunteers only</option>
+                    <option value="ngos">🏢 NGOs only</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Subject *</label>
+                  <input value={adminEmailForm.subject} onChange={e=>setAdminEmailForm(f=>({...f,subject:e.target.value}))} placeholder="e.g. Important platform update for all volunteers" style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Message *</label>
+                  <textarea value={adminEmailForm.body} onChange={e=>setAdminEmailForm(f=>({...f,body:e.target.value}))} placeholder="Write your message to the selected group..." rows={6} style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', resize:'vertical', fontFamily:'inherit', boxSizing:'border-box' }} />
+                </div>
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Schedule (optional — leave blank to send now)</label>
+                  <input type="datetime-local" value={adminEmailForm.scheduledAt} onChange={e=>setAdminEmailForm(f=>({...f,scheduledAt:e.target.value}))} style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
+                </div>
+              </div>
+              {/* Credential status */}
+              {(() => {
+                const svcId = import.meta.env.VITE_EMAILJS_SERVICE_ID
+                const tplId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+                const pubKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                const missing = !svcId || svcId.startsWith('your_') || !tplId || tplId.startsWith('your_') || !pubKey || pubKey.startsWith('your_')
+                if (missing) return (
+                  <div style={{ marginTop:'16px', padding:'12px 16px', background:'#fef3c7', border:'1px solid #fde68a', borderRadius:'10px', fontSize:'13px', color:'#92400e' }}>
+                    <p style={{ fontWeight:'700', margin:'0 0 4px' }}>⚠️ EmailJS not configured</p>
+                    <p style={{ margin:0, lineHeight:1.6 }}>Open <code style={{ background:'rgba(0,0,0,0.07)', padding:'1px 5px', borderRadius:'4px' }}>web/.env.local</code> and fill in your real credentials, then restart the dev server (<code style={{ background:'rgba(0,0,0,0.07)', padding:'1px 5px', borderRadius:'4px' }}>npm run dev</code>). Get the values from <strong>emailjs.com</strong> → Services, Templates, and Account → API Keys.</p>
+                  </div>
+                )
+                return <div style={{ marginTop:'16px', padding:'8px 14px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:'10px', fontSize:'12px', color:'#15803d', fontWeight:'600' }}>✓ EmailJS credentials detected</div>
+              })()}
+              <div style={{ display:'flex', gap:'12px', marginTop:'16px' }}>
+                <button onClick={()=>setShowAdminEmailModal(false)} style={{ flex:1, padding:'12px', background:'#f3f4f6', color:'#374151', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}>{t('cancel')}</button>
+                <button
+                  onClick={async ()=>{
+                    if (!adminEmailForm.subject.trim() || !adminEmailForm.body.trim()) { setNotifications(prev=>[...prev,'⚠️ Subject and message are required']); return }
+                    const svcId = import.meta.env.VITE_EMAILJS_SERVICE_ID
+                    const tplId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+                    const pubKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+                    if (!svcId || svcId.startsWith('your_') || !tplId || tplId.startsWith('your_') || !pubKey || pubKey.startsWith('your_')) {
+                      setNotifications(prev=>[...prev,'⚠️ EmailJS not configured. Fill in web/.env.local and restart the dev server.'])
+                      return
+                    }
+                    if (adminEmailForm.scheduledAt) {
+                      const email: AdminEmail = { id: Date.now().toString(), subject: adminEmailForm.subject.trim(), body: adminEmailForm.body.trim(), targetGroup: adminEmailForm.targetGroup, scheduledAt: adminEmailForm.scheduledAt, status: 'scheduled', createdAt: new Date().toISOString() }
+                      setAdminEmails((prev:AdminEmail[]) => [...prev, email])
+                      setNotifications(prev=>[...prev, `📅 Email scheduled: "${email.subject}"`])
+                      setAdminEmailForm({ subject:'', body:'', targetGroup:'all', scheduledAt:'' })
+                      setShowAdminEmailModal(false)
+                      return
+                    }
+                    const recipients = allUsers.filter((u: any) => {
+                      if (adminEmailForm.targetGroup === 'all') return u.role === 'student' || u.role === 'ngo'
+                      if (adminEmailForm.targetGroup === 'volunteers') return u.role === 'student'
+                      if (adminEmailForm.targetGroup === 'ngos') return u.role === 'ngo'
+                      return false
+                    })
+                    if (recipients.length === 0) { setNotifications(prev=>[...prev,'⚠️ No recipients found for the selected group.']); return }
+                    setIsSendingEmails(true)
+                    try {
+                      for (const recipient of recipients) {
+                        await emailjs.send(
+                          svcId,
+                          tplId,
+                          { to_email: recipient.email, to_name: recipient.name, subject: adminEmailForm.subject.trim(), message: adminEmailForm.body.trim() },
+                          pubKey
+                        )
+                      }
+                      const email: AdminEmail = { id: Date.now().toString(), subject: adminEmailForm.subject.trim(), body: adminEmailForm.body.trim(), targetGroup: adminEmailForm.targetGroup, scheduledAt: '', status: 'sent', createdAt: new Date().toISOString() }
+                      setAdminEmails((prev:AdminEmail[]) => [...prev, email])
+                      setNotifications(prev=>[...prev, `📧 Email sent to ${recipients.length} recipient(s)!`])
+                      setAdminEmailForm({ subject:'', body:'', targetGroup:'all', scheduledAt:'' })
+                      setShowAdminEmailModal(false)
+                    } catch (err: any) {
+                      console.error('EmailJS error:', err)
+                      const detail = err?.text || err?.message || 'Unknown error'
+                      setNotifications(prev=>[...prev,`❌ EmailJS error: ${detail}`])
+                    } finally {
+                      setIsSendingEmails(false)
+                    }
+                  }}
+                  disabled={isSendingEmails}
+                  style={{ flex:2, padding:'12px', background: isSendingEmails ? '#93c5fd' : 'linear-gradient(135deg,#3b82f6,#2563eb)', color:'white', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'700', cursor: isSendingEmails ? 'not-allowed' : 'pointer', opacity: isSendingEmails ? 0.8 : 1 }}
+                >{isSendingEmails ? '⏳ Sending...' : adminEmailForm.scheduledAt ? '📅 Schedule Email' : '📧 Send Now'}</button>
+              </div>
+              {/* Sent history */}
+              {adminEmails.length > 0 && (
+                <div style={{ marginTop:'28px', borderTop:'1px solid #f3f4f6', paddingTop:'20px' }}>
+                  <h4 style={{ fontSize:'14px', fontWeight:'700', color:'#374151', margin:'0 0 12px' }}>Recent Email History</h4>
+                  <div style={{ display:'grid', gap:'8px', maxHeight:'200px', overflow:'auto' }}>
+                    {[...adminEmails].reverse().map((e:any) => (
+                      <div key={e.id} style={{ padding:'10px 14px', background:'#f9fafb', borderRadius:'8px', display:'flex', gap:'10px', alignItems:'center' }}>
+                        <span style={{ fontSize:'16px' }}>{e.status==='sent' ? '✅' : e.status==='scheduled' ? '📅' : '📝'}</span>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <p style={{ fontSize:'13px', fontWeight:'600', color:'#1f2937', margin:'0 0 2px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{e.subject}</p>
+                          <p style={{ fontSize:'11px', color:'#9ca3af', margin:0 }}>To: {e.targetGroup} · {new Date(e.createdAt).toLocaleDateString()} · {e.status}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Admin NGO Detail Modal ── */}
+        {selectedAdminNgo && (
+          <div onClick={()=>setSelectedAdminNgo(null)} style={{ position:'fixed', inset:0, zIndex:9998, background:'rgba(15,8,5,0.52)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
+            <div onClick={e=>e.stopPropagation()} style={{ background:'white', borderRadius:'20px', maxWidth:'780px', width:'100%', maxHeight:'88vh', overflowY:'auto', boxShadow:'0 24px 64px rgba(0,0,0,0.22)', display:'flex', flexDirection:'column' }}>
+
+              {/* Dark gradient header */}
+              <div style={{ background:'linear-gradient(135deg,#1a2744 0%,#253860 100%)', padding:'28px 32px', borderRadius:'20px 20px 0 0', display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexShrink:0 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'16px' }}>
+                  {selectedAdminNgo.ngoLogo
+                    ? <img src={selectedAdminNgo.ngoLogo} alt="" style={{ width:'60px', height:'60px', borderRadius:'14px', objectFit:'cover', border:'2px solid rgba(255,255,255,0.25)', flexShrink:0 }} />
+                    : <div style={{ width:'60px', height:'60px', background:'rgba(255,255,255,0.12)', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'28px', flexShrink:0 }}>🏢</div>
+                  }
+                  <div>
+                    <h2 style={{ margin:0, fontSize:'22px', fontWeight:'700', color:'white' }}>{selectedAdminNgo.ngoOrgName || selectedAdminNgo.name}</h2>
+                    <p style={{ margin:'4px 0 0', fontSize:'13px', color:'rgba(255,255,255,0.65)' }}>{selectedAdminNgo.email}</p>
+                    <div style={{ display:'flex', gap:'6px', marginTop:'8px', flexWrap:'wrap' }}>
+                      <span style={{ fontSize:'11px', fontWeight:'600', background:'rgba(16,185,129,0.25)', color:'#6ee7b7', padding:'3px 8px', borderRadius:'20px' }}>
+                        ✓ {selectedAdminNgo.status === 'verified' ? t('verifiedLabel') : t('activeStatus')}
+                      </span>
+                      <span style={{ fontSize:'11px', fontWeight:'500', background:'rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.65)', padding:'3px 8px', borderRadius:'20px' }}>
+                        📅 {t('createdLabel')}: {selectedAdminNgo.joinDate ? new Date(selectedAdminNgo.joinDate).toLocaleDateString() : '—'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button onClick={()=>setSelectedAdminNgo(null)} style={{ background:'rgba(255,255,255,0.12)', border:'none', borderRadius:'8px', width:'34px', height:'34px', cursor:'pointer', fontSize:'18px', color:'white', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>×</button>
+              </div>
+
+              {/* Body */}
+              <div style={{ padding:'28px 32px', flex:1 }}>
+
+                {/* KPI grid */}
+                {(() => {
+                  const ngoEmail = selectedAdminNgo.email
+                  const ngoMissions = missions.filter((m:any) => m.organizerId === ngoEmail)
+                  const now2 = new Date()
+                  const todayS2 = `${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}-${String(now2.getDate()).padStart(2,'0')}`
+                  const activeMissions = ngoMissions.filter((m:any) => m.date >= todayS2)
+                  const pastMissions = ngoMissions.filter((m:any) => m.date < todayS2)
+                  const ngoSubs = hourSubmissions.filter((s:any) => s.missionId && ngoMissions.some((m:any) => m.id === s.missionId))
+                  const approvedHrs = ngoSubs.filter(s => s.status === 'approved').reduce((sum,s) => sum + (s.hours || 0), 0)
+                  const pendingSubs = ngoSubs.filter(s => s.status === 'pending')
+                  const ngoRegs = missionRegistrations.filter(r => ngoMissions.some((m:any) => m.id === r.missionId))
+                  const uniqueVols = new Set(ngoRegs.map(r => r.volunteer?.email).filter(Boolean)).size
+                  const ngoCertsCount = certPrograms.filter(p => p.ngoId === ngoEmail).length
+                  const ngoRevs = (ngoReviews as any[]).filter(r => r.ngoEmail === ngoEmail)
+                  const avgRating = ngoRevs.length > 0 ? (ngoRevs.reduce((s:number,r:any)=>s+r.rating,0)/ngoRevs.length).toFixed(1) : null
+                  const kpis = [
+                    { icon:'📋', label:t('totalMissionsLabel') || 'Missions', value:ngoMissions.length, color:'#7c3aed', bg:'#ede9fe' },
+                    { icon:'🟢', label:t('myMissionsUpcoming') || 'Upcoming', value:activeMissions.length, color:'#059669', bg:'#d1fae5' },
+                    { icon:'✅', label:t('myMissionsCompleted') || 'Completed', value:pastMissions.length, color:'#0284c7', bg:'#e0f2fe' },
+                    { icon:'⏱', label:t('totalHours') || 'Approved Hrs', value:`${approvedHrs}h`, color:'#d97706', bg:'#fef3c7' },
+                    { icon:'👥', label:t('volunteers') || 'Volunteers', value:uniqueVols, color:'#db2777', bg:'#fce7f3' },
+                    { icon:'🎓', label:t('certProgramSetup') || 'Cert Programs', value:ngoCertsCount, color:'#4f46e5', bg:'#e0e7ff' },
+                  ]
+                  return (
+                    <>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(110px, 1fr))', gap:'10px', marginBottom:'20px' }}>
+                        {kpis.map((kpi,i) => (
+                          <div key={i} style={{ background:kpi.bg, borderRadius:'12px', padding:'14px 10px', textAlign:'center' }}>
+                            <div style={{ fontSize:'22px', marginBottom:'4px' }}>{kpi.icon}</div>
+                            <div style={{ fontSize:'20px', fontWeight:'700', color:kpi.color }}>{kpi.value}</div>
+                            <div style={{ fontSize:'10px', color:'#6b7280', fontWeight:'500', marginTop:'2px' }}>{kpi.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {pendingSubs.length > 0 && (
+                        <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:'10px', padding:'10px 14px', marginBottom:'16px', display:'flex', alignItems:'center', gap:'8px' }}>
+                          <span>⏳</span>
+                          <span style={{ fontSize:'13px', color:'#92400e', fontWeight:'600' }}>{pendingSubs.length} pending hour submission{pendingSubs.length !== 1 ? 's' : ''} awaiting review</span>
+                        </div>
+                      )}
+                      {avgRating && (
+                        <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:'10px', padding:'10px 14px', marginBottom:'16px', display:'flex', alignItems:'center', gap:'8px' }}>
+                          <span style={{ color:'#f59e0b', fontSize:'16px' }}>★</span>
+                          <span style={{ fontSize:'13px', color:'#92400e', fontWeight:'600' }}>{avgRating}/5 avg from {ngoRevs.length} volunteer review{ngoRevs.length !== 1 ? 's' : ''}</span>
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
+
+                {/* Description */}
+                {selectedAdminNgo.ngoDescription && (
+                  <div style={{ marginBottom:'16px' }}>
+                    <p style={{ fontSize:'11px', fontWeight:'700', color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.5px', margin:'0 0 6px' }}>{t('profileNgoDescription')}</p>
+                    <p style={{ fontSize:'14px', color:'#374151', lineHeight:1.7, margin:0, background:'#f9fafb', borderRadius:'10px', padding:'12px' }}>{selectedAdminNgo.ngoDescription}</p>
+                  </div>
+                )}
+
+                {/* Links & Contact */}
+                <div style={{ display:'grid', gap:'8px', marginBottom:'20px' }}>
+                  {selectedAdminNgo.ngoWebsite && (
+                    <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 14px', background:'#f0fdf4', borderRadius:'10px', border:'1px solid #bbf7d0' }}>
+                      <span>🌐</span>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <p style={{ fontSize:'10px', fontWeight:'700', color:'#6b7280', margin:0, textTransform:'uppercase' }}>{t('profileNgoWebsite')}</p>
+                        <a href={selectedAdminNgo.ngoWebsite} target="_blank" rel="noopener noreferrer" style={{ fontSize:'13px', color:'#059669', fontWeight:'600', textDecoration:'none', wordBreak:'break-all' }}>{selectedAdminNgo.ngoWebsite}</a>
+                      </div>
+                    </div>
+                  )}
+                  {selectedAdminNgo.ngoPortfolioUrl && (
+                    <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 14px', background:'#ede9fe', borderRadius:'10px', border:'1px solid #c4b5fd' }}>
+                      <span>🖼</span>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <p style={{ fontSize:'10px', fontWeight:'700', color:'#6b7280', margin:0, textTransform:'uppercase' }}>{t('profileNgoPortfolio')}</p>
+                        <a href={selectedAdminNgo.ngoPortfolioUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize:'13px', color:'#7c3aed', fontWeight:'600', textDecoration:'none', wordBreak:'break-all' }}>{selectedAdminNgo.ngoPortfolioUrl}</a>
+                      </div>
+                    </div>
+                  )}
+                  {selectedAdminNgo.ngoDocumentUrl && (
+                    <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 14px', background:'#fffbeb', borderRadius:'10px', border:'1px solid #fde68a' }}>
+                      <span>📄</span>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <p style={{ fontSize:'10px', fontWeight:'700', color:'#6b7280', margin:0, textTransform:'uppercase' }}>{t('profileNgoLegalDocs')}</p>
+                        <a href={selectedAdminNgo.ngoDocumentUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize:'13px', color:'#d97706', fontWeight:'600', textDecoration:'none', wordBreak:'break-all' }}>{selectedAdminNgo.ngoDocumentUrl}</a>
+                        {selectedAdminNgo.ngoDocumentNote && <p style={{ fontSize:'12px', color:'#92400e', margin:'2px 0 0' }}>{selectedAdminNgo.ngoDocumentNote}</p>}
+                      </div>
+                    </div>
+                  )}
+                  {selectedAdminNgo.phone && (
+                    <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 14px', background:'#f3f4f6', borderRadius:'10px' }}>
+                      <span>📞</span>
+                      <div>
+                        <p style={{ fontSize:'10px', fontWeight:'700', color:'#6b7280', margin:0, textTransform:'uppercase' }}>{t('phoneNumber')}</p>
+                        <p style={{ fontSize:'13px', color:'#374151', fontWeight:'500', margin:0 }}>{selectedAdminNgo.phone}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* All Missions list */}
+                {(() => {
+                  const ngoMissions = missions.filter((m:any) => m.organizerId === selectedAdminNgo.email)
+                  if (ngoMissions.length === 0) return null
+                  const now3 = new Date()
+                  const todayS3 = `${now3.getFullYear()}-${String(now3.getMonth()+1).padStart(2,'0')}-${String(now3.getDate()).padStart(2,'0')}`
+                  return (
+                    <div style={{ marginBottom:'20px' }}>
+                      <p style={{ fontSize:'11px', fontWeight:'700', color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.5px', margin:'0 0 8px' }}>📋 All Missions ({ngoMissions.length})</p>
+                      <div style={{ maxHeight:'200px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'5px' }}>
+                        {ngoMissions.slice().sort((a:any,b:any)=>b.date.localeCompare(a.date)).map((m:any) => {
+                          const mRegs = missionRegistrations.filter(r => r.missionId === m.id).length
+                          const mApproved = hourSubmissions.filter((s:any) => s.missionId === m.id && s.status === 'approved').reduce((sum,s) => sum+(s.hours||0), 0)
+                          const isPast = m.date < todayS3
+                          return (
+                            <div key={m.id} style={{ padding:'9px 12px', background:'#f9fafb', borderRadius:'8px', display:'flex', justifyContent:'space-between', alignItems:'center', gap:'8px' }}>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <span style={{ fontSize:'13px', color:'#1f2937', fontWeight:'600', display:'block', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{m.title}</span>
+                                <span style={{ fontSize:'11px', color:'#9ca3af' }}>📅 {new Date(m.date).toLocaleDateString()} · 📍 {m.location}</span>
+                              </div>
+                              <div style={{ display:'flex', gap:'5px', flexShrink:0 }}>
+                                <span style={{ fontSize:'10px', background:'#e0e7ff', color:'#4f46e5', padding:'2px 7px', borderRadius:'20px', fontWeight:'600' }}>👥 {mRegs}</span>
+                                {isPast && mApproved > 0 && <span style={{ fontSize:'10px', background:'#d1fae5', color:'#059669', padding:'2px 7px', borderRadius:'20px', fontWeight:'600' }}>⏱ {mApproved}h</span>}
+                                <span style={{ fontSize:'10px', background:isPast?'#f3f4f6':'#d1fae5', color:isPast?'#9ca3af':'#059669', padding:'2px 7px', borderRadius:'20px', fontWeight:'600' }}>{isPast?t('statusCompleted'):t('statusActive')}</span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Certificate Programs */}
+                {(() => {
+                  const ngoCerts = certPrograms.filter(p => p.ngoId === selectedAdminNgo.email)
+                  if (ngoCerts.length === 0) return null
+                  return (
+                    <div style={{ marginBottom:'20px' }}>
+                      <p style={{ fontSize:'11px', fontWeight:'700', color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.5px', margin:'0 0 8px' }}>🎓 Certificate Programs ({ngoCerts.length})</p>
+                      <div style={{ display:'flex', flexDirection:'column', gap:'5px' }}>
+                        {ngoCerts.map((cp,i) => {
+                          const issued = certRequests.filter(r => r.ngoId === selectedAdminNgo.email && r.status === 'approved').length
+                          return (
+                            <div key={i} style={{ padding:'9px 12px', background:'#f5f3ff', borderRadius:'8px', border:'1px solid #ede9fe', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                              <div>
+                                <span style={{ fontSize:'13px', fontWeight:'600', color:'#374151' }}>{cp.programName}</span>
+                                <span style={{ fontSize:'11px', color:'#6b7280', display:'block', marginTop:'2px' }}>Requires {cp.requiredHours}h · {issued} issued</span>
+                              </div>
+                              <span style={{ fontSize:'11px', fontWeight:'600', padding:'3px 10px', borderRadius:'20px', background:cp.isActive?'#d1fae5':'#f3f4f6', color:cp.isActive?'#059669':'#9ca3af' }}>
+                                {cp.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Volunteer Reviews about this NGO */}
+                {(() => {
+                  const revs = (ngoReviews as any[]).filter(r => r.ngoEmail === selectedAdminNgo.email)
+                  if (revs.length === 0) return null
+                  const avg = revs.reduce((s:number,r:any)=>s+r.rating,0)/revs.length
+                  return (
+                    <div style={{ marginBottom:'20px' }}>
+                      <p style={{ fontSize:'11px', fontWeight:'700', color:'#6b7280', textTransform:'uppercase', letterSpacing:'0.5px', margin:'0 0 8px' }}>⭐ Volunteer Reviews ({revs.length}) · avg {avg.toFixed(1)}/5</p>
+                      <div style={{ display:'flex', flexDirection:'column', gap:'5px', maxHeight:'160px', overflowY:'auto' }}>
+                        {revs.slice().reverse().map((r:any) => (
+                          <div key={r.id} style={{ padding:'9px 12px', background:'#fafafa', borderRadius:'8px', border:'1px solid #f3f4f6' }}>
+                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'3px' }}>
+                              <span style={{ fontSize:'13px', fontWeight:'600', color:'#374151' }}>{r.volunteerName}</span>
+                              <div style={{ display:'flex', gap:'2px' }}>
+                                {[1,2,3,4,5].map(s=><span key={s} style={{ fontSize:'12px', color:r.rating>=s?'#f59e0b':'#d1d5db' }}>★</span>)}
+                              </div>
+                            </div>
+                            {r.comment && <p style={{ fontSize:'12px', color:'#6b7280', margin:'0 0 3px', lineHeight:1.5 }}>{r.comment}</p>}
+                            <p style={{ fontSize:'11px', color:'#9ca3af', margin:0 }}>{r.missionTitle} · {new Date(r.date).toLocaleDateString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Admin Actions */}
+                <div style={{ display:'flex', gap:'10px', paddingTop:'16px', borderTop:'1px solid #f1f5f9' }}>
+                  <button onClick={()=>setSelectedAdminNgo(null)} style={{ flex:1, padding:'12px', background:'#f3f4f6', color:'#374151', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}>{t('cancel')}</button>
+                  {selectedAdminNgo.status !== 'verified' && (
+                    <button
+                      onClick={() => {
+                        const updated = allUsers.map((u:any) => u.email === selectedAdminNgo.email ? {...u, status:'verified'} : u)
+                        setAllUsers(updated)
+                        localStorage.setItem('kindworld_users', JSON.stringify(updated))
+                        setSelectedAdminNgo({...selectedAdminNgo, status:'verified'})
+                        setNotifications(prev => [...prev, `✅ ${selectedAdminNgo.name} verified`])
+                      }}
+                      style={{ flex:1, padding:'12px', background:'linear-gradient(135deg,#059669,#10b981)', color:'white', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}
+                    >✓ Verify NGO</button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Notification System */}
         {notifications.length > 0 && (
           <div style={{
@@ -11402,16 +12848,16 @@ export default function KindWorldApp() {
               <div
                 key={index}
                 style={{
-                  background: 'rgba(255, 255, 255, 0.95)',
-                  backdropFilter: 'blur(10px)',
+                  background: 'rgba(255, 255, 255, 0.97)',
+                  backdropFilter: 'blur(12px)',
                   padding: '16px 20px',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '14px',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0,0,0,0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
                   fontSize: '14px',
                   fontWeight: '500',
                   color: '#2d3748',
-                  animation: 'slideIn 0.3s ease-out',
+                  animation: 'toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
                   cursor: 'pointer'
                 }}
                 onClick={() => setNotifications(prev => prev.filter((_, i) => i !== index))}
@@ -11610,6 +13056,21 @@ export default function KindWorldApp() {
                         {t('openBadgeManager')} →
                       </div>
                     </div>
+                    {/* Email Blast */}
+                    <div
+                      onClick={() => setShowAdminEmailModal(true)}
+                      style={{ background: 'white', padding: '36px', borderRadius: '24px', border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 10px 40px rgba(0,0,0,0.08)', transition: 'all 0.3s ease', cursor: 'pointer' }}
+                      onMouseOver={(e) => { e.currentTarget.style.boxShadow='0 20px 50px rgba(0,0,0,0.12)'; e.currentTarget.style.transform='translateY(-4px)' }}
+                      onMouseOut={(e) => { e.currentTarget.style.boxShadow='0 10px 40px rgba(0,0,0,0.08)'; e.currentTarget.style.transform='translateY(0)' }}
+                    >
+                      <div style={{ width:'72px', height:'72px', background:'linear-gradient(135deg,#eff6ff,#dbeafe)', borderRadius:'20px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'36px', marginBottom:'20px' }}>📧</div>
+                      <h3 style={{ fontSize:'22px', fontWeight:'700', color:'#1f2937', marginBottom:'12px' }}>Email Blast</h3>
+                      <p style={{ color:'#6b7280', fontSize:'15px', marginBottom:'24px', lineHeight:'1.6' }}>Compose and send announcements to all volunteers, NGOs, or everyone on the platform.</p>
+                      <div style={{ fontSize:'13px', color:'#6b7280', marginBottom:'16px' }}>📬 {adminEmails.filter((e:any)=>e.status==='sent').length} sent · {adminEmails.filter((e:any)=>e.status==='scheduled').length} scheduled</div>
+                      <div style={{ padding:'10px 20px', background:'linear-gradient(135deg,#3b82f6,#2563eb)', color:'white', borderRadius:'10px', fontSize:'14px', fontWeight:'600', textAlign:'center' }}>
+                        Compose Email →
+                      </div>
+                    </div>
                   </div>
 
                   {/* NGO Applications Section */}
@@ -11684,8 +13145,18 @@ export default function KindWorldApp() {
                                 {ngo.description}
                               </p>
                               {ngo.website && (
-                                <p style={{ margin: '4px 0 12px', color: 'var(--ta)', fontSize: '12px' }}>
-                                  🌐 {ngo.website}
+                                <p style={{ margin: '4px 0 8px', fontSize: '12px' }}>
+                                  🌐 <a href={ngo.website} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ta)', textDecoration: 'none', fontWeight: '600' }}>{ngo.website}</a>
+                                </p>
+                              )}
+                              {ngo.documentUrl && (
+                                <p style={{ margin: '4px 0 8px', fontSize: '12px' }}>
+                                  📄 <a href={ngo.documentUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: '600' }}>View Legal Document</a>
+                                </p>
+                              )}
+                              {ngo.portfolioUrl && (
+                                <p style={{ margin: '4px 0 12px', fontSize: '12px' }}>
+                                  🖼 <a href={ngo.portfolioUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#6b7280', textDecoration: 'none', fontWeight: '600' }}>View Portfolio</a>
                                 </p>
                               )}
                               <div style={{ display: 'flex', gap: '8px' }}>
@@ -11806,10 +13277,16 @@ export default function KindWorldApp() {
                                 {ngo.email}
                               </p>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span style={{ fontSize: '12px', color: '#059669', background: 'rgba(16, 185, 129, 0.1)', padding: '4px 8px', borderRadius: '6px', fontWeight: '500' }}>
                                 ✓ {t('activeStatus')}
                               </span>
+                              <button
+                                onClick={() => setSelectedAdminNgo(ngo)}
+                                style={{ fontSize: '12px', color: 'var(--td)', background: 'linear-gradient(135deg, var(--tl), var(--tl2))', border: '1px solid rgba(var(--ta-rgb),0.3)', padding: '4px 10px', borderRadius: '6px', fontWeight: '600', cursor: 'pointer' }}
+                              >
+                                {t('viewDetails')}
+                              </button>
                             </div>
                           </div>
                         ))}
@@ -11886,6 +13363,21 @@ export default function KindWorldApp() {
                           <span style={{ color: '#94a3b8' }}>·</span>
                           <span style={{ color: '#94a3b8' }}>{new Date(mission.date).toLocaleDateString(language, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                         </div>
+                        {/* Event summary snippet (any mission with a report) */}
+                        {mission.report?.text && (
+                          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                            <p style={{ fontSize: '11px', fontWeight: '600', color: '#10b981', margin: '0 0 4px' }}>📝 {t('eventSummaryLabel') || 'Event Summary'}</p>
+                            <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } as any}>{mission.report.text}</p>
+                            {(mission.report.photos || []).length > 0 && (
+                              <div style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' }}>
+                                {(mission.report.photos || []).slice(0, 4).map((photo, pi) => (
+                                  <img key={pi} src={photo} alt="" style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e5e7eb' }} />
+                                ))}
+                                {(mission.report.photos || []).length > 4 && <span style={{ fontSize: '11px', color: '#9ca3af', alignSelf: 'center' }}>+{(mission.report.photos || []).length - 4} more</span>}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
 
@@ -12179,6 +13671,7 @@ export default function KindWorldApp() {
                             {t('manageBadges')}
                           </button>
                           {userData.email !== user?.email && userData.role !== 'admin' && (
+                            <>
                             <button
                               onClick={() => {
                                 const isSuspended = userData.status === 'suspended'
@@ -12198,6 +13691,26 @@ export default function KindWorldApp() {
                             >
                               {userData.status === 'suspended' ? `✅ ${t('unsuspendUser')}` : `🚫 ${t('suspendUser')}`}
                             </button>
+                            <button
+                              onClick={() => {
+                                if (!window.confirm(t('deleteUserConfirm'))) return
+                                setAllUsers((prev: any[]) => {
+                                  const updated = prev.filter((u: any) => u.id !== userData.id && u.email !== userData.email)
+                                  localStorage.setItem('kindworld_allusers', JSON.stringify(updated))
+                                  return updated
+                                })
+                                setHourSubmissions((prev: any[]) => {
+                                  const updated = prev.filter((s: any) => s.volunteerEmail !== userData.email && s.volunteerId !== userData.email)
+                                  localStorage.setItem('kindworld_hour_submissions', JSON.stringify(updated))
+                                  return updated
+                                })
+                                setNotifications(prev => [...prev, `🗑️ Account "${userData.name}" permanently deleted.`])
+                              }}
+                              style={{ padding: '6px 12px', background: 'rgba(239,68,68,0.08)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
+                            >
+                              🗑️ {t('deleteUser')}
+                            </button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -12243,12 +13756,17 @@ export default function KindWorldApp() {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '48px' }}>
                     {(() => {
                       const ngoMissions = missions.filter(m => m.organizerId === user?.email)
-                      const ngoApprovedSubs = hourSubmissions.filter((s: any) => s.organizerId === user?.email && s.status === 'approved')
-                      const uniqueVolunteers = new Set(ngoApprovedSubs.map((s: any) => s.volunteerEmail || s.volunteerId)).size
+                      const ngoMissionIds = new Set(ngoMissions.map(m => m.id))
+                      const ngoApprovedSubs = hourSubmissions.filter((s: any) => (s.organizerId === user?.email || ngoMissionIds.has(s.missionId)) && s.status === 'approved')
+                      // Count all registered volunteers (joined), not just approved-hours ones
+                      const registeredVols = new Set([
+                        ...missionRegistrations.filter(r => ngoMissionIds.has(r.missionId)).map(r => r.volunteer?.email || r.volunteer?.id),
+                        ...ngoApprovedSubs.map((s: any) => s.volunteerEmail || s.volunteerId)
+                      ].filter(Boolean)).size
                       const totalApprovedHours = ngoApprovedSubs.reduce((sum: number, s: any) => sum + (s.hoursSubmitted || s.hours || 0), 0)
                       const certsIssued = certRequests.filter(r => r.ngoId === user?.email && r.status === 'approved').length
                       return [
-                        { value: uniqueVolunteers, label: t('ngoActiveVolunteers'), icon: '👥', color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))' },
+                        { value: registeredVols, label: t('ngoActiveVolunteers'), icon: '👥', color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))' },
                         { value: ngoMissions.length, label: t('ngoPublishedActivities'), icon: '📋', color: '#059669', bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5)' },
                         { value: `${totalApprovedHours}h`, label: t('ngoTotalImpactHours'), icon: '⏱️', color: '#d97706', bg: 'linear-gradient(135deg, #fffbeb, #fef3c7)' },
                         { value: certsIssued, label: t('ngoCertificatesIssued'), icon: '🏆', color: '#dc2626', bg: 'linear-gradient(135deg, #fef2f2, #fecaca)' }
@@ -12492,7 +14010,7 @@ export default function KindWorldApp() {
                     backdropFilter: 'blur(10px)',
                     padding: '32px',
                     borderRadius: '20px',
-                    border: pendingVerifications.length > 0 ? '2px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.2)',
+                    border: (pendingVerifications.length + hourSubmissions.filter((s: any) => { const ngoMissionIds = new Set(missions.filter(m => m.organizerId === user?.email).map(m => m.id)); return (s.organizerId === user?.email || ngoMissionIds.has(s.missionId)) && s.status === 'pending' }).length) > 0 ? '2px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.2)',
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                     marginBottom: '24px'
                   }}>
@@ -12501,7 +14019,10 @@ export default function KindWorldApp() {
                         <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#2d3748', margin: 0 }}>
                           ⏳ {t('pendingVerifications')}
                         </h3>
-                        {(pendingVerifications.length + hourSubmissions.filter((s: any) => s.organizerId === user?.email && s.status === 'pending').length) > 0 && (
+                        {(() => {
+                          const ngoMissionIds = new Set(missions.filter(m => m.organizerId === user?.email).map(m => m.id))
+                          const pendingCount = pendingVerifications.length + hourSubmissions.filter((s: any) => (s.organizerId === user?.email || ngoMissionIds.has(s.missionId)) && s.status === 'pending').length
+                          return pendingCount > 0 ? (
                           <span style={{
                             background: 'linear-gradient(135deg, #f59e0b, #d97706)',
                             color: 'white',
@@ -12510,15 +14031,17 @@ export default function KindWorldApp() {
                             fontSize: '12px',
                             fontWeight: '600'
                           }}>
-                            {pendingVerifications.length + hourSubmissions.filter((s: any) => s.organizerId === user?.email && s.status === 'pending').length} {t('hoursToVerify')}
+                            {pendingCount} {t('hoursToVerify')}
                           </span>
-                        )}
+                          ) : null
+                        })()}
                       </div>
                     </div>
 
                     {(() => {
                       // Combine legacy pendingVerifications with new hourSubmissions for this NGO
-                      const ngoSubmissions = hourSubmissions.filter((s: any) => s.organizerId === user?.email && s.status === 'pending')
+                      const ngoMissionIds = new Set(missions.filter(m => m.organizerId === user?.email).map(m => m.id))
+                      const ngoSubmissions = hourSubmissions.filter((s: any) => (s.organizerId === user?.email || ngoMissionIds.has(s.missionId)) && s.status === 'pending')
                       const allPending = [...pendingVerifications, ...ngoSubmissions.map((s: any) => ({ id: s.id, volunteerName: s.volunteerName, missionTitle: s.missionTitle, hoursSubmitted: s.hoursSubmitted, submittedDate: new Date(s.submittedAt).toLocaleDateString(), status: 'pending', organizerId: s.organizerId, _fromHourSubmissions: true, _submissionRef: s }))]
                       return allPending.length === 0 ? (
                       <div style={{
@@ -12603,9 +14126,17 @@ export default function KindWorldApp() {
                                     const volEmail = sub.volunteerEmail
                                     const approvedSubs = updated.filter((s: any) => s.volunteerEmail === volEmail && s.status === 'approved')
                                     const totalHrs = approvedSubs.reduce((sum: number, s: any) => sum + (s.hoursSubmitted || s.hours || 0), 0)
+                                    const prevTotal = totalHrs - (sub.hoursSubmitted || sub.hours || 0)
                                     const missionsDone = new Set(approvedSubs.map((s: any) => s.missionId)).size
                                     const orgsHelped = new Set(approvedSubs.map((s: any) => s.organizerId).filter(Boolean)).size
                                     setAllUsers((prev: any[]) => prev.map((u: any) => u.email === volEmail ? { ...u, hours: totalHrs, completedMissions: missionsDone, organizationsHelped: orgsHelped } : u))
+                                    // SMOT celebrations: milestone checks
+                                    const milestones = [{ h:1,icon:'⏰',title:'First Hours Approved!',sub:`Great news — ${verification.volunteerName}'s first volunteer hours are now officially logged. Their journey begins! 🌟`},{h:10,icon:'🔥',title:'10 Hours Milestone!',sub:`${verification.volunteerName} has now volunteered 10 hours. They're on a roll!`},{h:25,icon:'⭐',title:'25 Hours Achievement!',sub:`${verification.volunteerName} has reached 25 volunteer hours — a fantastic milestone!`},{h:50,icon:'🏅',title:'50 Hours! Half-Centurion!',sub:`${verification.volunteerName} has dedicated 50 hours of their time. Incredible commitment!`},{h:100,icon:'💯',title:'100 Hours — Centurion! 🎖️',sub:`${verification.volunteerName} has hit the legendary 100-hour mark. A true KindWorld champion!`}]
+                                    let topMilestone = null
+                                    for (const m of milestones) {
+                                      if (prevTotal < m.h && totalHrs >= m.h) topMilestone = m
+                                    }
+                                    if (topMilestone) setShowCelebration({ type:'milestone', title: topMilestone.title, subtitle: topMilestone.sub, icon: topMilestone.icon })
                                   } else {
                                     setPendingVerifications(prev => prev.filter(v => v.id !== verification.id))
                                   }
@@ -12635,14 +14166,8 @@ export default function KindWorldApp() {
                               </button>
                               <button
                                 onClick={() => {
-                                  if ((verification as any)._fromHourSubmissions) {
-                                    const updated = hourSubmissions.map((s: any) => s.id === verification.id ? { ...s, status: 'rejected' } : s)
-                                    setHourSubmissions(updated)
-                                    localStorage.setItem('kindworld_hour_submissions', JSON.stringify(updated))
-                                  } else {
-                                    setPendingVerifications(prev => prev.filter(v => v.id !== verification.id))
-                                  }
-                                  setNotifications(prev => [...prev, `❌ Rejected hours submission from ${verification.volunteerName}`])
+                                  setRejectionReasonInput('')
+                                  setShowRejectModal(verification)
                                 }}
                                 style={{
                                   padding: '8px 16px',
@@ -12663,6 +14188,18 @@ export default function KindWorldApp() {
                                 }}
                               >
                                 {t('rejectHours')}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const sub = (verification as any)._submissionRef
+                                  setReviewForm({ rating: 5, comment: '' })
+                                  setShowReviewModal({ type: 'vol', missionId: sub?.missionId ?? verification.id, missionTitle: verification.missionTitle, targetEmail: sub?.volunteerEmail ?? '', targetName: verification.volunteerName })
+                                }}
+                                style={{ padding: '8px 16px', background: 'rgba(245,158,11,0.1)', color: '#d97706', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }}
+                                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(245,158,11,0.18)' }}
+                                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(245,158,11,0.1)' }}
+                              >
+                                ⭐ {t('reviewVolunteerBtn') || 'Review'}
                               </button>
                             </div>
                           </div>
@@ -12863,16 +14400,33 @@ export default function KindWorldApp() {
                                 setShowMissionReport(true)
                               }}
                               style={{
-                              padding: '6px 12px',
-                              background: 'rgba(var(--tp-rgb), 0.1)',
-                              color: 'var(--tp)',
-                              border: 'none',
-                              borderRadius: '6px',
-                              fontSize: '11px',
-                              fontWeight: '600',
-                              cursor: 'pointer'
-                            }}>
-                              📋 {t('detailsLabel')}
+                                padding: '6px 12px',
+                                background: (() => {
+                                  const isPast = new Date(activity.date) < new Date()
+                                  const hasRpt = !!(activity.report?.text || (activity.report?.photos || []).length)
+                                  return isPast && !hasRpt ? 'rgba(245,158,11,0.12)' : isPast && hasRpt ? 'rgba(34,197,94,0.1)' : 'rgba(var(--tp-rgb), 0.1)'
+                                })(),
+                                color: (() => {
+                                  const isPast = new Date(activity.date) < new Date()
+                                  const hasRpt = !!(activity.report?.text || (activity.report?.photos || []).length)
+                                  return isPast && !hasRpt ? '#d97706' : isPast && hasRpt ? '#16a34a' : 'var(--tp)'
+                                })(),
+                                border: (() => {
+                                  const isPast = new Date(activity.date) < new Date()
+                                  const hasRpt = !!(activity.report?.text || (activity.report?.photos || []).length)
+                                  return isPast && !hasRpt ? '1px solid rgba(245,158,11,0.3)' : 'none'
+                                })(),
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {(() => {
+                                const isPast = new Date(activity.date) < new Date()
+                                const hasRpt = !!(activity.report?.text || (activity.report?.photos || []).length)
+                                return isPast && !hasRpt ? '📝 Add Summary' : isPast && hasRpt ? '📸 View Summary' : '📋 Details'
+                              })()}
                             </button>
                           </div>
                         </div>
@@ -13064,7 +14618,7 @@ export default function KindWorldApp() {
                           <button
                             onClick={() => {
                               setEditingMission(null)
-                              setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 0, maxParticipants: 0, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
+                              setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
                             }}
                             style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#718096' }}
                           >
@@ -13188,7 +14742,7 @@ export default function KindWorldApp() {
                                 })
                                 setNotifications(prev => [...prev, `✅ Mission "${newActivity.title}" updated successfully!`])
                                 setEditingMission(null)
-                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 0, maxParticipants: 0, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
+                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
                               }}
                               style={{
                                 flex: 1,
@@ -13207,7 +14761,7 @@ export default function KindWorldApp() {
                             <button
                               onClick={() => {
                                 setEditingMission(null)
-                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 0, maxParticipants: 0, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
+                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
                               }}
                               style={{
                                 flex: 1,
@@ -13297,7 +14851,7 @@ export default function KindWorldApp() {
                             <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>{t('certUploadLogo')}</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                               {newCertProgForm.logo && (
-                                <img src={newCertProgForm.logo} alt="NGO Logo" style={{ height: '56px', maxWidth: '140px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #e0e7ff', background: 'white', padding: '4px' }} />
+                                <img src={newCertProgForm.logo} alt="NGO Logo" style={{ height: '56px', maxWidth: '140px', objectFit: 'contain', background: 'transparent', mixBlendMode: 'multiply' as const }} />
                               )}
                               <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: 'white', border: '1.5px solid #c7d2fe', borderRadius: '10px', fontSize: '13px', fontWeight: '600', color: '#6366f1', cursor: 'pointer' }}>
                                 📁 {t('certUploadLogo')}
@@ -13346,7 +14900,7 @@ export default function KindWorldApp() {
                               {certPrograms.filter(p => p.ngoId === user?.email).map(prog => (
                                 <div key={prog.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 18px', background: prog.isActive ? 'white' : 'rgba(243,244,246,0.8)', borderRadius: '14px', border: `1px solid ${prog.isActive ? 'rgba(99,102,241,0.2)' : '#e5e7eb'}` }}>
                                   {prog.ngoLogo ? (
-                                    <img src={prog.ngoLogo} alt="" style={{ height: '40px', width: '40px', objectFit: 'contain', borderRadius: '8px', border: '1px solid #e0e7ff', background: 'white', padding: '2px', flexShrink: 0 }} />
+                                    <img src={prog.ngoLogo} alt="" style={{ height: '40px', width: '40px', objectFit: 'contain', flexShrink: 0, background: 'transparent', mixBlendMode: 'multiply' as const }} />
                                   ) : (
                                     <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #e0e7ff, #c7d2fe)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>🏆</div>
                                   )}
@@ -13518,41 +15072,113 @@ export default function KindWorldApp() {
                                     borderRadius: '12px',
                                     border: '1px solid #e5e7eb'
                                   }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <div style={{
-                                          width: '40px',
-                                          height: '40px',
-                                          background: 'linear-gradient(135deg, var(--ta), var(--tb))',
-                                          borderRadius: '50%',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          justifyContent: 'center',
-                                          color: 'white',
-                                          fontWeight: 'bold',
-                                          fontSize: '14px'
-                                        }}>
-                                          {p.volunteer.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                          <div style={{ fontWeight: '600', color: '#2d3748', fontSize: '14px' }}>
-                                            {p.volunteer.name}
-                                          </div>
-                                          <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                                            {p.volunteer.email}
-                                          </div>
-                                        </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                      <div style={{
+                                        width: '44px',
+                                        height: '44px',
+                                        background: 'linear-gradient(135deg, var(--ta), var(--tb))',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontWeight: 'bold',
+                                        fontSize: '16px',
+                                        flexShrink: 0
+                                      }}>
+                                        {p.volunteer.name.charAt(0)}
                                       </div>
-                                      <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                                        📞 {p.registrationData?.phoneNumber || 'N/A'}
+                                      <div>
+                                        <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '15px' }}>
+                                          {p.volunteer?.name}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                          {p.volunteer?.email}
+                                        </div>
                                       </div>
                                     </div>
-                                    {p.registrationData?.emergencyContact && (
-                                      <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e5e7eb', fontSize: '12px', color: '#6b7280' }}>
-                                        <strong>{t('emergencyContact')}: </strong>
-                                        {p.registrationData.emergencyContact} ({p.registrationData.emergencyPhone})
-                                      </div>
-                                    )}
+                                    {/* Registration details grid */}
+                                    <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e5e7eb', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                      {p.registrationData?.phoneNumber && (
+                                        <div style={{ fontSize: '12px', color: '#374151' }}>
+                                          <span style={{ fontWeight: '600', color: '#6b7280' }}>📞 Phone: </span>
+                                          {p.registrationData.phoneNumber}
+                                        </div>
+                                      )}
+                                      {p.registrationData?.transportation && (
+                                        <div style={{ fontSize: '12px', color: '#374151' }}>
+                                          <span style={{ fontWeight: '600', color: '#6b7280' }}>🚗 Transport: </span>
+                                          {p.registrationData.transportation}
+                                        </div>
+                                      )}
+                                      {p.registrationData?.specialSkills && (
+                                        <div style={{ fontSize: '12px', color: '#374151', gridColumn: '1/-1' }}>
+                                          <span style={{ fontWeight: '600', color: '#6b7280' }}>🛠 Special Skills: </span>
+                                          {p.registrationData.specialSkills}
+                                        </div>
+                                      )}
+                                      {p.registrationData?.allergies && (
+                                        <div style={{ fontSize: '12px', color: '#dc2626', gridColumn: '1/-1' }}>
+                                          <span style={{ fontWeight: '600' }}>⚠️ Allergies: </span>
+                                          {p.registrationData.allergies}
+                                        </div>
+                                      )}
+                                      {p.registrationData?.medicalConditions && (
+                                        <div style={{ fontSize: '12px', color: '#dc2626', gridColumn: '1/-1' }}>
+                                          <span style={{ fontWeight: '600' }}>🏥 Medical: </span>
+                                          {p.registrationData.medicalConditions}
+                                        </div>
+                                      )}
+                                      {p.registrationData?.dietaryRestrictions && (
+                                        <div style={{ fontSize: '12px', color: '#374151', gridColumn: '1/-1' }}>
+                                          <span style={{ fontWeight: '600', color: '#6b7280' }}>🥗 Dietary: </span>
+                                          {p.registrationData.dietaryRestrictions}
+                                        </div>
+                                      )}
+                                      {(p.registrationData?.emergencyContact || p.registrationData?.emergencyContactName) && (
+                                        <div style={{ fontSize: '12px', color: '#374151', gridColumn: '1/-1', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', padding: '6px 10px' }}>
+                                          <span style={{ fontWeight: '600', color: '#92400e' }}>🆘 Emergency: </span>
+                                          {p.registrationData.emergencyContact || p.registrationData.emergencyContactName}
+                                          {(p.registrationData.emergencyPhone || p.registrationData.emergencyContactPhone) && ` · ${p.registrationData.emergencyPhone || p.registrationData.emergencyContactPhone}`}
+                                          {p.registrationData.emergencyContactRelation && ` (${p.registrationData.emergencyContactRelation})`}
+                                        </div>
+                                      )}
+                                      {p.registrationData?.notes && (
+                                        <div style={{ fontSize: '12px', color: '#374151', gridColumn: '1/-1' }}>
+                                          <span style={{ fontWeight: '600', color: '#6b7280' }}>📝 Notes: </span>
+                                          {p.registrationData.notes}
+                                        </div>
+                                      )}
+                                    </div>
+                                    {/* NGO Action Buttons */}
+                                    <div style={{ display:'flex', gap:'8px', marginTop:'12px', paddingTop:'12px', borderTop:'1px solid #f3f4f6', flexWrap:'wrap' }}>
+                                      {(() => {
+                                        const isNoShow = noShowRecords.some((n:any) => n.volunteerEmail === p.volunteer?.email && n.missionId === selectedMissionParticipants.id)
+                                        return isNoShow ? (
+                                          <span style={{ fontSize:'12px', color:'#dc2626', background:'#fef2f2', border:'1px solid #fecaca', borderRadius:'8px', padding:'6px 12px', fontWeight:'600' }}>🚫 Marked No-Show</span>
+                                        ) : (
+                                          <button
+                                            onClick={() => {
+                                              const record = { id: Date.now().toString(), volunteerEmail: p.volunteer?.email, volunteerName: p.volunteer?.name, ngoEmail: user?.email || '', ngoName: user?.name || '', missionId: selectedMissionParticipants.id, missionTitle: selectedMissionParticipants.title, reason: '', date: new Date().toISOString() }
+                                              setNoShowRecords((prev:any[]) => [...prev, record])
+                                              setNotifications(prev => [...prev, `🚫 ${p.volunteer?.name} marked as no-show`])
+                                            }}
+                                            style={{ padding:'6px 12px', background:'#fef2f2', color:'#dc2626', border:'1px solid #fecaca', borderRadius:'8px', fontSize:'12px', fontWeight:'600', cursor:'pointer' }}
+                                          >🚫 Mark No-Show</button>
+                                        )
+                                      })()}
+                                      <button
+                                        onClick={() => {
+                                          setReviewForm({ rating: 5, comment: '' })
+                                          setShowReviewModal({ type:'vol', missionId: selectedMissionParticipants.id, missionTitle: selectedMissionParticipants.title, targetEmail: p.volunteer?.email, targetName: p.volunteer?.name })
+                                        }}
+                                        style={{ padding:'6px 12px', background:'#fffbeb', color:'#d97706', border:'1px solid #fde68a', borderRadius:'8px', fontSize:'12px', fontWeight:'600', cursor:'pointer' }}
+                                      >⭐ Write Review</button>
+                                      <button
+                                        onClick={() => setShowDirectMsgModal({ toEmail: p.volunteer?.email, toName: p.volunteer?.name })}
+                                        style={{ padding:'6px 12px', background:'#eff6ff', color:'#3b82f6', border:'1px solid #bfdbfe', borderRadius:'8px', fontSize:'12px', fontWeight:'600', cursor:'pointer' }}
+                                      >💬 Message</button>
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -14016,7 +15642,7 @@ export default function KindWorldApp() {
                           </div>
 
                           {/* Action Buttons */}
-                          <div style={{ display: 'flex', gap: '12px' }}>
+                          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                             <button
                               onClick={() => {
                                 setShowUserDetailModal(false)
@@ -14044,6 +15670,39 @@ export default function KindWorldApp() {
                             >
                               ✏️ {t('editUser')}
                             </button>
+                            {selectedUserDetail?.email !== user?.email && selectedUserDetail?.role !== 'admin' && (
+                              <button
+                                onClick={() => {
+                                  if (!window.confirm(t('deleteUserConfirm'))) return
+                                  const target = selectedUserDetail
+                                  setShowUserDetailModal(false)
+                                  setSelectedUserDetail(null)
+                                  setAllUsers((prev: any[]) => {
+                                    const updated = prev.filter((u: any) => u.id !== target.id && u.email !== target.email)
+                                    localStorage.setItem('kindworld_allusers', JSON.stringify(updated))
+                                    return updated
+                                  })
+                                  setHourSubmissions((prev: any[]) => {
+                                    const updated = prev.filter((s: any) => s.volunteerEmail !== target.email && s.volunteerId !== target.email)
+                                    localStorage.setItem('kindworld_hour_submissions', JSON.stringify(updated))
+                                    return updated
+                                  })
+                                  setNotifications(prev => [...prev, `🗑️ Account "${target.name}" permanently deleted.`])
+                                }}
+                                style={{
+                                  padding: '14px 24px',
+                                  background: 'rgba(239,68,68,0.08)',
+                                  color: '#dc2626',
+                                  border: '2px solid rgba(239,68,68,0.25)',
+                                  borderRadius: '12px',
+                                  fontSize: '15px',
+                                  fontWeight: '600',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                🗑️ {t('deleteUser')}
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 setShowUserDetailModal(false)
@@ -14069,31 +15728,155 @@ export default function KindWorldApp() {
                   )}
                 </div>
               ) : user.role === 'ngo' ? (
-                // NGO Pending Approval Screen
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '40px 24px', textAlign: 'center' }}>
-                  <div style={{ background: 'white', borderRadius: '24px', padding: '60px 48px', maxWidth: '520px', width: '100%', boxShadow: '0 8px 40px rgba(0,0,0,0.08)', border: '1px solid #e5e7eb' }}>
-                    <div style={{ fontSize: '64px', marginBottom: '24px' }}>⏳</div>
-                    <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#1f2937', margin: '0 0 12px 0' }}>
-                      {t('ngoPendingTitle')}
-                    </h2>
-                    <p style={{ color: '#6b7280', fontSize: '16px', lineHeight: '1.6', margin: '0 0 28px 0' }}>
-                      {t('ngoPendingDesc')}
-                    </p>
-                    <div style={{ background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '12px', padding: '14px 24px', marginBottom: '28px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '16px' }}>🏢</span>
-                      <span style={{ color: '#92400e', fontWeight: '600', fontSize: '14px' }}>{t('ngoPendingStatus')}</span>
+                // NGO Pending — two states: onboarding form OR under-review
+                (() => {
+                  const ngoUser = allUsers.find((u: any) => u.email === user?.email)
+                  const submitted = !!(ngoUser?.ngoProfileComplete)
+
+                  if (!submitted) {
+                    // ── State 1: Onboarding form ──
+                    return (
+                      <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 24px' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+                          <div style={{ fontSize: '56px', marginBottom: '12px' }}>🏢</div>
+                          <h2 style={{ fontSize: '28px', fontWeight: '800', color: '#1f2937', margin: '0 0 8px' }}>{t('ngoOnboardingTitle')}</h2>
+                          <p style={{ color: '#6b7280', fontSize: '15px', margin: 0 }}>{t('ngoOnboardingSubtitle')}</p>
+                        </div>
+
+                        <div style={{ background: 'white', borderRadius: '20px', padding: '36px', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid #e5e7eb', display: 'grid', gap: '20px' }}>
+
+                          {/* Description */}
+                          <div>
+                            <label style={{ display: 'block', fontWeight: '600', color: '#374151', fontSize: '14px', marginBottom: '6px' }}>{t('ngoOnboardingDescLabel')} <span style={{ color: '#ef4444' }}>*</span></label>
+                            <textarea value={profileForm.ngoDescription || ''} onChange={e => setProfileForm({ ...profileForm, ngoDescription: e.target.value })}
+                              placeholder={t('ngoOnboardingDescPlaceholder')}
+                              rows={4}
+                              style={{ width: '100%', padding: '12px 14px', border: '2px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                              onFocus={e => e.target.style.borderColor = 'var(--tp)'} onBlur={e => e.target.style.borderColor = '#e5e7eb'} />
+                          </div>
+
+                          {/* Website */}
+                          <div>
+                            <label style={{ display: 'block', fontWeight: '600', color: '#374151', fontSize: '14px', marginBottom: '6px' }}>{t('ngoOnboardingWebsiteLabel')} <span style={{ color: '#ef4444' }}>*</span></label>
+                            <input type="url" value={profileForm.ngoWebsite || ''} onChange={e => setProfileForm({ ...profileForm, ngoWebsite: e.target.value })}
+                              placeholder="https://yourorganisation.org"
+                              style={{ width: '100%', padding: '12px 14px', border: '2px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
+                              onFocus={e => e.target.style.borderColor = 'var(--tp)'} onBlur={e => e.target.style.borderColor = '#e5e7eb'} />
+                          </div>
+
+                          {/* Legal Document URL */}
+                          <div>
+                            <label style={{ display: 'block', fontWeight: '600', color: '#374151', fontSize: '14px', marginBottom: '6px' }}>{t('ngoOnboardingLegalLabel')} <span style={{ color: '#ef4444' }}>*</span></label>
+                            <p style={{ fontSize: '12px', color: '#9ca3af', margin: '0 0 8px' }}>{t('ngoOnboardingLegalHint')}</p>
+                            <input type="url" value={profileForm.ngoDocumentUrl || ''} onChange={e => setProfileForm({ ...profileForm, ngoDocumentUrl: e.target.value })}
+                              placeholder="https://drive.google.com/…"
+                              style={{ width: '100%', padding: '12px 14px', border: '2px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
+                              onFocus={e => e.target.style.borderColor = 'var(--tp)'} onBlur={e => e.target.style.borderColor = '#e5e7eb'} />
+                          </div>
+
+                          {/* Portfolio / Past Work */}
+                          <div>
+                            <label style={{ display: 'block', fontWeight: '600', color: '#374151', fontSize: '14px', marginBottom: '6px' }}>{t('ngoOnboardingPortfolioLabel')} <span style={{ color: '#6b7280', fontWeight: '400' }}>{t('ngoOnboardingPortfolioOptional')}</span></label>
+                            <input type="url" value={profileForm.ngoPortfolioUrl || ''} onChange={e => setProfileForm({ ...profileForm, ngoPortfolioUrl: e.target.value })}
+                              placeholder={t('ngoOnboardingPortfolioPlaceholder')}
+                              style={{ width: '100%', padding: '12px 14px', border: '2px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', outline: 'none', boxSizing: 'border-box' }}
+                              onFocus={e => e.target.style.borderColor = 'var(--tp)'} onBlur={e => e.target.style.borderColor = '#e5e7eb'} />
+                          </div>
+
+                          {/* Submit */}
+                          <button
+                            onClick={() => {
+                              if (!profileForm.ngoDescription?.trim() || !profileForm.ngoWebsite?.trim() || !profileForm.ngoDocumentUrl?.trim()) {
+                                setNotifications(prev => [...prev, t('ngoOnboardingRequiredFields')])
+                                return
+                              }
+                              // Save profile details to allUsers
+                              setAllUsers((prev: any[]) => {
+                                const updated = prev.map((u: any) => u.email === user?.email ? {
+                                  ...u,
+                                  ngoDescription: profileForm.ngoDescription,
+                                  ngoWebsite: profileForm.ngoWebsite,
+                                  ngoDocumentUrl: profileForm.ngoDocumentUrl,
+                                  ngoPortfolioUrl: profileForm.ngoPortfolioUrl,
+                                  ngoProfileComplete: true
+                                } : u)
+                                localStorage.setItem('kindworld_allusers', JSON.stringify(updated))
+                                return updated
+                              })
+                              // Update (or create) the pending NGO application with real details
+                              setPendingNGOs((prev: any[]) => {
+                                const exists = prev.some((n: any) => n.email === user?.email)
+                                let updated: any[]
+                                if (exists) {
+                                  updated = prev.map((n: any) => n.email === user?.email ? {
+                                    ...n,
+                                    organization: profileForm.ngoOrgName || user?.name,
+                                    description: profileForm.ngoDescription,
+                                    website: profileForm.ngoWebsite,
+                                    documentUrl: profileForm.ngoDocumentUrl,
+                                    portfolioUrl: profileForm.ngoPortfolioUrl
+                                  } : n)
+                                } else {
+                                  updated = [...prev, {
+                                    id: Date.now(),
+                                    name: user?.name,
+                                    email: user?.email,
+                                    organization: profileForm.ngoOrgName || user?.name,
+                                    description: profileForm.ngoDescription,
+                                    website: profileForm.ngoWebsite,
+                                    documentUrl: profileForm.ngoDocumentUrl,
+                                    portfolioUrl: profileForm.ngoPortfolioUrl,
+                                    status: 'pending' as const,
+                                    appliedDate: new Date().toISOString().split('T')[0]
+                                  }]
+                                }
+                                localStorage.setItem('kindworld_pending_ngos', JSON.stringify(updated))
+                                return updated
+                              })
+                              setNotifications(prev => [...prev, t('ngoOnboardingSubmitSuccess')])
+                            }}
+                            style={{ padding: '16px', background: 'linear-gradient(135deg, var(--tp), var(--ts))', color: 'white', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 8px 24px rgba(var(--tp-rgb),0.3)' }}
+                          >
+                            {t('ngoOnboardingSubmitBtn')}
+                          </button>
+
+                          <button onClick={() => { setUser(null); setCurrentPage('landing') }}
+                            style={{ padding: '12px', background: 'none', color: '#9ca3af', border: 'none', fontSize: '14px', cursor: 'pointer' }}>
+                            {t('logout')}
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  }
+
+                  // ── State 2: Submitted, awaiting admin review ──
+                  return (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', padding: '40px 24px', textAlign: 'center' }}>
+                      <div style={{ background: 'white', borderRadius: '24px', padding: '60px 48px', maxWidth: '520px', width: '100%', boxShadow: '0 8px 40px rgba(0,0,0,0.08)', border: '1px solid #e5e7eb' }}>
+                        <div style={{ fontSize: '64px', marginBottom: '24px' }}>⏳</div>
+                        <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#1f2937', margin: '0 0 12px 0' }}>
+                          {t('ngoPendingTitle')}
+                        </h2>
+                        <p style={{ color: '#6b7280', fontSize: '16px', lineHeight: '1.6', margin: '0 0 28px 0' }}>
+                          {t('ngoOnboardingReviewMsg')}
+                        </p>
+                        <div style={{ background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '12px', padding: '14px 24px', marginBottom: '28px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '16px' }}>🏢</span>
+                          <span style={{ color: '#92400e', fontWeight: '600', fontSize: '14px' }}>{t('ngoPendingStatus')}</span>
+                        </div>
+                        <div style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '28px' }}>
+                          {t('ngoPendingSignedIn')}: <strong style={{ color: '#6b7280' }}>{user.email}</strong>
+                        </div>
+                        <button
+                          onClick={() => { setUser(null); setCurrentPage('landing') }}
+                          style={{ padding: '12px 36px', background: '#f3f4f6', color: '#6b7280', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600' }}
+                        >
+                          {t('ngoPendingLogout')}
+                        </button>
+                      </div>
                     </div>
-                    <div style={{ color: '#9ca3af', fontSize: '13px', marginBottom: '28px' }}>
-                      {t('ngoPendingSignedIn')}: <strong style={{ color: '#6b7280' }}>{user.email}</strong>
-                    </div>
-                    <button
-                      onClick={() => { setUser(null); setCurrentPage('landing') }}
-                      style={{ padding: '12px 36px', background: '#f3f4f6', color: '#6b7280', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600' }}
-                    >
-                      {t('ngoPendingLogout')}
-                    </button>
-                  </div>
-                </div>
+                  )
+                })()
               ) : (
                 // Student/Volunteer Dashboard
                 <div>
@@ -14122,7 +15905,13 @@ export default function KindWorldApp() {
                           margin: 0,
                           letterSpacing: '-0.5px'
                         }}>
-                          {t('welcomeBack')}, {user.name}!
+                          {(() => {
+                            const h = new Date().getHours()
+                            if (h < 12) return `🌅 Good morning, ${user.name}!`
+                            if (h < 17) return `☀️ Good afternoon, ${user.name}!`
+                            if (h < 21) return `🌇 Good evening, ${user.name}!`
+                            return `🌙 Good night, ${user.name}!`
+                          })()}
                         </h2>
                         <p style={{ color: '#6b7280', fontSize: '17px', margin: 0, marginTop: '6px' }}>
                           {t('impactSummary')}
@@ -14130,6 +15919,53 @@ export default function KindWorldApp() {
                       </div>
                     </div>
                   </div>
+
+              {/* Get Started Checklist — shown only when not yet fully onboarded */}
+              {user?.role === 'student' && (() => {
+                const savedUser = allUsers.find((u:any) => u.email === user?.email)
+                const hasProfile = !!(savedUser?.phone && savedUser?.emergencyContactName)
+                const hasJoined = joinedMissionIds.size > 0
+                const hasSubmitted = hourSubmissions.some((s:any) => s.volunteerEmail === user?.email || s.volunteerId === user?.email)
+                const hasApproved = userApprovedSubs.length > 0
+                const items = [
+                  { done: hasProfile, label: 'Complete your profile', desc: 'Add phone, emergency contact & allergies', action: ()=>setCurrentPage('profile'), cta: 'Go to Profile' },
+                  { done: hasJoined, label: 'Join your first mission', desc: 'Browse and register for a volunteer opportunity', action: ()=>setCurrentPage('missions'), cta: 'Browse Missions' },
+                  { done: hasSubmitted, label: 'Submit your volunteer hours', desc: 'Log the hours you spent volunteering', action: ()=>setCurrentPage('missions'), cta: 'Submit Hours' },
+                  { done: hasApproved, label: 'Get your first hours approved', desc: 'Wait for the NGO to verify your contribution', action: null, cta: null },
+                ]
+                const doneCount = items.filter(i=>i.done).length
+                if (doneCount === items.length) return null
+                return (
+                  <div style={{ background:'linear-gradient(135deg,#f0fdf4,#dcfce7)', border:'1px solid #bbf7d0', borderRadius:'20px', padding:'24px 28px', marginBottom:'32px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
+                      <div>
+                        <h3 style={{ fontSize:'18px', fontWeight:'800', color:'#166534', margin:'0 0 4px' }}>🚀 Get Started Checklist</h3>
+                        <p style={{ fontSize:'13px', color:'#16a34a', margin:0 }}>{doneCount} of {items.length} steps completed</p>
+                      </div>
+                      <div style={{ width:'52px', height:'52px', borderRadius:'50%', background:`conic-gradient(#22c55e ${doneCount/items.length*360}deg, #d1fae5 0)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                        <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:'800', fontSize:'13px', color:'#166534' }}>{Math.round(doneCount/items.length*100)}%</div>
+                      </div>
+                    </div>
+                    <div style={{ display:'grid', gap:'10px' }}>
+                      {items.map((item, idx) => (
+                        <div key={idx} style={{ display:'flex', alignItems:'center', gap:'14px', padding:'12px 16px', background: item.done ? 'rgba(34,197,94,0.08)' : 'white', borderRadius:'12px', border: item.done ? '1px solid rgba(34,197,94,0.2)' : '1px solid #e5e7eb' }}>
+                          <span style={{ fontSize:'20px', flexShrink:0 }}>{item.done ? '✅' : '⬜'}</span>
+                          <div style={{ flex:1 }}>
+                            <p style={{ fontSize:'14px', fontWeight:'600', color: item.done ? '#166534' : '#374151', margin:'0 0 2px', textDecoration: item.done ? 'line-through' : 'none', opacity: item.done ? 0.7 : 1 }}>{item.label}</p>
+                            <p style={{ fontSize:'12px', color:'#6b7280', margin:0 }}>{item.desc}</p>
+                          </div>
+                          {!item.done && item.action && (
+                            <button onClick={item.action} style={{ padding:'6px 14px', background:'#22c55e', color:'white', border:'none', borderRadius:'8px', fontSize:'12px', fontWeight:'700', cursor:'pointer', flexShrink:0 }}>{item.cta}</button>
+                          )}
+                          {!item.done && !item.action && (
+                            <span style={{ fontSize:'11px', color:'#9ca3af', flexShrink:0 }}>⏳ Waiting...</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Stats Cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '48px' }}>
@@ -14148,11 +15984,14 @@ export default function KindWorldApp() {
                   const thisMonthHours = dedupedSubs
                     .filter((s: any) => { const d = new Date(s.submittedAt); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() })
                     .reduce((sum: number, s: any) => sum + (s.hoursSubmitted || s.hours || 0), 0)
-                  const completedMissionsCount = dedupedSubs.length
-                  const orgsHelpedCount = new Set(dedupedSubs.map((s: any) => s.organizerId).filter(Boolean)).size
+                  const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`
+                  const completedMissionsCount = [...joinedMissionIds].length
+                  const orgsFromJoined = new Set(missions.filter(m => joinedMissionIds.has(m.id) && m.organizerId).map(m => m.organizerId))
+                  const orgsFromSubs = new Set(dedupedSubs.map((s: any) => s.organizerId).filter(Boolean))
+                  const orgsHelpedCount = new Set([...orgsFromJoined, ...orgsFromSubs]).size
 
                   return [
-                    { value: totalHours, label: t('volunteerHours'), icon: '⏱️', color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))' },
+                    { value: totalHours, label: t('volunteerHours'), icon: '⏱️', color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))', ring: true },
                     { value: thisMonthHours, label: t('thisMonthHours'), icon: '📅', color: '#059669', bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', highlight: true },
                     { value: completedMissionsCount, label: t('projectsCompleted'), icon: '🎯', color: '#d97706', bg: 'linear-gradient(135deg, #fffbeb, #fef3c7)' },
                     { value: orgsHelpedCount, label: t('organizationsHelped'), icon: '🏢', color: '#dc2626', bg: 'linear-gradient(135deg, #fef2f2, #fecaca)' }
@@ -14160,13 +15999,14 @@ export default function KindWorldApp() {
                 })().map((stat, index) => (
                   <div
                     key={index}
+                    className="kw-card-accent"
                     style={{
-                      background: 'white',
+                      background: '#fdfcfb',
                       padding: '36px',
                       borderRadius: '24px',
                       textAlign: 'center',
-                      border: stat.highlight ? '2px solid rgba(5, 150, 105, 0.3)' : '1px solid rgba(0, 0, 0, 0.05)',
-                      boxShadow: stat.highlight ? '0 10px 40px rgba(5, 150, 105, 0.15)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
+                      border: (stat as any).highlight ? '2px solid rgba(5, 150, 105, 0.3)' : '1px solid rgba(0, 0, 0, 0.05)',
+                      boxShadow: (stat as any).highlight ? '0 10px 40px rgba(5, 150, 105, 0.15)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
                       transition: 'all 0.3s ease',
                       cursor: 'pointer',
                       position: 'relative'
@@ -14177,11 +16017,11 @@ export default function KindWorldApp() {
                     }}
                     onMouseOut={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = stat.highlight ? '0 10px 40px rgba(5, 150, 105, 0.15)' : '0 10px 40px rgba(0, 0, 0, 0.08)'
+                      e.currentTarget.style.boxShadow = (stat as any).highlight ? '0 10px 40px rgba(5, 150, 105, 0.15)' : '0 10px 40px rgba(0, 0, 0, 0.08)'
                     }}
                   >
                     {/* Special badge for monthly hours */}
-                    {stat.highlight && (
+                    {(stat as any).highlight && (
                       <div style={{
                         position: 'absolute',
                         top: '16px',
@@ -14200,28 +16040,28 @@ export default function KindWorldApp() {
                       </div>
                     )}
 
-                    <div style={{
-                      width: '80px',
-                      height: '80px',
-                      background: stat.bg,
-                      borderRadius: '24px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      margin: '0 auto 24px auto',
-                      fontSize: '40px'
-                    }}>
-                      {stat.icon}
+                    <div style={{ position: 'relative', width: '80px', height: '80px', margin: '0 auto 24px auto' }}>
+                      {(stat as any).ring && <ProgressRing value={stat.value} goal={100} color={stat.color} />}
+                      <div style={{
+                        position: 'absolute',
+                        inset: (stat as any).ring ? '7px' : '0',
+                        background: stat.bg,
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: (stat as any).ring ? '32px' : '40px'
+                      }}>
+                        {stat.icon}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '44px', fontWeight: '700', color: stat.color, marginBottom: '8px', letterSpacing: '-1px' }}>
-                      {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
-                    </div>
+                    <AnimatedNumber value={stat.value} color={stat.color} />
                     <div style={{ color: '#6b7280', fontSize: '15px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       {stat.label}
                     </div>
 
                     {/* Additional info for monthly hours */}
-                    {stat.highlight && (
+                    {(stat as any).highlight && (
                       <div style={{
                         fontSize: '13px',
                         color: '#059669',
@@ -14232,7 +16072,7 @@ export default function KindWorldApp() {
                         justifyContent: 'center',
                         gap: '6px'
                       }}>
-                        <span>📈</span> {new Date(2026, 0).toLocaleDateString(language, { month: 'long', year: 'numeric' })}
+                        <span>📈</span> {new Date().toLocaleDateString(language, { month: 'long', year: 'numeric' })}
                       </div>
                     )}
                   </div>
@@ -14764,10 +16604,9 @@ export default function KindWorldApp() {
               <div style={{ marginBottom: '40px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
                   <div>
-                    <h2 style={{
+                    <h2 className="kw-gradient-text" style={{
                       fontSize: '32px',
-                      fontWeight: '700',
-                      color: '#2d3748',
+                      fontWeight: '800',
                       marginBottom: '8px'
                     }}>
                       {user?.role === 'ngo' ? `🏢 ${t('ngoMissionsTitle')}` :
@@ -14955,6 +16794,24 @@ export default function KindWorldApp() {
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontWeight: '700', fontSize: '15px', color: '#1e293b', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{mission.title}</div>
                                 <div style={{ fontSize: '12px', color: '#6b7280' }}>📅 {new Date(mission.date).toLocaleDateString()} · ⏱️ {mission.hours}h · 📍 {mission.location}</div>
+                                {isPast && (mission as any).report && ((mission as any).report.text || ((mission as any).report.photos?.length ?? 0) > 0) && (
+                                  <div style={{ marginTop: '6px' }}>
+                                    {(mission as any).report.text && (
+                                      <div style={{ fontSize: '12px', color: '#374151', background: 'rgba(99,102,241,0.07)', borderRadius: '8px', padding: '7px 10px', lineHeight: '1.5' }}>
+                                        <span style={{ fontWeight: '600', color: 'var(--tp)', marginRight: '4px' }}>📝 {t('reportLabel')}:</span>
+                                        {(mission as any).report.text}
+                                      </div>
+                                    )}
+                                    {((mission as any).report.photos?.length ?? 0) > 0 && (
+                                      <button
+                                        onClick={() => { setGalleryMission(mission); setShowPhotoGallery(true) }}
+                                        style={{ marginTop: '6px', padding: '4px 10px', background: 'rgba(var(--tp-rgb),0.1)', color: 'var(--tp)', border: 'none', borderRadius: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
+                                      >
+                                        📸 {t('viewReport')} ({(mission as any).report.photos.length})
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                               <div style={{ flexShrink: 0 }}>
                                 {isPast ? (
@@ -14983,6 +16840,19 @@ export default function KindWorldApp() {
               })()}
 
               <div style={{ display: 'grid', gap: '24px' }}>
+                {/* NGO profile-complete prompt */}
+                {user?.role === 'ngo' && !allUsers.find((u:any) => u.email === user?.email)?.ngoProfileComplete && (
+                  <div style={{ background:'linear-gradient(135deg,#fffbeb,#fef3c7)', border:'1px solid #fde68a', borderRadius:'16px', padding:'20px 24px', display:'flex', gap:'16px', alignItems:'center' }}>
+                    <span style={{ fontSize:'28px', flexShrink:0 }}>✍️</span>
+                    <div style={{ flex:1 }}>
+                      <p style={{ fontWeight:'700', color:'#92400e', margin:'0 0 4px', fontSize:'15px' }}>Complete your NGO profile to build trust with volunteers</p>
+                      <p style={{ fontSize:'13px', color:'#b45309', margin:0 }}>Add your description and website — they'll appear on all your mission cards, helping volunteers understand your mission.</p>
+                    </div>
+                    <button onClick={()=>setCurrentPage('profile')} style={{ padding:'10px 20px', background:'#d97706', color:'white', border:'none', borderRadius:'10px', fontSize:'13px', fontWeight:'700', cursor:'pointer', flexShrink:0 }}>
+                      Complete Profile →
+                    </button>
+                  </div>
+                )}
                 {/* Empty state for NGO with no published activities */}
                 {user?.role === 'ngo' && missions.filter(m => m.organizerId === user?.email).length === 0 && (
                   <div style={{
@@ -15102,13 +16972,16 @@ export default function KindWorldApp() {
                   }).length
                   if (filteredCount > 0) return null
                   return (
-                    <div style={{ textAlign: 'center', padding: '40px 32px', background: 'rgba(255,255,255,0.95)', borderRadius: '24px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
-                      <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-                      <h3 style={{ fontSize: '22px', fontWeight: '700', color: '#1e293b', marginBottom: '10px' }}>{t('noMissionsFound')}</h3>
-                      <p style={{ fontSize: '15px', color: '#6b7280', maxWidth: '360px', margin: '0 auto 28px' }}>{t('noMissionsFoundDesc')}</p>
+                    <div style={{ textAlign: 'center', padding: 'clamp(40px, 6vw, 64px) clamp(24px, 5vw, 48px)', background: '#fdfcfb', borderRadius: '28px', boxShadow: '0 8px 32px rgba(0,0,0,0.07)', border: '1px solid #f1f5f9', maxWidth: '480px', margin: '0 auto', position: 'relative', overflow: 'hidden' }}>
+                      {/* Decorative blobs */}
+                      <div style={{ position:'absolute', top:'-30px', right:'-30px', width:'120px', height:'120px', borderRadius:'50%', background:'radial-gradient(circle, rgba(var(--tp-rgb),0.1) 0%, transparent 70%)', pointerEvents:'none' }} />
+                      <div style={{ position:'absolute', bottom:'-20px', left:'-20px', width:'90px', height:'90px', borderRadius:'50%', background:'radial-gradient(circle, rgba(var(--ts-rgb),0.08) 0%, transparent 70%)', pointerEvents:'none' }} />
+                      <div style={{ width: '80px', height: '80px', borderRadius: '24px', background: 'linear-gradient(135deg, var(--tl) 0%, var(--tl2) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', margin: '0 auto 20px', boxShadow: '0 8px 24px rgba(var(--tp-rgb),0.15)' }}>🔍</div>
+                      <h3 className="kw-gradient-text" style={{ fontSize: '22px', fontWeight: '800', margin: '0 0 10px' }}>{t('noMissionsFound')}</h3>
+                      <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 auto 28px', lineHeight: '1.7', maxWidth: '320px' }}>{t('noMissionsFoundDesc')}</p>
                       <button
                         onClick={() => { setRegionFilter('all'); setCountryFilter('all'); setCategoryFilter('all'); setDifficultyFilter('all'); setMissionSearchQuery('') }}
-                        style={{ padding: '12px 28px', background: 'linear-gradient(135deg, var(--ta) 0%, var(--tb) 100%)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' }}
+                        style={{ padding: '12px 32px', background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 16px rgba(var(--tp-rgb),0.3)' }}
                       >
                         ✕ {t('clearFilters')}
                       </button>
@@ -15116,7 +16989,20 @@ export default function KindWorldApp() {
                   )
                 })()}
                 {/* Available Missions section header for students */}
-                {user?.role === 'student' && <div style={{ fontWeight: '700', fontSize: '18px', color: '#374151', paddingBottom: '4px', borderBottom: '2px solid var(--tl)', display: 'inline-block' }}>🔎 {t('availableMissionsTitle')}</div>}
+                {user?.role === 'student' && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontWeight: '700', fontSize: '18px', color: '#374151', paddingBottom: '4px', borderBottom: '2px solid var(--tl)', display: 'inline-block' }}>🔎 {t('availableMissionsTitle')}</div>
+                    <button
+                      onClick={() => {
+                        const saved = localStorage.getItem('kindworld_missions')
+                        if (saved) { try { setMissions(JSON.parse(saved)) } catch {} }
+                      }}
+                      style={{ padding: '6px 14px', background: 'rgba(var(--tp-rgb),0.08)', color: 'var(--tp)', border: '1.5px solid rgba(var(--tp-rgb),0.2)', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                    >
+                      🔄 {t('refreshMissions') || 'Refresh'}
+                    </button>
+                  </div>
+                )}
                 {missions
                   .filter(m => {
                     if (user?.role === 'ngo') return m.organizerId === user?.email
@@ -15222,40 +17108,82 @@ export default function KindWorldApp() {
                             🌍 {regions.find(r => r.code === mission.region)?.name || mission.region}
                           </div>
                         )}
+                        {mission.category && (() => {
+                          const catColors: Record<string,{bg:string;color:string;icon:string}> = {
+                            'Environment':    { bg:'rgba(16,185,129,0.12)',  color:'#065f46', icon:'🌱' },
+                            'Education':      { bg:'rgba(59,130,246,0.12)',  color:'#1e40af', icon:'📚' },
+                            'Healthcare':     { bg:'rgba(239,68,68,0.1)',    color:'#991b1b', icon:'🏥' },
+                            'Community':      { bg:'rgba(245,158,11,0.12)',  color:'#92400e', icon:'🤝' },
+                            'Animal Welfare': { bg:'rgba(251,146,60,0.12)',  color:'#9a3412', icon:'🐾' },
+                            'Arts & Culture': { bg:'rgba(168,85,247,0.12)', color:'#6b21a8', icon:'🎨' },
+                            'Technology':     { bg:'rgba(99,102,241,0.12)', color:'#3730a3', icon:'💻' },
+                            'Sports':         { bg:'rgba(236,72,153,0.1)',  color:'#9d174d', icon:'⚽' },
+                          }
+                          const cat = catColors[mission.category] || { bg:'rgba(107,114,128,0.1)', color:'#374151', icon:'📌' }
+                          return (
+                            <div style={{ display:'inline-flex', alignItems:'center', gap:'4px', background:cat.bg, padding:'4px 12px', borderRadius:'12px', fontSize:'12px', fontWeight:'600', color:cat.color }}>
+                              {cat.icon} {mission.category}
+                            </div>
+                          )
+                        })()}
                       </div>
+                      {/* NGO profile snippet */}
+                      {(() => {
+                        const ngoUser = allUsers.find((u:any) => u.email === mission.organizerId)
+                        if (!ngoUser?.ngoDescription && !ngoUser?.ngoWebsite) return null
+                        return (
+                          <div style={{ marginTop:'10px', paddingTop:'10px', borderTop:'1px solid #f3f4f6', display:'flex', alignItems:'center', gap:'10px', flexWrap:'wrap' }}>
+                            <span style={{ fontSize:'11px', fontWeight:'700', color:'var(--ta)', background:'rgba(var(--ta-rgb),0.08)', padding:'2px 8px', borderRadius:'6px' }}>🏢 {mission.organizer}</span>
+                            {ngoUser.ngoDescription && (
+                              <p style={{ fontSize:'12px', color:'#6b7280', margin:0, lineHeight:1.5, flex:1, minWidth:'0', overflow:'hidden', display:'-webkit-box', WebkitLineClamp:1, WebkitBoxOrient:'vertical' } as any}>{ngoUser.ngoDescription}</p>
+                            )}
+                            {ngoUser.ngoWebsite && (
+                              <a href={ngoUser.ngoWebsite} target="_blank" rel="noopener noreferrer" onClick={e=>e.stopPropagation()} style={{ fontSize:'12px', color:'#3b82f6', textDecoration:'none', fontWeight:'600', flexShrink:0 }}>🔗 Website</a>
+                            )}
+                          </div>
+                        )
+                      })()}
+                      {/* Event summary snippet — visible to all users */}
+                      {mission.report?.text && (
+                        <div style={{ marginTop:'10px', paddingTop:'10px', borderTop:'1px solid #f3f4f6' }}>
+                          <p style={{ fontSize:'11px', fontWeight:'700', color:'#10b981', margin:'0 0 4px', display:'flex', alignItems:'center', gap:'4px' }}>📝 {t('eventSummaryLabel') || 'Event Summary'}</p>
+                          <p style={{ fontSize:'12px', color:'#6b7280', margin:0, lineHeight:1.5, overflow:'hidden', display:'-webkit-box', WebkitLineClamp:2, WebkitBoxOrient:'vertical' } as any}>{mission.report.text}</p>
+                          {(mission.report.photos || []).length > 0 && (
+                            <div style={{ display:'flex', gap:'6px', marginTop:'8px', flexWrap:'wrap' }}>
+                              {(mission.report.photos || []).slice(0,4).map((photo, pi) => (
+                                <img key={pi} src={photo} alt="" style={{ width:'40px', height:'40px', objectFit:'cover', borderRadius:'6px', border:'1px solid #e5e7eb' }} />
+                              ))}
+                              {(mission.report.photos || []).length > 4 && <span style={{ fontSize:'11px', color:'#9ca3af', alignSelf:'center' }}>+{(mission.report.photos || []).length - 4} more</span>}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     {/* Show different buttons based on user role */}
                     {user?.role === 'ngo' || user?.role === 'admin' ? (
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', flexShrink: 0 }}>
                         <button
                           onClick={() => {
                             setSelectedMissionDetail(mission)
                             setShowMissionDetail(true)
                           }}
                           style={{
-                            padding: '12px 20px',
+                            padding: '7px 14px',
                             background: user?.role === 'admin'
                               ? 'linear-gradient(135deg, var(--td) 0%, var(--ts) 100%)'
                               : 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
                             color: 'white',
                             border: 'none',
-                            borderRadius: '12px',
+                            borderRadius: '8px',
                             cursor: 'pointer',
-                            fontSize: '14px',
+                            fontSize: '12px',
                             fontWeight: '600',
-                            transition: 'all 0.3s ease',
-                            outline: 'none'
+                            transition: 'all 0.2s ease',
+                            outline: 'none',
+                            whiteSpace: 'nowrap'
                           }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-2px)'
-                            e.currentTarget.style.boxShadow = user?.role === 'admin'
-                              ? '0 8px 20px rgba(79, 70, 229, 0.4)'
-                              : '0 8px 20px rgba(5, 150, 105, 0.4)'
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)'
-                            e.currentTarget.style.boxShadow = 'none'
-                          }}
+                          onMouseOver={(e) => { e.currentTarget.style.opacity = '0.88' }}
+                          onMouseOut={(e) => { e.currentTarget.style.opacity = '1' }}
                         >
                           📋 {t('viewDetails')}
                         </button>
@@ -15265,27 +17193,22 @@ export default function KindWorldApp() {
                             setShowParticipantList(true)
                           }}
                           style={{
-                            padding: '12px 20px',
-                            background: 'rgba(var(--tp-rgb), 0.1)',
+                            padding: '7px 14px',
+                            background: 'rgba(var(--tp-rgb), 0.08)',
                             color: 'var(--tp)',
-                            border: '2px solid rgba(var(--tp-rgb), 0.2)',
-                            borderRadius: '12px',
+                            border: '1.5px solid rgba(var(--tp-rgb), 0.2)',
+                            borderRadius: '8px',
                             cursor: 'pointer',
-                            fontSize: '14px',
+                            fontSize: '12px',
                             fontWeight: '600',
-                            transition: 'all 0.3s ease',
-                            outline: 'none'
+                            transition: 'all 0.2s ease',
+                            outline: 'none',
+                            whiteSpace: 'nowrap'
                           }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-2px)'
-                            e.currentTarget.style.boxShadow = '0 8px 20px rgba(var(--tp-rgb), 0.2)'
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)'
-                            e.currentTarget.style.boxShadow = 'none'
-                          }}
+                          onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(var(--tp-rgb), 0.14)' }}
+                          onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(var(--tp-rgb), 0.08)' }}
                         >
-                          👥 {t('participantsLabel2')} ({mission.currentParticipants})
+                          👥 {mission.currentParticipants}/{mission.maxParticipants}
                         </button>
                       </div>
                     ) : (
@@ -15320,26 +17243,30 @@ export default function KindWorldApp() {
                             📸 {t('viewReport')}
                           </button>
                         )}
-                        {new Date(mission.date) >= new Date(new Date().toDateString()) && (
+                        {(() => { const _td = new Date(); const _tds = `${_td.getFullYear()}-${String(_td.getMonth()+1).padStart(2,'0')}-${String(_td.getDate()).padStart(2,'0')}`; return mission.date >= _tds })() && (
                           <button
                             onClick={() => {
                               if (joinedMissionIds.has(mission.id)) {
                                 if (window.confirm(t('confirmLeaveMission'))) joinMission(mission.id)
                               } else {
                                 setJoiningMission(mission)
-                                setMissionRegistration({
-                                  fullName: user?.name || '',
-                                  phoneNumber: '',
-                                  emergencyContact: '',
-                                  emergencyPhone: '',
-                                  allergies: '',
-                                  medicalConditions: '',
-                                  dietaryRestrictions: '',
-                                  tshirtSize: 'M',
-                                  transportation: 'own',
-                                  specialSkills: '',
-                                  agreeTerms: false
-                                })
+                                {
+                                  const sv = allUsers.find((u:any) => u.email === user?.email)
+                                  setMissionRegistration({
+                                    fullName: user?.name || '',
+                                    phoneNumber: sv?.phone || '',
+                                    emergencyContact: sv?.emergencyContactName || '',
+                                    emergencyPhone: sv?.emergencyContactPhone || '',
+                                    allergies: sv?.allergies || '',
+                                    medicalConditions: sv?.medicalConditions || '',
+                                    dietaryRestrictions: sv?.dietaryRestrictions || '',
+                                    tshirtSize: sv?.tshirtSize || 'M',
+                                    transportation: 'own',
+                                    specialSkills: '',
+                                    notes: '',
+                                    agreeTerms: false
+                                  })
+                                }
                                 setShowJoinMissionModal(true)
                               }
                             }}
@@ -15680,387 +17607,60 @@ export default function KindWorldApp() {
                   </div>
                 </div>
 
-                {/* Modal Body - Registration Form */}
+                {/* Modal Body - Simplified Registration Form */}
                 <div style={{ padding: '28px 32px' }}>
-                  <p style={{
-                    margin: '0 0 24px 0',
-                    color: '#6b7280',
-                    fontSize: '14px',
-                    lineHeight: '1.6'
-                  }}>
-                    Please fill in the required information below. This helps the organizers prepare for your participation and ensure your safety during the mission.
-                  </p>
+                  {/* Profile auto-fill notice */}
+                  {(() => {
+                    const savedUser = allUsers.find((u:any) => u.email === user?.email)
+                    const hasProfile = savedUser?.emergencyContactName && savedUser?.phone
+                    return hasProfile ? (
+                      <div style={{ background:'linear-gradient(135deg, #f0fdf4, #dcfce7)', border:'1px solid #bbf7d0', borderRadius:'14px', padding:'16px 20px', marginBottom:'24px', display:'flex', gap:'12px', alignItems:'flex-start' }}>
+                        <span style={{ fontSize:'20px', flexShrink:0 }}>✅</span>
+                        <div>
+                          <p style={{ fontSize:'14px', fontWeight:'700', color:'#166534', margin:'0 0 4px' }}>Your profile info will be shared with the NGO</p>
+                          <p style={{ fontSize:'13px', color:'#16a34a', margin:0, lineHeight:1.5 }}>
+                            Name: <b>{user?.name}</b> · Phone: <b>{savedUser.phone}</b> · Emergency: <b>{savedUser.emergencyContactName}</b> ({savedUser.emergencyContactRelation || '—'}) · Allergies: <b>{savedUser.allergies || 'None'}</b> · T-Shirt: <b>{savedUser.tshirtSize || '—'}</b>
+                          </p>
+                          <button onClick={()=>setCurrentPage('profile')} style={{ fontSize:'12px', color:'#15803d', background:'none', border:'none', cursor:'pointer', padding:0, marginTop:'6px', textDecoration:'underline', fontWeight:'600' }}>Update my profile →</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:'14px', padding:'16px 20px', marginBottom:'24px', display:'flex', gap:'12px', alignItems:'flex-start' }}>
+                        <span style={{ fontSize:'20px', flexShrink:0 }}>⚠️</span>
+                        <div>
+                          <p style={{ fontSize:'14px', fontWeight:'700', color:'#92400e', margin:'0 0 4px' }}>Complete your profile for a faster join experience</p>
+                          <p style={{ fontSize:'13px', color:'#b45309', margin:'0 0 6px', lineHeight:1.5 }}>Add your emergency contact, phone number, allergies and T-shirt size to your profile once — it'll be auto-shared every time you join a mission.</p>
+                          <button onClick={()=>setCurrentPage('profile')} style={{ fontSize:'12px', color:'#d97706', background:'none', border:'none', cursor:'pointer', padding:0, textDecoration:'underline', fontWeight:'600' }}>Complete my profile →</button>
+                        </div>
+                      </div>
+                    )
+                  })()}
 
                   <div style={{ display: 'grid', gap: '20px' }}>
-                    {/* Personal Information Section */}
-                    <div style={{
-                      background: '#f9fafb',
-                      padding: '20px',
-                      borderRadius: '16px',
-                      border: '1px solid #e5e7eb'
-                    }}>
-                      <h4 style={{
-                        margin: '0 0 16px 0',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#374151',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}>
-                        Personal Information
+                    {/* Transportation + Special Skills — the only truly event-specific fields */}
+                    <div style={{ background:'#f0f9ff', padding:'20px', borderRadius:'16px', border:'1px solid #bae6fd' }}>
+                      <h4 style={{ margin:'0 0 16px 0', fontSize:'14px', fontWeight:'600', color:'#075985', textTransform:'uppercase', letterSpacing:'0.5px' }}>
+                        Mission-Specific Details
                       </h4>
-                      <div style={{ display: 'grid', gap: '16px' }}>
+                      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
                         <div>
-                          <label style={{
-                            display: 'block',
-                            marginBottom: '6px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            fontSize: '14px'
-                          }}>
-                            Full Name *
-                          </label>
-                          <input
-                            type="text"
-                            value={missionRegistration.fullName}
-                            onChange={(e) => setMissionRegistration({...missionRegistration, fullName: e.target.value})}
-                            placeholder="Enter your full name"
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              border: '2px solid #e5e7eb',
-                              borderRadius: '12px',
-                              fontSize: '14px',
-                              outline: 'none',
-                              transition: 'border-color 0.2s ease',
-                              boxSizing: 'border-box'
-                            }}
-                            onFocus={(e) => e.target.style.borderColor = '#22c55e'}
-                            onBlur={(e) => e.target.style.borderColor = 'var(--tbrd)'}
-                          />
-                        </div>
-                        <div>
-                          <label style={{
-                            display: 'block',
-                            marginBottom: '6px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            fontSize: '14px'
-                          }}>
-                            Phone Number *
-                          </label>
-                          <input
-                            type="tel"
-                            value={missionRegistration.phoneNumber}
-                            onChange={(e) => setMissionRegistration({...missionRegistration, phoneNumber: e.target.value})}
-                            placeholder="+1 (555) 000-0000"
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              border: '2px solid #e5e7eb',
-                              borderRadius: '12px',
-                              fontSize: '14px',
-                              outline: 'none',
-                              transition: 'border-color 0.2s ease',
-                              boxSizing: 'border-box'
-                            }}
-                            onFocus={(e) => e.target.style.borderColor = '#22c55e'}
-                            onBlur={(e) => e.target.style.borderColor = 'var(--tbrd)'}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Emergency Contact Section */}
-                    <div style={{
-                      background: '#fef2f2',
-                      padding: '20px',
-                      borderRadius: '16px',
-                      border: '1px solid #fecaca'
-                    }}>
-                      <h4 style={{
-                        margin: '0 0 16px 0',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#991b1b',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}>
-                        Emergency Contact
-                      </h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        <div>
-                          <label style={{
-                            display: 'block',
-                            marginBottom: '6px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            fontSize: '14px'
-                          }}>
-                            Contact Name *
-                          </label>
-                          <input
-                            type="text"
-                            value={missionRegistration.emergencyContact}
-                            onChange={(e) => setMissionRegistration({...missionRegistration, emergencyContact: e.target.value})}
-                            placeholder="Emergency contact name"
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              border: '2px solid #fecaca',
-                              borderRadius: '12px',
-                              fontSize: '14px',
-                              outline: 'none',
-                              background: 'white',
-                              boxSizing: 'border-box'
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{
-                            display: 'block',
-                            marginBottom: '6px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            fontSize: '14px'
-                          }}>
-                            Contact Phone *
-                          </label>
-                          <input
-                            type="tel"
-                            value={missionRegistration.emergencyPhone}
-                            onChange={(e) => setMissionRegistration({...missionRegistration, emergencyPhone: e.target.value})}
-                            placeholder="+1 (555) 000-0000"
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              border: '2px solid #fecaca',
-                              borderRadius: '12px',
-                              fontSize: '14px',
-                              outline: 'none',
-                              background: 'white',
-                              boxSizing: 'border-box'
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Health & Safety Section */}
-                    <div style={{
-                      background: '#fffbeb',
-                      padding: '20px',
-                      borderRadius: '16px',
-                      border: '1px solid #fde68a'
-                    }}>
-                      <h4 style={{
-                        margin: '0 0 16px 0',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#92400e',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}>
-                        Health & Safety Information
-                      </h4>
-                      <div style={{ display: 'grid', gap: '16px' }}>
-                        <div>
-                          <label style={{
-                            display: 'block',
-                            marginBottom: '6px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            fontSize: '14px'
-                          }}>
-                            Allergies
-                          </label>
-                          <input
-                            type="text"
-                            value={missionRegistration.allergies}
-                            onChange={(e) => setMissionRegistration({...missionRegistration, allergies: e.target.value})}
-                            placeholder="List any allergies (food, medication, environmental)"
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              border: '2px solid #fde68a',
-                              borderRadius: '12px',
-                              fontSize: '14px',
-                              outline: 'none',
-                              background: 'white',
-                              boxSizing: 'border-box'
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{
-                            display: 'block',
-                            marginBottom: '6px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            fontSize: '14px'
-                          }}>
-                            Medical Conditions
-                          </label>
-                          <input
-                            type="text"
-                            value={missionRegistration.medicalConditions}
-                            onChange={(e) => setMissionRegistration({...missionRegistration, medicalConditions: e.target.value})}
-                            placeholder="Any conditions we should be aware of"
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              border: '2px solid #fde68a',
-                              borderRadius: '12px',
-                              fontSize: '14px',
-                              outline: 'none',
-                              background: 'white',
-                              boxSizing: 'border-box'
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <label style={{
-                            display: 'block',
-                            marginBottom: '6px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            fontSize: '14px'
-                          }}>
-                            Dietary Restrictions
-                          </label>
-                          <input
-                            type="text"
-                            value={missionRegistration.dietaryRestrictions}
-                            onChange={(e) => setMissionRegistration({...missionRegistration, dietaryRestrictions: e.target.value})}
-                            placeholder="Vegetarian, vegan, halal, kosher, etc."
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              border: '2px solid #fde68a',
-                              borderRadius: '12px',
-                              fontSize: '14px',
-                              outline: 'none',
-                              background: 'white',
-                              boxSizing: 'border-box'
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Additional Details Section */}
-                    <div style={{
-                      background: '#f0f9ff',
-                      padding: '20px',
-                      borderRadius: '16px',
-                      border: '1px solid #bae6fd'
-                    }}>
-                      <h4 style={{
-                        margin: '0 0 16px 0',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        color: '#075985',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                      }}>
-                        Additional Details
-                      </h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        <div>
-                          <label style={{
-                            display: 'block',
-                            marginBottom: '6px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            fontSize: '14px'
-                          }}>
-                            T-Shirt Size
-                          </label>
-                          <select
-                            value={missionRegistration.tshirtSize}
-                            onChange={(e) => setMissionRegistration({...missionRegistration, tshirtSize: e.target.value})}
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              border: '2px solid #bae6fd',
-                              borderRadius: '12px',
-                              fontSize: '14px',
-                              outline: 'none',
-                              background: 'white',
-                              boxSizing: 'border-box',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <option value="XS">XS</option>
-                            <option value="S">S</option>
-                            <option value="M">M</option>
-                            <option value="L">L</option>
-                            <option value="XL">XL</option>
-                            <option value="XXL">XXL</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label style={{
-                            display: 'block',
-                            marginBottom: '6px',
-                            fontWeight: '500',
-                            color: '#374151',
-                            fontSize: '14px'
-                          }}>
-                            Transportation
-                          </label>
-                          <select
-                            value={missionRegistration.transportation}
-                            onChange={(e) => setMissionRegistration({...missionRegistration, transportation: e.target.value})}
-                            style={{
-                              width: '100%',
-                              padding: '12px 16px',
-                              border: '2px solid #bae6fd',
-                              borderRadius: '12px',
-                              fontSize: '14px',
-                              outline: 'none',
-                              background: 'white',
-                              boxSizing: 'border-box',
-                              cursor: 'pointer'
-                            }}
-                          >
+                          <label style={{ display:'block', marginBottom:'6px', fontWeight:'500', color:'#374151', fontSize:'14px' }}>Transportation</label>
+                          <select value={missionRegistration.transportation} onChange={(e)=>setMissionRegistration({...missionRegistration, transportation: e.target.value})} style={{ width:'100%', padding:'12px 16px', border:'2px solid #bae6fd', borderRadius:'12px', fontSize:'14px', outline:'none', background:'white', boxSizing:'border-box', cursor:'pointer' }}>
                             <option value="own">{t('transportOwn')}</option>
                             <option value="carpool">{t('transportCarpool')}</option>
                             <option value="public">{t('transportPublic')}</option>
                           </select>
                         </div>
+                        <div>
+                          <label style={{ display:'block', marginBottom:'6px', fontWeight:'500', color:'#374151', fontSize:'14px' }}>Special Skills (optional)</label>
+                          <input type="text" value={missionRegistration.specialSkills} onChange={(e)=>setMissionRegistration({...missionRegistration, specialSkills: e.target.value})} placeholder="e.g. First aid, Photography" style={{ width:'100%', padding:'12px 16px', border:'2px solid #bae6fd', borderRadius:'12px', fontSize:'14px', outline:'none', background:'white', boxSizing:'border-box' }} />
+                        </div>
                       </div>
-                      <div style={{ marginTop: '16px' }}>
-                        <label style={{
-                          display: 'block',
-                          marginBottom: '6px',
-                          fontWeight: '500',
-                          color: '#374151',
-                          fontSize: '14px'
-                        }}>
-                          Special Skills or Notes
-                        </label>
-                        <textarea
-                          value={missionRegistration.specialSkills}
-                          onChange={(e) => setMissionRegistration({...missionRegistration, specialSkills: e.target.value})}
-                          placeholder="Any relevant skills, certifications, or notes for the organizer"
-                          rows={3}
-                          style={{
-                            width: '100%',
-                            padding: '12px 16px',
-                            border: '2px solid #bae6fd',
-                            borderRadius: '12px',
-                            fontSize: '14px',
-                            outline: 'none',
-                            background: 'white',
-                            resize: 'vertical',
-                            fontFamily: 'inherit',
-                            boxSizing: 'border-box'
-                          }}
-                        />
+                      <div style={{ marginTop:'16px' }}>
+                        <label style={{ display:'block', marginBottom:'6px', fontWeight:'500', color:'#374151', fontSize:'14px' }}>Notes for the organizer (optional)</label>
+                        <textarea value={missionRegistration.notes} onChange={(e)=>setMissionRegistration({...missionRegistration, notes: e.target.value})} placeholder="Any additional notes for the NGO..." rows={2} style={{ width:'100%', padding:'12px 16px', border:'2px solid #bae6fd', borderRadius:'12px', fontSize:'14px', outline:'none', background:'white', resize:'vertical', fontFamily:'inherit', boxSizing:'border-box' }} />
                       </div>
                     </div>
-
                     {/* Terms Agreement */}
                     <div style={{
                       display: 'flex',
@@ -16134,10 +17734,8 @@ export default function KindWorldApp() {
                   <button
                     onClick={() => {
                       // Validate required fields
-                      if (!missionRegistration.fullName || !missionRegistration.phoneNumber ||
-                          !missionRegistration.emergencyContact || !missionRegistration.emergencyPhone ||
-                          !missionRegistration.agreeTerms) {
-                        setNotifications(prev => [...prev, '⚠️ Please fill in all required fields and agree to the terms'])
+                      if (!missionRegistration.agreeTerms) {
+                        setNotifications(prev => [...prev, '⚠️ Please agree to the mission terms to continue'])
                         return
                       }
 
@@ -16223,14 +17821,14 @@ export default function KindWorldApp() {
                     fontSize: '22px'
                   }}>📊</div>
                   <div>
-                    <h2 style={{ margin: 0, fontSize: '28px', fontWeight: '700', color: '#1f2937' }}>{t('reportsTitle')}</h2>
+                    <h2 className="kw-gradient-text" style={{ margin: 0, fontSize: '28px', fontWeight: '800' }}>{t('reportsTitle')}</h2>
                     <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: '15px' }}>{t('reportsSubtitle')}</p>
                   </div>
                 </div>
               </div>
 
               {/* KPI Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '32px' }}>
                 {[
                   { label: t('rpTotalMissions'), value: totalMissions, icon: '🎯', color: 'var(--tp)', bg: 'var(--tl)' },
                   { label: t('rpTotalVolunteers'), value: totalParticipants, icon: '👥', color: '#0891b2', bg: '#ecfeff' },
@@ -16454,7 +18052,7 @@ export default function KindWorldApp() {
                 color: 'white'
               }}>
                 <h3 style={{ margin: '0 0 20px 0', fontSize: '18px', fontWeight: '600' }}>{t('rpPlatformSummary')}</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
                   <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: '12px', padding: '20px', textAlign: 'center' }}>
                     <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>{t('rpAvgParticipants')}</div>
                     <div style={{ fontSize: '28px', fontWeight: '700' }}>{totalMissions > 0 ? Math.round(totalParticipants / totalMissions) : 0}</div>
@@ -16528,7 +18126,7 @@ export default function KindWorldApp() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           {newCertProgForm.logo ? (
                             <div style={{ position: 'relative' }}>
-                              <img src={newCertProgForm.logo} alt="Logo" style={{ height: '52px', maxWidth: '120px', objectFit: 'contain', borderRadius: '10px', border: '1.5px solid #e0e7ff', background: '#f5f3ff', padding: '4px' }} />
+                              <img src={newCertProgForm.logo} alt="Logo" style={{ height: '52px', maxWidth: '120px', objectFit: 'contain', borderRadius: '10px' }} />
                               <button onClick={() => setNewCertProgForm(f => ({ ...f, logo: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', width: '18px', height: '18px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>✕</button>
                             </div>
                           ) : null}
@@ -16587,7 +18185,7 @@ export default function KindWorldApp() {
                         {certPrograms.filter(p => p.ngoId === user?.email).map(prog => (
                           <div key={prog.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', background: prog.isActive ? 'linear-gradient(135deg, #f0fdf4, #dcfce7)' : '#f9fafb', borderRadius: '14px', border: `1px solid ${prog.isActive ? '#bbf7d0' : '#e5e7eb'}`, transition: 'all 0.2s' }}>
                             {prog.ngoLogo ? (
-                              <img src={prog.ngoLogo} alt="" style={{ height: '44px', width: '44px', objectFit: 'contain', borderRadius: '10px', border: '1px solid #e5e7eb', background: 'white', padding: '3px', flexShrink: 0 }} />
+                              <img src={prog.ngoLogo} alt="" style={{ height: '44px', width: '44px', objectFit: 'contain', borderRadius: '10px', flexShrink: 0 }} />
                             ) : (
                               <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg, #e0e7ff, #c7d2fe)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>🏆</div>
                             )}
@@ -16845,7 +18443,7 @@ export default function KindWorldApp() {
                           const _h = cert.hours
                           const _ng = esc(cert.company)
                           const _pr = esc(cert.name)
-                          const _dt = new Date().toLocaleDateString()
+                          const _dt = new Date().toLocaleDateString(langToLocale[language] || 'en', { year: 'numeric', month: 'long', day: 'numeric' })
                           const _certRecog = t('certVolRecognitionProg')
                           const _certLabel = t('certOfVolServiceLabel')
                           const _certIssTo = t('certIssuedTo')
@@ -16860,7 +18458,7 @@ export default function KindWorldApp() {
                             @page{size:A4 landscape;margin:0;}
                             @media print{body{margin:0;padding:0;display:block;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{box-shadow:none;}.no-print{display:none!important;}}
                             *{box-sizing:border-box;margin:0;padding:0;}
-                            body{font-family:Georgia,'Times New Roman',serif;background:#b0b0b0;display:flex;flex-direction:column;align-items:center;padding:24px;overflow-y:auto;}
+                            body{font-family:Georgia,'Times New Roman','Noto Serif','Yu Mincho',YuMincho,'Hiragino Mincho ProN','Hiragino Mincho Pro','SimSun','STSong','Songti SC',MingLiU,'Batang','Gungsuh',Tahoma,serif;background:#b0b0b0;display:flex;flex-direction:column;align-items:center;padding:24px;overflow-y:auto;}
                             .page{background:#fdfaf4;width:100%;max-width:930px;position:relative;overflow:hidden;box-shadow:0 14px 64px rgba(0,0,0,0.38);}
                             .ob{position:absolute;inset:10px;border:2.5px solid #1a2744;pointer-events:none;z-index:10;}
                             .ib{position:absolute;inset:17px;border:1px solid #c9a84c;pointer-events:none;z-index:10;}
@@ -16922,8 +18520,10 @@ export default function KindWorldApp() {
                             </div>
                             <button class="print-btn no-print" onclick="window.print()">${_certSavePDF}</button>
                           </body></html>`
-                          const pw = window.open('', '_blank', 'width=1050,height=800')
-                          if (pw) { pw.document.write(certHtml); pw.document.close(); pw.focus() }
+                          const _blob1 = new Blob([certHtml], { type: 'text/html;charset=utf-8' })
+                          const _burl1 = URL.createObjectURL(_blob1)
+                          const pw = window.open(_burl1, '_blank', 'width=1050,height=800')
+                          if (pw) { pw.focus(); setTimeout(() => URL.revokeObjectURL(_burl1), 60000) }
                           setNotifications(prev => [...prev, `📥 ${t('downloadCertBtn')}: "${cert.name}"`])
                         }}
                         style={{
@@ -16981,7 +18581,7 @@ export default function KindWorldApp() {
                   {t('availableCertsDesc')}
                 </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
                   {uploadedCertificates.filter(c => c.status === 'Active').map((cert) => {
                     const userHours = user?.hours || 0
                     const progress = Math.min((userHours / cert.requiredHours) * 100, 100)
@@ -17127,7 +18727,7 @@ export default function KindWorldApp() {
                   <p style={{ color: '#718096', fontSize: '14px', marginBottom: '24px' }}>
                     {t('availableCertsDesc')}
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
                     {certPrograms.filter(p => p.isActive && p.ngoId !== user?.email).map(prog => {
                       const userHours = getHoursWithNgo(prog.ngoId)
                       const progress = Math.min((userHours / prog.requiredHours) * 100, 100)
@@ -17146,7 +18746,7 @@ export default function KindWorldApp() {
                           {/* NGO Logo + Name */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
                             {prog.ngoLogo ? (
-                              <img src={prog.ngoLogo} alt={prog.ngoName} style={{ height: '48px', width: '48px', objectFit: 'contain', borderRadius: '10px', border: '1px solid var(--tbrd)', background: 'white', padding: '4px' }} />
+                              <img src={prog.ngoLogo} alt={prog.ngoName} style={{ height: '48px', width: '48px', objectFit: 'contain', background: 'transparent', mixBlendMode: 'multiply' as const }} />
                             ) : (
                               <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, var(--tl), var(--tl2))', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>🏢</div>
                             )}
@@ -17177,7 +18777,7 @@ export default function KindWorldApp() {
                                 const _ng = esc(prog.ngoName)
                                 const _pr = esc(prog.programName)
                                 const _logo = prog.ngoLogo
-                                const _dt = new Date().toLocaleDateString()
+                                const _dt = new Date().toLocaleDateString(langToLocale[language] || 'en', { year: 'numeric', month: 'long', day: 'numeric' })
                                 const _certRecog2 = t('certVolRecognitionProg')
                                 const _certLabel2 = t('certOfVolServiceLabel')
                                 const _certIssTo2 = t('certIssuedTo')
@@ -17192,7 +18792,7 @@ export default function KindWorldApp() {
                                   @page{size:A4 landscape;margin:0;}
                                   @media print{body{margin:0;padding:0;display:block;background:white;-webkit-print-color-adjust:exact;print-color-adjust:exact;}.page{box-shadow:none;}.no-print{display:none!important;}}
                                   *{box-sizing:border-box;margin:0;padding:0;}
-                                  body{font-family:Georgia,'Times New Roman',serif;background:#b0b0b0;display:flex;flex-direction:column;align-items:center;padding:24px;overflow-y:auto;}
+                                  body{font-family:Georgia,'Times New Roman','Noto Serif','Yu Mincho',YuMincho,'Hiragino Mincho ProN','Hiragino Mincho Pro','SimSun','STSong','Songti SC',MingLiU,'Batang','Gungsuh',Tahoma,serif;background:#b0b0b0;display:flex;flex-direction:column;align-items:center;padding:24px;overflow-y:auto;}
                                   .page{background:#fdfaf4;width:100%;max-width:930px;position:relative;overflow:hidden;box-shadow:0 14px 64px rgba(0,0,0,0.38);}
                                   .ob{position:absolute;inset:10px;border:2.5px solid #1a2744;pointer-events:none;z-index:10;}
                                   .ib{position:absolute;inset:17px;border:1px solid #c9a84c;pointer-events:none;z-index:10;}
@@ -17205,7 +18805,7 @@ export default function KindWorldApp() {
                                   .kw-n{font-size:20px;font-weight:700;color:#fff;letter-spacing:7px;font-family:Arial,sans-serif;}
                                   .kw-s{font-size:8px;color:rgba(255,255,255,0.6);letter-spacing:3px;text-transform:uppercase;margin-top:3px;font-family:Arial,sans-serif;}
                                   .body{padding:18px 60px 16px;text-align:center;}
-                                  .ngo-logo{max-height:48px;max-width:130px;object-fit:contain;margin:0 auto 8px;display:block;border-radius:4px;}
+                                  .ngo-logo{max-height:56px;max-width:160px;object-fit:contain;margin:0 auto 10px;display:block;background:transparent;mix-blend-mode:multiply;}
                                   .c-title{font-size:20px;font-weight:400;color:#1a2744;letter-spacing:2px;margin-bottom:12px;display:inline-block;padding-bottom:10px;border-bottom:1px solid #c9a84c;min-width:280px;max-width:100%;word-break:break-word;}
                                   .vname{font-size:34px;font-weight:700;color:#1a2744;font-style:italic;margin:2px 0 10px;line-height:1.2;word-break:break-word;overflow-wrap:break-word;}
                                   .dv{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:10px;}
@@ -17256,8 +18856,10 @@ export default function KindWorldApp() {
                                   </div>
                                   <button class="print-btn no-print" onclick="window.print()">${_certSavePDF2}</button>
                                 </body></html>`
-                                const pw = window.open('', '_blank', 'width=1050,height=800')
-                                if (pw) { pw.document.write(certHtml); pw.document.close(); pw.focus() }
+                                const _blob2 = new Blob([certHtml], { type: 'text/html;charset=utf-8' })
+                                const _burl2 = URL.createObjectURL(_blob2)
+                                const pw = window.open(_burl2, '_blank', 'width=1050,height=800')
+                                if (pw) { pw.focus(); setTimeout(() => URL.revokeObjectURL(_burl2), 60000) }
                                 setNotifications(prev => [...prev, `📥 ${t('downloadCertBtn')}: ${prog.programName}`])
                               }}
                               style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
@@ -17313,7 +18915,7 @@ export default function KindWorldApp() {
 
           {/* User Badges Page */}
           {currentPage === 'badges' && (
-            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
               {/* Badges Header */}
               <div style={{
                 background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
@@ -17368,7 +18970,7 @@ export default function KindWorldApp() {
                   ✨ {t('earnedBadgesTitle')}
                 </h3>
                 {user?.userBadges && user.userBadges.length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '16px' }}>
                     {user.userBadges.map((badge: any, index: number) => (
                       <div key={index} style={{
                         padding: '24px 20px',
@@ -17408,13 +19010,15 @@ export default function KindWorldApp() {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '40px 32px', color: '#6b7280', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', borderRadius: '16px', border: '1px dashed #fcd34d' }}>
-                    <div style={{ fontSize: '48px', marginBottom: '14px' }}>🏆</div>
-                    <h4 style={{ fontSize: '18px', fontWeight: '700', color: '#1e293b', marginBottom: '8px' }}>{t('noBadgesYet')}</h4>
-                    <p style={{ fontSize: '14px', color: '#92400e', marginBottom: '24px', maxWidth: '300px', margin: '0 auto 24px' }}>{t('joinMissionPrompt')}</p>
+                  <div style={{ textAlign: 'center', padding: '48px 32px', background: '#fdfcfb', borderRadius: '24px', border: '1px solid #fde68a', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position:'absolute', top:'-24px', right:'-24px', width:'100px', height:'100px', borderRadius:'50%', background:'radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 70%)', pointerEvents:'none' }} />
+                    <div style={{ position:'absolute', bottom:'-16px', left:'-16px', width:'80px', height:'80px', borderRadius:'50%', background:'radial-gradient(circle, rgba(217,119,6,0.1) 0%, transparent 70%)', pointerEvents:'none' }} />
+                    <div style={{ width:'80px', height:'80px', borderRadius:'24px', background:'linear-gradient(135deg, #fef3c7, #fde68a)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'38px', margin:'0 auto 20px', boxShadow:'0 8px 24px rgba(245,158,11,0.2)' }}>🏆</div>
+                    <h4 style={{ fontSize: '20px', fontWeight: '800', color: '#92400e', marginBottom: '10px' }}>{t('noBadgesYet')}</h4>
+                    <p style={{ fontSize: '14px', color: '#b45309', marginBottom: '28px', maxWidth: '280px', margin: '0 auto 28px', lineHeight: '1.7' }}>{t('joinMissionPrompt')}</p>
                     <button
-                      onClick={() => setCurrentPage('dashboard')}
-                      style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: 'white', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+                      onClick={() => setCurrentPage('missions')}
+                      style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', boxShadow: '0 4px 16px rgba(245,158,11,0.35)' }}
                     >
                       🌍 {t('findMissions')}
                     </button>
@@ -17463,7 +19067,7 @@ export default function KindWorldApp() {
                 <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   🎖️ {t('allAvailableBadges')}
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '16px' }}>
                   {[
                     { id: 'b1', icon: '🏆', name: 'Community Champion', company: 'KindWorld', color: '#fbbf24', description: 'Top contributor in community service' },
                     { id: 'b2', icon: '🌱', name: 'Environmental Hero', company: 'Green Earth', color: '#22c55e', description: 'Champion of environmental causes' },
@@ -17536,11 +19140,35 @@ export default function KindWorldApp() {
 
           {/* Leaderboard */}
           {currentPage === 'leaderboard' && (
-            <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1100px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
               {/* Header */}
               <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)', borderRadius: '24px', padding: '32px', marginBottom: '32px', color: 'white' }}>
-                <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px' }}>🏆 {t('leaderboardTitle')}</h1>
-                <p style={{ opacity: 0.9, margin: 0 }}>{t('leaderboardDesc')}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                  <div>
+                    <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', margin: 0 }}>🏆 {t('leaderboardTitle')}</h1>
+                    <p style={{ opacity: 0.9, margin: '8px 0 0' }}>{t('leaderboardDesc')}</p>
+                  </div>
+                  {user?.role === 'student' && (() => {
+                    const savedUser = allUsers.find((u:any) => u.email === user?.email)
+                    const isOptedIn = savedUser?.showOnLeaderboard !== false
+                    return (
+                      <div style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '14px', padding: '12px 18px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.25)' }}
+                        onClick={() => {
+                          const newVal = !isOptedIn
+                          setAllUsers((prev:any[]) => prev.map((u:any) => u.email === user?.email ? { ...u, showOnLeaderboard: newVal } : u))
+                          setNotifications(prev => [...prev, newVal ? '✅ You are now visible on the leaderboard' : '🙈 You are now hidden from the leaderboard'])
+                        }}
+                      >
+                        <div style={{ width: '42px', height: '24px', background: isOptedIn ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.2)', borderRadius: '12px', position: 'relative', transition: 'background 0.2s', flexShrink: 0 }}>
+                          <div style={{ position: 'absolute', top: '3px', left: isOptedIn ? '21px' : '3px', width: '18px', height: '18px', background: isOptedIn ? '#d97706' : 'white', borderRadius: '50%', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+                        </div>
+                        <span style={{ fontSize: '13px', fontWeight: '600', color: 'white', whiteSpace: 'nowrap' }}>
+                          {isOptedIn ? '👁 Visible on leaderboard' : '🙈 Hidden from leaderboard'}
+                        </span>
+                      </div>
+                    )
+                  })()}
+                </div>
               </div>
 
               {/* Two panels */}
@@ -17552,7 +19180,7 @@ export default function KindWorldApp() {
                   </h3>
                   {(() => {
                     const ranked = [...allUsers]
-                      .filter((u: any) => u.role === 'student' || u.role === 'volunteer')
+                      .filter((u: any) => (u.role === 'student' || u.role === 'volunteer') && u.showOnLeaderboard !== false)
                       .sort((a: any, b: any) => (b.hours || 0) - (a.hours || 0))
                       .slice(0, 10)
                     const medals = ['🥇', '🥈', '🥉']
@@ -17567,7 +19195,7 @@ export default function KindWorldApp() {
                         <span style={{ width: '28px', textAlign: 'center', fontSize: i < 3 ? '20px' : '14px', fontWeight: '700', color: '#94a3b8' }}>
                           {i < 3 ? medals[i] : `${i + 1}`}
                         </span>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--tp), var(--ts))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '14px', flexShrink: 0 }}>
+                        <div className="kw-avatar" style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, var(--tp), var(--ts))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '14px', flexShrink: 0 }}>
                           {(u.name || '?').charAt(0)}
                         </div>
                         <div style={{ flex: 1 }}>
@@ -17587,7 +19215,7 @@ export default function KindWorldApp() {
                   </h3>
                   {(() => {
                     const ranked = [...allUsers]
-                      .filter((u: any) => u.role === 'student' || u.role === 'volunteer')
+                      .filter((u: any) => (u.role === 'student' || u.role === 'volunteer') && u.showOnLeaderboard !== false)
                       .sort((a: any, b: any) => (b.userBadges?.length || 0) - (a.userBadges?.length || 0))
                       .slice(0, 10)
                     const medals = ['🥇', '🥈', '🥉']
@@ -17602,7 +19230,7 @@ export default function KindWorldApp() {
                         <span style={{ width: '28px', textAlign: 'center', fontSize: i < 3 ? '20px' : '14px', fontWeight: '700', color: '#94a3b8' }}>
                           {i < 3 ? medals[i] : `${i + 1}`}
                         </span>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '14px', flexShrink: 0 }}>
+                        <div className="kw-avatar" style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '14px', flexShrink: 0 }}>
                           {(u.name || '?').charAt(0)}
                         </div>
                         <div style={{ flex: 1 }}>
@@ -17646,7 +19274,7 @@ export default function KindWorldApp() {
 
           {/* Friends */}
           {currentPage === 'friends' && (
-            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
               {/* Friends Header */}
               <div style={{
                 background: 'linear-gradient(135deg, var(--ta) 0%, var(--tb) 100%)',
@@ -17832,7 +19460,7 @@ export default function KindWorldApp() {
                         borderRadius: '12px'
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{
+                          <div className="kw-avatar" style={{
                             width: '48px',
                             height: '48px',
                             borderRadius: '50%',
@@ -17859,7 +19487,9 @@ export default function KindWorldApp() {
                               const updatedFriends = [...friends, acceptedFriend]
                               setFriends(updatedFriends)
                               localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
-                              setFriendRequests(friendRequests.filter(r => r.id !== request.id))
+                              const updatedReqs = friendRequests.filter(r => r.id !== request.id)
+                              setFriendRequests(updatedReqs)
+                              localStorage.setItem('kindworld_friend_requests', JSON.stringify(updatedReqs))
                             }}
                             style={{
                               padding: '8px 16px',
@@ -17875,7 +19505,9 @@ export default function KindWorldApp() {
                           </button>
                           <button
                             onClick={() => {
-                              setFriendRequests(friendRequests.filter(r => r.id !== request.id))
+                              const updatedReqs = friendRequests.filter(r => r.id !== request.id)
+                              setFriendRequests(updatedReqs)
+                              localStorage.setItem('kindworld_friend_requests', JSON.stringify(updatedReqs))
                             }}
                             style={{
                               padding: '8px 16px',
@@ -17926,7 +19558,7 @@ export default function KindWorldApp() {
                         borderRadius: '12px'
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{
+                          <div className="kw-avatar" style={{
                             width: '48px',
                             height: '48px',
                             borderRadius: '50%',
@@ -17945,25 +19577,24 @@ export default function KindWorldApp() {
                             <p style={{ fontSize: '14px', color: '#6b7280' }}>{friend.hours} {t('hoursLabel')}</p>
                           </div>
                         </div>
-                        <button
-                          onClick={() => {
-                            const updatedFriends = friends.filter(f => f.id !== friend.id)
-                            setFriends(updatedFriends)
-                            localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
-                          }}
-                          style={{
-                            padding: '6px 12px',
-                            background: '#fee2e2',
-                            color: '#ef4444',
-                            border: 'none',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          {t('removeFriend')}
-                        </button>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button
+                            onClick={() => { setShowFriendChat({ id: friend.id, name: friend.name, email: friend.email }); setFriendChatInput(''); setFriendChatImageUrl(''); setShowEmojiPicker(false) }}
+                            style={{ padding: '6px 12px', background: 'rgba(var(--tp-rgb),0.1)', color: 'var(--tp)', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                          >
+                            💬 Chat
+                          </button>
+                          <button
+                            onClick={() => {
+                              const updatedFriends = friends.filter(f => f.id !== friend.id)
+                              setFriends(updatedFriends)
+                              localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
+                            }}
+                            style={{ padding: '6px 12px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '500', cursor: 'pointer' }}
+                          >
+                            {t('removeFriend')}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -18048,7 +19679,7 @@ export default function KindWorldApp() {
 
           {/* Profile */}
           {currentPage === 'profile' && (
-            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
               {/* Profile Header */}
               <div style={{
                 background: 'linear-gradient(135deg, var(--ta) 0%, var(--tb) 100%)',
@@ -18068,8 +19699,8 @@ export default function KindWorldApp() {
                   transform: 'translate(50%, -50%)'
                 }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '32px', position: 'relative', zIndex: 1 }}>
-                  <label style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} title="Change profile picture">
-                    <div style={{
+                  <label style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} title={t('profileChangePicture')}>
+                    <div className="kw-avatar" style={{
                       width: '120px',
                       height: '120px',
                       borderRadius: '50%',
@@ -18097,7 +19728,7 @@ export default function KindWorldApp() {
                       onMouseOut={e => (e.currentTarget.style.opacity = '0')}
                     >
                       <span style={{ fontSize: '20px' }}>📷</span>
-                      Change
+                      {t('profileChangeLabel')}
                     </div>
                     <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
                       const file = e.target.files?.[0]
@@ -18167,7 +19798,23 @@ export default function KindWorldApp() {
                           name: user.name,
                           email: user.email,
                           phone: savedUser?.phone || '',
-                          city: savedUser?.residency || ''
+                          city: savedUser?.residency || '',
+                          lineId: savedUser?.lineId || '',
+                          whatsapp: savedUser?.whatsapp || '',
+                          emergencyContactName: savedUser?.emergencyContactName || '',
+                          emergencyContactPhone: savedUser?.emergencyContactPhone || '',
+                          emergencyContactRelation: savedUser?.emergencyContactRelation || '',
+                          allergies: savedUser?.allergies || '',
+                          medicalConditions: savedUser?.medicalConditions || '',
+                          dietaryRestrictions: savedUser?.dietaryRestrictions || '',
+                          tshirtSize: savedUser?.tshirtSize || '',
+                          ngoDescription: savedUser?.ngoDescription || '',
+                          ngoWebsite: savedUser?.ngoWebsite || '',
+                          ngoDocumentUrl: savedUser?.ngoDocumentUrl || '',
+                          ngoPortfolioUrl: savedUser?.ngoPortfolioUrl || '',
+                          ngoDocumentNote: savedUser?.ngoDocumentNote || '',
+                          ngoOrgName: savedUser?.ngoOrgName || '',
+                          interests: savedUser?.interests || []
                         })
                       }
                     }}
@@ -18188,17 +19835,21 @@ export default function KindWorldApp() {
               </div>
 
               {/* Stats Overview - Different stats based on user role */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '32px' }}>
                 {(() => {
                   // NGO-specific stats — all from real data
                   if (user.role === 'ngo') {
                     const ngoMissions = missions.filter(m => m.organizerId === user.email)
-                    const ngoApprovedSubs = hourSubmissions.filter((s: any) => s.organizerId === user.email && s.status === 'approved')
-                    const uniqueVolunteers = new Set(ngoApprovedSubs.map((s: any) => s.volunteerEmail || s.volunteerId)).size
+                    const ngoMissionIds = new Set(ngoMissions.map(m => m.id))
+                    const ngoApprovedSubs = hourSubmissions.filter((s: any) => (s.organizerId === user.email || ngoMissionIds.has(s.missionId)) && s.status === 'approved')
+                    const registeredVols = new Set([
+                      ...missionRegistrations.filter(r => ngoMissionIds.has(r.missionId)).map(r => r.volunteer?.email || r.volunteer?.id),
+                      ...ngoApprovedSubs.map((s: any) => s.volunteerEmail || s.volunteerId)
+                    ].filter(Boolean)).size
                     const totalApprovedHours = ngoApprovedSubs.reduce((sum: number, s: any) => sum + (s.hoursSubmitted || s.hours || 0), 0)
                     const certsIssued = certRequests.filter(r => r.ngoId === user.email && r.status === 'approved').length
                     return [
-                      { icon: '👥', value: uniqueVolunteers, label: t('ngoActiveVolunteers'), color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))' },
+                      { icon: '👥', value: registeredVols, label: t('ngoActiveVolunteers'), color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))' },
                       { icon: '📋', value: ngoMissions.length, label: t('ngoPublishedActivities'), color: '#059669', bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5)' },
                       { icon: '⏱️', value: `${totalApprovedHours}h`, label: t('ngoTotalImpactHours'), color: '#d97706', bg: 'linear-gradient(135deg, #fffbeb, #fef3c7)' },
                       { icon: '🏆', value: certsIssued, label: t('ngoCertificatesIssued'), color: 'var(--ts)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))' }
@@ -18371,7 +20022,7 @@ export default function KindWorldApp() {
                         value={isEditingProfile ? profileForm.phone : (allUsers.find((u: any) => u.email === user?.email)?.phone || '')}
                         onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
                         disabled={!isEditingProfile}
-                        placeholder="+62 812 3456 7890"
+                        placeholder=""
                         style={{
                           width: '100%',
                           padding: '14px 16px',
@@ -18396,7 +20047,7 @@ export default function KindWorldApp() {
                         value={isEditingProfile ? profileForm.city : (allUsers.find((u: any) => u.email === user?.email)?.residency || '')}
                         onChange={(e) => setProfileForm({...profileForm, city: e.target.value})}
                         disabled={!isEditingProfile}
-                        placeholder={t('cityPlaceholder')}
+                        placeholder=""
                         style={{
                           width: '100%',
                           padding: '14px 16px',
@@ -18411,6 +20062,96 @@ export default function KindWorldApp() {
                         }}
                       />
                     </div>
+
+                    {/* Line ID + WhatsApp */}
+                    <div style={{ gridColumn: '1/-1', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
+                      <p style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>{t('profileContactChannels')}</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        {[
+                          { label: t('profileLineId'), key: 'lineId', placeholder: '', type: 'text' },
+                          { label: t('profileWhatsApp'), key: 'whatsapp', placeholder: '', type: 'tel' }
+                        ].map(f=>(
+                          <div key={f.key}>
+                            <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{f.label}</label>
+                            <input type={f.type} value={(isEditingProfile ? (profileForm as any)[f.key] : (allUsers.find((u: any) => u.email === user?.email) as any)?.[f.key]) || ''} onChange={e=>setProfileForm({...profileForm, [f.key]: e.target.value})} disabled={!isEditingProfile} placeholder={f.placeholder} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Emergency Contact */}
+                    <div style={{ gridColumn: '1/-1', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
+                      <p style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>{t('profileEmergencyContact')}</p>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                        {[
+                          { label: t('fullName'), key: 'emergencyContactName', placeholder: '', type: 'text' },
+                          { label: t('phoneNumber'), key: 'emergencyContactPhone', placeholder: '', type: 'tel' },
+                          { label: t('profileRelationship'), key: 'emergencyContactRelation', placeholder: '', type: 'text' }
+                        ].map(f=>(
+                          <div key={f.key}>
+                            <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{f.label}</label>
+                            <input type={f.type} value={(isEditingProfile ? (profileForm as any)[f.key] : (allUsers.find((u: any) => u.email === user?.email) as any)?.[f.key]) || ''} onChange={e=>setProfileForm({...profileForm, [f.key]: e.target.value})} disabled={!isEditingProfile} placeholder={f.placeholder} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Health / Logistics — only for volunteers */}
+                    {user.role === 'student' && (
+                      <div style={{ gridColumn: '1/-1', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
+                        <p style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px' }}>{t('profileHealthLogistics')}</p>
+                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: '0 0 16px' }}>{t('profileHealthLogisticsHint')}</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                          {[
+                            { label: t('profileAllergies'), key: 'allergies', placeholder: t('profileAllergiesPlaceholder') },
+                            { label: t('profileMedicalConditions'), key: 'medicalConditions', placeholder: t('profileMedicalConditionsPlaceholder') },
+                            { label: t('profileDietaryRestrictions'), key: 'dietaryRestrictions', placeholder: t('profileDietaryRestrictionsPlaceholder') },
+                          ].map(f=>(
+                            <div key={f.key}>
+                              <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{f.label}</label>
+                              <input type="text" value={(isEditingProfile ? (profileForm as any)[f.key] : (allUsers.find((u: any) => u.email === user?.email) as any)?.[f.key]) || ''} onChange={e=>setProfileForm({...profileForm, [f.key]: e.target.value})} disabled={!isEditingProfile} placeholder={f.placeholder} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }} />
+                            </div>
+                          ))}
+                          <div>
+                            <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{t('profileTshirtSize')}</label>
+                            <select value={(isEditingProfile ? profileForm.tshirtSize : (allUsers.find((u: any) => u.email === user?.email) as any)?.tshirtSize) || ''} onChange={e=>setProfileForm({...profileForm, tshirtSize: e.target.value})} disabled={!isEditingProfile} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'pointer' : 'default', boxSizing:'border-box' }}>
+                              <option value="">{t('profileTshirtSizePlaceholder')}</option>
+                              {['XS','S','M','L','XL','XXL'].map(s=><option key={s} value={s}>{s}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* NGO Profile Info */}
+                    {user.role === 'ngo' && (
+                      <div style={{ gridColumn: '1/-1', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
+                        <p style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px' }}>{t('profileNgoSection')}</p>
+                        <p style={{ fontSize: '12px', color: '#9ca3af', margin: '0 0 16px' }}>{t('profileNgoSectionHint')}</p>
+                        <div style={{ display: 'flex', flexDirection:'column', gap: '16px' }}>
+                          <div>
+                            <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{t('profileNgoDescription')}</label>
+                            <textarea value={(isEditingProfile ? profileForm.ngoDescription : (allUsers.find((u: any) => u.email === user?.email) as any)?.ngoDescription) || ''} onChange={e=>setProfileForm({...profileForm, ngoDescription: e.target.value})} disabled={!isEditingProfile} placeholder={t('profileNgoDescriptionPlaceholder')} rows={4} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', resize:'vertical', boxSizing:'border-box', color:'#1f2937' }} />
+                          </div>
+                          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+                            <div>
+                              <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{t('profileNgoWebsite')}</label>
+                              <input type="url" value={(isEditingProfile ? profileForm.ngoWebsite : (allUsers.find((u: any) => u.email === user?.email) as any)?.ngoWebsite) || ''} onChange={e=>setProfileForm({...profileForm, ngoWebsite: e.target.value})} disabled={!isEditingProfile} placeholder={t('profileNgoWebsitePlaceholder')} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }} />
+                            </div>
+                            <div>
+                              <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{t('profileNgoPortfolio')}</label>
+                              <input type="url" value={(isEditingProfile ? profileForm.ngoPortfolioUrl : (allUsers.find((u: any) => u.email === user?.email) as any)?.ngoPortfolioUrl) || ''} onChange={e=>setProfileForm({...profileForm, ngoPortfolioUrl: e.target.value})} disabled={!isEditingProfile} placeholder={t('profileNgoPortfolioPlaceholder')} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }} />
+                            </div>
+                          </div>
+                          <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:'10px', padding:'16px' }}>
+                            <p style={{ fontSize:'13px', fontWeight:'700', color:'#92400e', margin:'0 0 10px' }}>{t('profileNgoLegalDocs')}</p>
+                            <p style={{ fontSize:'12px', color:'#78350f', margin:'0 0 10px', lineHeight:1.6 }}>{t('profileNgoLegalDocsHint')}</p>
+                            <input type="url" value={(isEditingProfile ? profileForm.ngoDocumentUrl : (allUsers.find((u: any) => u.email === user?.email) as any)?.ngoDocumentUrl) || ''} onChange={e=>setProfileForm({...profileForm, ngoDocumentUrl: e.target.value})} disabled={!isEditingProfile} placeholder={t('profileNgoDocLinkPlaceholder')} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid #f59e0b' : '2px solid #fde68a', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#fffbeb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box', marginBottom:'8px' }} />
+                            <input type="text" value={(isEditingProfile ? profileForm.ngoDocumentNote : (allUsers.find((u: any) => u.email === user?.email) as any)?.ngoDocumentNote) || ''} onChange={e=>setProfileForm({...profileForm, ngoDocumentNote: e.target.value})} disabled={!isEditingProfile} placeholder={t('profileNgoDocNotePlaceholder')} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid #f59e0b' : '2px solid #fde68a', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#fffbeb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }} />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -18461,40 +20202,81 @@ export default function KindWorldApp() {
                       borderRadius: '20px',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
                     }}>
-                      <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span style={{ fontSize: '24px' }}>💝</span> {t('volunteerInterests')}
                       </h3>
+                      {isEditingProfile && <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 16px' }}>{t('clickToToggleInterests') || 'Click to select/deselect your interests'}</p>}
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                        {[
-                          t('interestEnvironment'),
-                          t('interestEducation'),
-                          t('interestHealthcare'),
-                          t('interestCommunity'),
-                          t('interestAnimals'),
-                          t('interestElderlyCare'),
-                          t('interestYouthPrograms'),
-                          t('interestFoodSecurity')
-                        ].map((interest, index) => (
-                          <span
-                            key={index}
-                            style={{
-                              padding: '10px 18px',
-                              background: index < 4 ? 'linear-gradient(135deg, var(--tl), var(--tl2))' : '#f3f4f6',
-                              color: index < 4 ? 'var(--td)' : '#6b7280',
-                              borderRadius: '20px',
-                              fontSize: '14px',
-                              fontWeight: '500',
-                              cursor: 'pointer',
-                              border: index < 4 ? '2px solid var(--ta)' : '2px solid transparent',
-                              transition: 'all 0.2s ease'
-                            }}
-                          >
-                            {interest}
-                          </span>
-                        ))}
+                        {(['interestEnvironment','interestEducation','interestHealthcare','interestCommunity','interestAnimals','interestElderlyCare','interestYouthPrograms','interestFoodSecurity'] as const).map((key) => {
+                          const isSelected = (profileForm.interests || []).includes(key)
+                          return (
+                            <span
+                              key={key}
+                              onClick={() => {
+                                if (!isEditingProfile) return
+                                setProfileForm(f => ({
+                                  ...f,
+                                  interests: isSelected
+                                    ? (f.interests || []).filter(i => i !== key)
+                                    : [...(f.interests || []), key]
+                                }))
+                              }}
+                              style={{
+                                padding: '10px 18px',
+                                background: isSelected ? 'linear-gradient(135deg, var(--tl), var(--tl2))' : '#f3f4f6',
+                                color: isSelected ? 'var(--td)' : '#6b7280',
+                                borderRadius: '20px',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                cursor: isEditingProfile ? 'pointer' : 'default',
+                                border: isSelected ? '2px solid var(--ta)' : '2px solid transparent',
+                                transition: 'all 0.2s ease',
+                                userSelect: 'none'
+                              }}
+                            >
+                              {t(key)}
+                            </span>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
+
+                  {/* Reviews Received - Only show for volunteers/students */}
+                  {user.role !== 'ngo' && user.role !== 'admin' && (() => {
+                    const myReviews = volunteerReviews.filter(r => r.volunteerEmail === user.email)
+                    if (myReviews.length === 0) return null
+                    const avgRating = myReviews.reduce((s, r) => s + r.rating, 0) / myReviews.length
+                    return (
+                      <div style={{ background: 'white', padding: '32px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ fontSize: '24px' }}>⭐</span> {t('reviewsReceived') || 'Reviews from NGOs'}
+                        </h3>
+                        <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 20px' }}>
+                          {t('avgRatingLabel') || 'Average rating'}: <strong style={{ color: '#f59e0b' }}>{avgRating.toFixed(1)} / 5</strong> &nbsp;·&nbsp; {myReviews.length} {t('reviewsCount') || 'review(s)'}
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', maxHeight: '320px', overflowY: 'auto' }}>
+                          {myReviews.slice().reverse().map(r => (
+                            <div key={r.id} style={{ padding: '16px', background: '#fafafa', borderRadius: '14px', border: '1px solid #f3f4f6' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                <div>
+                                  <span style={{ fontWeight: '700', color: '#1f2937', fontSize: '14px' }}>{r.ngoName}</span>
+                                  <span style={{ fontSize: '12px', color: '#9ca3af', marginLeft: '8px' }}>{r.missionTitle}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '2px' }}>
+                                  {[1,2,3,4,5].map(s => (
+                                    <span key={s} style={{ fontSize: '14px', color: r.rating >= s ? '#f59e0b' : '#d1d5db' }}>★</span>
+                                  ))}
+                                </div>
+                              </div>
+                              {r.comment && <p style={{ fontSize: '13px', color: '#4b5563', margin: '0 0 6px', lineHeight: 1.5 }}>{r.comment}</p>}
+                              <p style={{ fontSize: '11px', color: '#9ca3af', margin: 0 }}>{new Date(r.date).toLocaleDateString()}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
 
@@ -18504,7 +20286,7 @@ export default function KindWorldApp() {
                   <button
                     onClick={() => {
                       setIsEditingProfile(false)
-                      setProfileForm({ name: '', email: '', phone: '', city: '' })
+                      setProfileForm({ name: '', email: '', phone: '', city: '', lineId: '', whatsapp: '', emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '', allergies: '', medicalConditions: '', dietaryRestrictions: '', tshirtSize: '', ngoOrgName: '', ngoDescription: '', ngoWebsite: '', ngoDocumentUrl: '', ngoPortfolioUrl: '', ngoDocumentNote: '', interests: [] })
                     }}
                     style={{
                       padding: '14px 32px',
@@ -18539,7 +20321,7 @@ export default function KindWorldApp() {
                         setAllUsers((prev: any[]) => {
                           const updated = prev.map((u: any) =>
                             u.id === user?.id || u.email === user?.email
-                              ? { ...u, name: updatedName, email: updatedEmail, residency: profileForm.city, phone: profileForm.phone }
+                              ? { ...u, name: updatedName, email: updatedEmail, residency: profileForm.city, phone: profileForm.phone, lineId: profileForm.lineId, whatsapp: profileForm.whatsapp, emergencyContactName: profileForm.emergencyContactName, emergencyContactPhone: profileForm.emergencyContactPhone, emergencyContactRelation: profileForm.emergencyContactRelation, allergies: profileForm.allergies, medicalConditions: profileForm.medicalConditions, dietaryRestrictions: profileForm.dietaryRestrictions, tshirtSize: profileForm.tshirtSize, ngoDescription: profileForm.ngoDescription, ngoWebsite: profileForm.ngoWebsite, ngoDocumentUrl: profileForm.ngoDocumentUrl, ngoPortfolioUrl: profileForm.ngoPortfolioUrl, ngoDocumentNote: profileForm.ngoDocumentNote, ngoProfileComplete: user?.role === 'ngo' ? !!(profileForm.ngoDescription?.trim() && profileForm.ngoWebsite?.trim()) : undefined, interests: profileForm.interests }
                               : u
                           )
                           localStorage.setItem('kindworld_allusers', JSON.stringify(updated))
@@ -18579,7 +20361,7 @@ export default function KindWorldApp() {
 
           {/* Badge Management Page */}
           {currentPage === 'badgeManagement' && (
-            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
               {/* Header */}
               <div style={{
                 background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
@@ -19641,6 +21423,7 @@ export default function KindWorldApp() {
                       <input
                         type="date"
                         value={newActivity.date}
+                        min={new Date().toISOString().split('T')[0]}
                         onChange={(e) => setNewActivity({...newActivity, date: e.target.value})}
                         style={{
                           width: '100%',
@@ -19891,7 +21674,23 @@ export default function KindWorldApp() {
                   <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
                     <button
                       onClick={() => {
-                        if (newActivity.title && newActivity.description && newActivity.location && newActivity.date && newActivity.hours > 0 && newActivity.maxParticipants > 0) {
+                        // Identify missing required fields specifically
+                        const missing: string[] = []
+                        if (!newActivity.title) missing.push('Title')
+                        if (!newActivity.description) missing.push('Description')
+                        if (!newActivity.location) missing.push('Location')
+                        if (!newActivity.date) missing.push('Date')
+                        if (newActivity.hours <= 0) missing.push('Duration (hours)')
+                        if (newActivity.maxParticipants <= 0) missing.push('Max Participants')
+                        if (missing.length > 0) {
+                          setNotifications(prev => [...prev, `❌ Please fill in: ${missing.join(', ')}`])
+                        } else {
+                          const _tn = new Date()
+                          const todayStr = `${_tn.getFullYear()}-${String(_tn.getMonth()+1).padStart(2,'0')}-${String(_tn.getDate()).padStart(2,'0')}`
+                          if (newActivity.date < todayStr) {
+                            setNotifications(prev => [...prev, '❌ Mission date cannot be in the past. Please select today or a future date.'])
+                            return
+                          }
                           const maxId = missions.reduce((max, m) => Math.max(max, m.id), 0)
                           const newMission: Mission = {
                             id: maxId + 1,
@@ -19921,25 +21720,9 @@ export default function KindWorldApp() {
                             localStorage.setItem('kindworld_missions', JSON.stringify(updated))
                             return updated
                           })
-                          setNotifications(prev => [...prev, `✅ Activity "${newActivity.title}" created successfully!`])
-                          setNewActivity({
-                            title: '',
-                            description: '',
-                            location: '',
-                            date: '',
-                            startTime: '',
-                            endTime: '',
-                            hours: 0,
-                            maxParticipants: 0,
-                            category: 'Community',
-                            difficulty: 'Easy',
-                            region: 'SEA',
-                            country: '',
-                            imageUrl: ''
-                          })
+                          setNotifications(prev => [...prev, `✅ Activity "${newActivity.title}" created successfully! Students can now see and join it on the Missions page.`])
+                          setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
                           setShowCreateActivity(false)
-                        } else {
-                          setNotifications(prev => [...prev, '❌ Please fill in all required fields'])
                         }
                       }}
                       style={{
@@ -20094,6 +21877,38 @@ export default function KindWorldApp() {
                                 {p.registrationData.emergencyContact} ({p.registrationData.emergencyPhone})
                               </div>
                             )}
+                            {/* NGO / Admin action buttons */}
+                            {(user?.role === 'ngo' || user?.role === 'admin') && (() => {
+                              const existingReview = volunteerReviews.find(r => r.volunteerEmail === p.volunteer.email && r.missionId === selectedMissionParticipants.id)
+                              const isNoShow = noShowRecords.some((n: any) => n.volunteerEmail === p.volunteer.email && n.missionId === selectedMissionParticipants.id)
+                              return (
+                                <div style={{ display: 'flex', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #f3f4f6', flexWrap: 'wrap', alignItems: 'center' }}>
+                                  {existingReview ? (
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '5px 10px', fontWeight: '600' }}>
+                                      {[1,2,3,4,5].map(s => <span key={s} style={{ color: existingReview.rating >= s ? '#f59e0b' : '#d1d5db', fontSize: '13px' }}>★</span>)}
+                                      <span style={{ marginLeft: '4px' }}>{existingReview.comment ? `"${existingReview.comment.slice(0,40)}${existingReview.comment.length > 40 ? '…' : ''}"` : 'Reviewed'}</span>
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => { setReviewForm({ rating: 5, comment: '' }); setShowReviewModal({ type: 'vol', missionId: selectedMissionParticipants.id, missionTitle: selectedMissionParticipants.title, targetEmail: p.volunteer.email, targetName: p.volunteer.name }) }}
+                                      style={{ padding: '6px 12px', background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                    >⭐ Write Review</button>
+                                  )}
+                                  {isNoShow ? (
+                                    <span style={{ fontSize: '12px', color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '5px 10px', fontWeight: '600' }}>🚫 No-Show</span>
+                                  ) : (
+                                    <button
+                                      onClick={() => { const rec = { id: Date.now().toString(), volunteerEmail: p.volunteer.email, volunteerName: p.volunteer.name, ngoEmail: user?.email || '', ngoName: user?.name || '', missionId: selectedMissionParticipants.id, missionTitle: selectedMissionParticipants.title, reason: '', date: new Date().toISOString() }; setNoShowRecords((prev: any[]) => [...prev, rec]); setNotifications(prev => [...prev, `🚫 ${p.volunteer.name} marked as no-show`]) }}
+                                      style={{ padding: '6px 12px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                    >🚫 No-Show</button>
+                                  )}
+                                  <button
+                                    onClick={() => setShowDirectMsgModal({ toEmail: p.volunteer.email, toName: p.volunteer.name })}
+                                    style={{ padding: '6px 12px', background: '#eff6ff', color: '#3b82f6', border: '1px solid #bfdbfe', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                                  >💬 Message</button>
+                                </div>
+                              )
+                            })()}
                           </div>
                         ))}
                       </div>
@@ -20634,8 +22449,20 @@ export default function KindWorldApp() {
                   <button
                     onClick={() => {
                       const themeVars = Object.entries(themes[userTheme]?.vars || themes.violet.vars).map(([k, v]) => `${k}: ${v}`).join('; ')
-                      const today = new Date().toLocaleDateString()
-                      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>KindWorld – My Data</title><style>:root{${themeVars}} body{font-family:system-ui,sans-serif;max-width:720px;margin:40px auto;color:#1e293b;padding:0 24px} h1{color:var(--tp);margin-bottom:4px} .subtitle{color:#94a3b8;font-size:14px;margin-bottom:32px} .card{background:#f8fafc;border-radius:16px;padding:20px 24px;margin-bottom:16px;border:1px solid #e2e8f0} .card h2{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#64748b} .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:14px} .row:last-child{border:none} .val{font-weight:600;color:var(--tp)} .footer{margin-top:32px;font-size:12px;color:#94a3b8;text-align:center} @media print{body{margin:0}}</style></head><body><h1>KindWorld</h1><p class="subtitle">My Volunteer Data · ${today}</p><div class="card"><h2>Profile</h2><div class="row"><span>Name</span><span class="val">${esc(user?.name || '—')}</span></div><div class="row"><span>Email</span><span class="val">${esc(user?.email || '—')}</span></div><div class="row"><span>Role</span><span class="val">${esc(user?.role || '—')}</span></div></div><div class="card"><h2>Activity</h2><div class="row"><span>Volunteer Hours</span><span class="val">${user?.hours ?? 0} hrs</span></div><div class="row"><span>Missions Completed</span><span class="val">${user?.completedMissions ?? 0}</span></div><div class="row"><span>Badges Earned</span><span class="val">${(user?.userBadges || []).length}</span></div></div>${(user?.userBadges || []).length > 0 ? `<div class="card"><h2>Badges</h2>${(user.userBadges || []).map((b: Badge) => `<div class="row"><span>${esc(b.icon)} ${esc(b.name)}</span><span class="val">✓</span></div>`).join('')}</div>` : ''}<div class="footer">Generated by KindWorld · ${today}</div></body></html>`
+                      const today = new Date().toLocaleDateString(langToLocale[language] || 'en', { year: 'numeric', month: 'long', day: 'numeric' })
+                      const _xTitle = t('exportMyDataTitle')
+                      const _xProfile = t('exportProfileSection')
+                      const _xActivity = t('exportActivitySection')
+                      const _xGenBy = t('exportGeneratedBy')
+                      const _xName = t('fullNameLabel')
+                      const _xEmail = t('emailLabel')
+                      const _xRole = t('roleLabel')
+                      const _xVolHrs = t('volunteerHoursLabel')
+                      const _xMissions = t('missionsCompleted')
+                      const _xBadgesEarned = t('badgesEarned')
+                      const _xBadgesLabel = t('badgesLabel')
+                      const _xHrs = t('hoursLabel')
+                      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>KindWorld – My Data</title><style>:root{${themeVars}} body{font-family:system-ui,'Noto Sans',sans-serif;max-width:720px;margin:40px auto;color:#1e293b;padding:0 24px} h1{color:var(--tp);margin-bottom:4px} .subtitle{color:#94a3b8;font-size:14px;margin-bottom:32px} .card{background:#f8fafc;border-radius:16px;padding:20px 24px;margin-bottom:16px;border:1px solid #e2e8f0} .card h2{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:#64748b} .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f1f5f9;font-size:14px} .row:last-child{border:none} .val{font-weight:600;color:var(--tp)} .footer{margin-top:32px;font-size:12px;color:#94a3b8;text-align:center} @media print{body{margin:0}}</style></head><body><h1>KindWorld</h1><p class="subtitle">${_xTitle} · ${today}</p><div class="card"><h2>${_xProfile}</h2><div class="row"><span>${_xName}</span><span class="val">${esc(user?.name || '—')}</span></div><div class="row"><span>${_xEmail}</span><span class="val">${esc(user?.email || '—')}</span></div><div class="row"><span>${_xRole}</span><span class="val">${esc(user?.role || '—')}</span></div></div><div class="card"><h2>${_xActivity}</h2><div class="row"><span>${_xVolHrs}</span><span class="val">${user?.hours ?? 0} ${_xHrs}</span></div><div class="row"><span>${_xMissions}</span><span class="val">${user?.completedMissions ?? 0}</span></div><div class="row"><span>${_xBadgesEarned}</span><span class="val">${(user?.userBadges || []).length}</span></div></div>${(user?.userBadges || []).length > 0 ? `<div class="card"><h2>${_xBadgesLabel}</h2>${(user.userBadges || []).map((b: Badge) => `<div class="row"><span>${esc(b.icon)} ${esc(b.name)}</span><span class="val">✓</span></div>`).join('')}</div>` : ''}<div class="footer">${_xGenBy} · ${today}</div></body></html>`
                       const printWindow = window.open('', '_blank', 'width=900,height=750')
                       if (printWindow) { printWindow.document.write(html); printWindow.document.close(); printWindow.focus(); setTimeout(() => printWindow.print(), 500) }
                     }}
