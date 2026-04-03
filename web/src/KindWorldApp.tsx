@@ -7620,6 +7620,10 @@ function ProgressRing({ value, goal = 100, color }: { value: number; goal?: numb
 export default function KindWorldApp() {
   // Add CSS animations and global styles
   const styles = `
+    html { font-size: clamp(15px, 1.1vw, 19px); }
+    body { font-size: 1rem; }
+    @media (min-width: 1600px) { html { font-size: 18px; } }
+    @media (min-width: 2000px) { html { font-size: 20px; } }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -7744,7 +7748,7 @@ export default function KindWorldApp() {
       document.head.appendChild(styleSheet)
     }
   }
-  const [currentPage, setCurrentPage] = useState<'landing' | 'learnmore' | 'signin' | 'dashboard' | 'missions' | 'badges' | 'certificates' | 'profile' | 'friends' | 'leaderboard' | 'badgeManagement' | 'reports' | 'settings'>('landing')
+  const [currentPage, setCurrentPage] = useState<'landing' | 'learnmore' | 'signin' | 'dashboard' | 'missions' | 'badges' | 'certificates' | 'profile' | 'friends' | 'leaderboard' | 'badgeManagement' | 'reports' | 'settings' | 'investor'>('landing')
   const [badgeManagementUser, setBadgeManagementUser] = useState<any>(null)
   const [user, setUser] = useState<User | null>(null)
 
@@ -8352,6 +8356,54 @@ export default function KindWorldApp() {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#x27;')
+  }
+
+  // Remove background from logo using corner flood-fill — only removes pixels connected to the image edge
+  const removeLogoBackground = (dataUrl: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const W = img.width, H = img.height
+        canvas.width = W
+        canvas.height = H
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0)
+        const imageData = ctx.getImageData(0, 0, W, H)
+        const d = imageData.data
+        const visited = new Uint8Array(W * H)
+        const threshold = 220
+        const isBackground = (idx: number) =>
+          d[idx] >= threshold && d[idx + 1] >= threshold && d[idx + 2] >= threshold
+
+        // BFS flood-fill from all 4 edges
+        const queue: number[] = []
+        const enqueue = (x: number, y: number) => {
+          if (x < 0 || x >= W || y < 0 || y >= H) return
+          const p = y * W + x
+          if (visited[p]) return
+          const idx = p * 4
+          if (isBackground(idx)) {
+            visited[p] = 1
+            queue.push(x, y)
+          }
+        }
+        for (let x = 0; x < W; x++) { enqueue(x, 0); enqueue(x, H - 1) }
+        for (let y = 0; y < H; y++) { enqueue(0, y); enqueue(W - 1, y) }
+        let qi = 0
+        while (qi < queue.length) {
+          const x = queue[qi++], y = queue[qi++]
+          const idx = (y * W + x) * 4
+          d[idx + 3] = 0
+          enqueue(x + 1, y); enqueue(x - 1, y)
+          enqueue(x, y + 1); enqueue(x, y - 1)
+        }
+        ctx.putImageData(imageData, 0, 0)
+        resolve(canvas.toDataURL('image/png'))
+      }
+      img.onerror = () => resolve(dataUrl)
+      img.src = dataUrl
+    })
   }
 
   const downloadMyStats = () => {
@@ -12005,10 +12057,10 @@ export default function KindWorldApp() {
                   if (!isApproved) return []
                   return ['dashboard', 'missions', 'certificates', 'profile', 'settings']
                 }
-                if (user?.role === 'admin') return ['dashboard', 'missions', 'reports', 'profile', 'settings']
+                if (user?.role === 'admin') return ['dashboard', 'missions', 'reports', 'investor', 'profile', 'settings']
                 return ['dashboard', 'missions', 'badges', 'certificates', 'leaderboard', 'friends', 'profile', 'settings']
               })().map((page) => {
-                const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', badgeManagement:'🛡️' }
+                const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', badgeManagement:'🛡️', investor:'💼' }
                 const isActive = currentPage === page
                 return (
                   <button
@@ -12868,7 +12920,7 @@ export default function KindWorldApp() {
           </div>
         )}
 
-        <div style={{ padding: '32px 24px', maxWidth: '100%', margin: '0 auto' }}>
+        <div style={{ padding: 'clamp(24px, 3vw, 48px) clamp(16px, 4vw, 64px)', maxWidth: '100%', margin: '0 auto' }}>
           {/* Dashboard */}
           {currentPage === 'dashboard' && (
             <div style={{ animation: 'fadeIn 0.5s ease-in' }}>
@@ -14851,7 +14903,7 @@ export default function KindWorldApp() {
                             <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>{t('certUploadLogo')}</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                               {newCertProgForm.logo && (
-                                <img src={newCertProgForm.logo} alt="NGO Logo" style={{ height: '56px', maxWidth: '140px', objectFit: 'contain', background: 'transparent', mixBlendMode: 'multiply' as const }} />
+                                <img src={newCertProgForm.logo} alt="NGO Logo" style={{ height: '56px', maxWidth: '140px', objectFit: 'contain' }} />
                               )}
                               <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: 'white', border: '1.5px solid #c7d2fe', borderRadius: '10px', fontSize: '13px', fontWeight: '600', color: '#6366f1', cursor: 'pointer' }}>
                                 📁 {t('certUploadLogo')}
@@ -14859,8 +14911,10 @@ export default function KindWorldApp() {
                                   const file = e.target.files?.[0]
                                   if (!file) return
                                   const reader = new FileReader()
-                                  reader.onload = (ev) => {
-                                    setNewCertProgForm(f => ({ ...f, logo: ev.target?.result as string || '' }))
+                                  reader.onload = async (ev) => {
+                                    const raw = ev.target?.result as string || ''
+                                    const processed = await removeLogoBackground(raw)
+                                    setNewCertProgForm(f => ({ ...f, logo: processed }))
                                   }
                                   reader.readAsDataURL(file)
                                 }} />
@@ -14900,7 +14954,7 @@ export default function KindWorldApp() {
                               {certPrograms.filter(p => p.ngoId === user?.email).map(prog => (
                                 <div key={prog.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 18px', background: prog.isActive ? 'white' : 'rgba(243,244,246,0.8)', borderRadius: '14px', border: `1px solid ${prog.isActive ? 'rgba(99,102,241,0.2)' : '#e5e7eb'}` }}>
                                   {prog.ngoLogo ? (
-                                    <img src={prog.ngoLogo} alt="" style={{ height: '40px', width: '40px', objectFit: 'contain', flexShrink: 0, background: 'transparent', mixBlendMode: 'multiply' as const }} />
+                                    <img src={prog.ngoLogo} alt="" style={{ height: '40px', width: '40px', objectFit: 'contain', flexShrink: 0 }} />
                                   ) : (
                                     <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #e0e7ff, #c7d2fe)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>🏆</div>
                                   )}
@@ -18136,7 +18190,11 @@ export default function KindWorldApp() {
                               const file = e.target.files?.[0]
                               if (!file) return
                               const reader = new FileReader()
-                              reader.onload = (ev) => setNewCertProgForm(f => ({ ...f, logo: ev.target?.result as string || '' }))
+                              reader.onload = async (ev) => {
+                                const raw = ev.target?.result as string || ''
+                                const processed = await removeLogoBackground(raw)
+                                setNewCertProgForm(f => ({ ...f, logo: processed }))
+                              }
                               reader.readAsDataURL(file)
                             }} />
                           </label>
@@ -18746,7 +18804,7 @@ export default function KindWorldApp() {
                           {/* NGO Logo + Name */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
                             {prog.ngoLogo ? (
-                              <img src={prog.ngoLogo} alt={prog.ngoName} style={{ height: '48px', width: '48px', objectFit: 'contain', background: 'transparent', mixBlendMode: 'multiply' as const }} />
+                              <img src={prog.ngoLogo} alt={prog.ngoName} style={{ height: '48px', width: '48px', objectFit: 'contain', flexShrink: 0 }} />
                             ) : (
                               <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, var(--tl), var(--tl2))', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>🏢</div>
                             )}
@@ -18804,8 +18862,9 @@ export default function KindWorldApp() {
                                   .hdr{background:linear-gradient(135deg,#1a2744 0%,#253860 100%);padding:18px 48px;border-bottom:3px solid #c9a84c;display:flex;align-items:center;justify-content:center;gap:16px;}
                                   .kw-n{font-size:20px;font-weight:700;color:#fff;letter-spacing:7px;font-family:Arial,sans-serif;}
                                   .kw-s{font-size:8px;color:rgba(255,255,255,0.6);letter-spacing:3px;text-transform:uppercase;margin-top:3px;font-family:Arial,sans-serif;}
-                                  .body{padding:18px 60px 16px;text-align:center;}
-                                  .ngo-logo{max-height:56px;max-width:160px;object-fit:contain;margin:0 auto 10px;display:block;background:transparent;mix-blend-mode:multiply;}
+                                  .body{padding:18px 60px 16px;text-align:center;background:#fdfaf4;}
+                                  .ngo-logo-wrap{display:block;margin:0 auto 12px;text-align:center;}
+                                  .ngo-logo{max-height:60px;max-width:180px;object-fit:contain;display:inline-block;}
                                   .c-title{font-size:20px;font-weight:400;color:#1a2744;letter-spacing:2px;margin-bottom:12px;display:inline-block;padding-bottom:10px;border-bottom:1px solid #c9a84c;min-width:280px;max-width:100%;word-break:break-word;}
                                   .vname{font-size:34px;font-weight:700;color:#1a2744;font-style:italic;margin:2px 0 10px;line-height:1.2;word-break:break-word;overflow-wrap:break-word;}
                                   .dv{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:10px;}
@@ -18834,7 +18893,7 @@ export default function KindWorldApp() {
                                     <div class="cr tl"></div><div class="cr tr"></div><div class="cr bl"></div><div class="cr br"></div>
                                     <div class="hdr"><span style="font-size:30px">🌍</span><div><div class="kw-n">KINDWORLD</div><div class="kw-s">${_certRecog2}</div></div></div>
                                     <div class="body">
-                                      ${_logo ? `<img src="${_logo}" class="ngo-logo" alt="NGO Logo" />` : ''}
+                                      ${_logo ? `<div class="ngo-logo-wrap"><img src="${_logo}" class="ngo-logo" alt="NGO Logo" /></div>` : ''}
                                       <div class="c-title">${_certLabel2}</div>
                                       <div class="vname">${_vn}</div>
                                       <div class="dv"><div class="dl"></div><div class="dd"></div><div class="dl"></div></div>
@@ -22567,6 +22626,259 @@ export default function KindWorldApp() {
               </div>
             </div>
           )}
+
+          {/* ── INVESTOR / COMPANY DASHBOARD ── */}
+          {currentPage === 'investor' && user?.role === 'admin' && (() => {
+            const totalVols = allUsers.filter((u: any) => u.role === 'student').length
+            const totalNGOs = allUsers.filter((u: any) => u.role === 'ngo' && (u.status === 'verified' || u.status === 'active')).length
+            const totalMissions = missions.length
+            const totalHours = allUsers.filter((u: any) => u.role === 'student').reduce((s: number, u: any) => s + (u.hours || 0), 0)
+            const totalRegistrations = missionRegistrations.length
+            const completedMissions = missions.filter((m: any) => m.date < new Date().toISOString().split('T')[0]).length
+            const activeMissions = missions.filter((m: any) => m.date >= new Date().toISOString().split('T')[0]).length
+            const avgHoursPerVol = totalVols > 0 ? (totalHours / totalVols).toFixed(1) : '0'
+            const topNGOs = [...allUsers.filter((u: any) => u.role === 'ngo' && (u.status === 'verified' || u.status === 'active'))].slice(0, 5)
+            const recentMissions = [...missions].sort((a: any, b: any) => b.date.localeCompare(a.date)).slice(0, 6)
+            const categories = missions.reduce((acc: Record<string,number>, m: any) => { acc[m.category] = (acc[m.category] || 0) + 1; return acc }, {} as Record<string,number>)
+            const topCategories = Object.entries(categories).sort((a, b) => b[1] - a[1]).slice(0, 5)
+            const totalCertIssued = certRequests.filter((r: any) => r.status === 'approved').length
+
+            return (
+              <div style={{ maxWidth: '1400px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
+
+                {/* Hero Header */}
+                <div style={{
+                  background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1a2744 100%)',
+                  borderRadius: '28px',
+                  padding: 'clamp(32px, 4vw, 64px)',
+                  marginBottom: '40px',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  {/* decorative circles */}
+                  <div style={{ position:'absolute', top:'-60px', right:'-60px', width:'320px', height:'320px', borderRadius:'50%', background:'rgba(201,168,76,0.07)', pointerEvents:'none' }} />
+                  <div style={{ position:'absolute', bottom:'-40px', left:'30%', width:'200px', height:'200px', borderRadius:'50%', background:'rgba(99,102,241,0.08)', pointerEvents:'none' }} />
+                  <div style={{ position:'relative', zIndex:1 }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:'16px', marginBottom:'20px' }}>
+                      <div style={{ width:'clamp(48px,5vw,72px)', height:'clamp(48px,5vw,72px)', background:'linear-gradient(135deg,#c9a84c,#f0c040)', borderRadius:'18px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'clamp(24px,3vw,40px)', flexShrink:0 }}>💼</div>
+                      <div>
+                        <div style={{ fontSize:'clamp(11px,1vw,13px)', letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.8)', fontWeight:'700', marginBottom:'6px' }}>KINDWORLD · INVESTOR DASHBOARD</div>
+                        <h1 style={{ margin:0, fontSize:'clamp(26px,3.5vw,52px)', fontWeight:'800', color:'white', letterSpacing:'-0.02em', lineHeight:1.1 }}>Platform Overview</h1>
+                      </div>
+                    </div>
+                    <p style={{ margin:0, fontSize:'clamp(14px,1.3vw,20px)', color:'rgba(255,255,255,0.65)', maxWidth:'640px', lineHeight:1.6 }}>
+                      Real-time metrics, volunteer impact data, and NGO partnership overview for KindWorld.
+                    </p>
+                    <div style={{ marginTop:'24px', display:'flex', gap:'12px', flexWrap:'wrap' }}>
+                      <span style={{ background:'rgba(201,168,76,0.15)', border:'1px solid rgba(201,168,76,0.35)', color:'#f0c040', padding:'6px 16px', borderRadius:'99px', fontSize:'clamp(12px,1vw,14px)', fontWeight:'600' }}>✓ Live Data</span>
+                      <span style={{ background:'rgba(34,197,94,0.12)', border:'1px solid rgba(34,197,94,0.3)', color:'#4ade80', padding:'6px 16px', borderRadius:'99px', fontSize:'clamp(12px,1vw,14px)', fontWeight:'600' }}>● Platform Active</span>
+                      <span style={{ background:'rgba(99,102,241,0.12)', border:'1px solid rgba(99,102,241,0.3)', color:'#a5b4fc', padding:'6px 16px', borderRadius:'99px', fontSize:'clamp(12px,1vw,14px)', fontWeight:'600' }}>🌏 12 Languages</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* KPI Cards Row */}
+                <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(clamp(160px,18vw,240px), 1fr))', gap:'clamp(12px,1.5vw,24px)', marginBottom:'40px' }}>
+                  {[
+                    { icon:'👥', label:'Total Volunteers', value: totalVols.toLocaleString(), sub:`avg ${avgHoursPerVol}h each`, color:'#6366f1', bg:'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+                    { icon:'🌍', label:'Active NGO Partners', value: totalNGOs.toLocaleString(), sub:'verified organizations', color:'#059669', bg:'linear-gradient(135deg,#059669,#10b981)' },
+                    { icon:'📋', label:'Total Missions', value: totalMissions.toLocaleString(), sub:`${activeMissions} upcoming · ${completedMissions} done`, color:'#f59e0b', bg:'linear-gradient(135deg,#f59e0b,#f97316)' },
+                    { icon:'⏱', label:'Volunteer Hours', value: totalHours.toLocaleString(), sub:'hours contributed total', color:'#3b82f6', bg:'linear-gradient(135deg,#3b82f6,#6366f1)' },
+                    { icon:'📝', label:'Registrations', value: totalRegistrations.toLocaleString(), sub:'mission sign-ups total', color:'#ec4899', bg:'linear-gradient(135deg,#ec4899,#f43f5e)' },
+                    { icon:'🎓', label:'Certificates Issued', value: totalCertIssued.toLocaleString(), sub:'approved by NGOs', color:'#c9a84c', bg:'linear-gradient(135deg,#c9a84c,#f0c040)' },
+                  ].map((kpi) => (
+                    <div key={kpi.label} style={{ background:'white', borderRadius:'20px', padding:'clamp(20px,2.5vw,32px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9', position:'relative', overflow:'hidden' }}>
+                      <div style={{ position:'absolute', top:'-20px', right:'-20px', width:'100px', height:'100px', borderRadius:'50%', background: kpi.bg, opacity:0.08 }} />
+                      <div style={{ fontSize:'clamp(28px,3vw,40px)', marginBottom:'12px' }}>{kpi.icon}</div>
+                      <div style={{ fontSize:'clamp(28px,3vw,44px)', fontWeight:'800', color:'#0f172a', lineHeight:1, marginBottom:'6px' }}>{kpi.value}</div>
+                      <div style={{ fontSize:'clamp(12px,1.1vw,16px)', fontWeight:'700', color:'#374151', marginBottom:'4px' }}>{kpi.label}</div>
+                      <div style={{ fontSize:'clamp(11px,0.9vw,13px)', color:'#94a3b8' }}>{kpi.sub}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Main 2-col grid */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'clamp(16px,2vw,32px)', marginBottom:'32px' }}>
+
+                  {/* Mission Categories */}
+                  <div style={{ background:'white', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9' }}>
+                    <h2 style={{ margin:'0 0 24px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a', display:'flex', alignItems:'center', gap:'10px' }}>
+                      📊 Mission Categories
+                    </h2>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+                      {topCategories.length > 0 ? topCategories.map(([cat, count]) => {
+                        const pct = Math.round((count / totalMissions) * 100)
+                        const catColors: Record<string,string> = { environment:'#10b981', education:'#6366f1', healthcare:'#ef4444', community:'#f59e0b', elderly:'#8b5cf6', youth:'#3b82f6', animals:'#ec4899', disaster:'#f97316' }
+                        const clr = catColors[cat] || '#6366f1'
+                        return (
+                          <div key={cat}>
+                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'6px' }}>
+                              <span style={{ fontSize:'clamp(13px,1.1vw,16px)', fontWeight:'600', color:'#374151', textTransform:'capitalize' }}>{cat}</span>
+                              <span style={{ fontSize:'clamp(13px,1.1vw,16px)', fontWeight:'700', color: clr }}>{count} missions · {pct}%</span>
+                            </div>
+                            <div style={{ height:'10px', background:'#f1f5f9', borderRadius:'99px', overflow:'hidden' }}>
+                              <div style={{ width:`${pct}%`, height:'100%', background: clr, borderRadius:'99px', transition:'width 0.5s ease' }} />
+                            </div>
+                          </div>
+                        )
+                      }) : <p style={{ color:'#94a3b8', fontSize:'clamp(13px,1.1vw,16px)' }}>No mission data yet</p>}
+                    </div>
+                  </div>
+
+                  {/* NGO Partners */}
+                  <div style={{ background:'white', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9' }}>
+                    <h2 style={{ margin:'0 0 24px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a', display:'flex', alignItems:'center', gap:'10px' }}>
+                      🏢 NGO Partners
+                    </h2>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+                      {topNGOs.length > 0 ? topNGOs.map((ngo: any) => {
+                        const ngoMissionCount = missions.filter((m: any) => m.organizerId === ngo.email).length
+                        const ngoVolCount = missionRegistrations.filter((r: any) => missions.some((m: any) => m.id === r.missionId && m.organizerId === ngo.email)).length
+                        return (
+                          <div key={ngo.email} style={{ display:'flex', alignItems:'center', gap:'14px', padding:'14px 16px', background:'#f8fafc', borderRadius:'14px', border:'1px solid #e2e8f0' }}>
+                            {ngo.ngoLogo
+                              ? <img src={ngo.ngoLogo} alt="" style={{ width:'clamp(36px,3.5vw,48px)', height:'clamp(36px,3.5vw,48px)', objectFit:'contain', borderRadius:'10px', flexShrink:0 }} />
+                              : <div style={{ width:'clamp(36px,3.5vw,48px)', height:'clamp(36px,3.5vw,48px)', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'clamp(16px,1.8vw,22px)', flexShrink:0 }}>🏢</div>
+                            }
+                            <div style={{ flex:1, minWidth:0 }}>
+                              <div style={{ fontSize:'clamp(13px,1.1vw,16px)', fontWeight:'700', color:'#1e293b', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ngo.ngoOrgName || ngo.name}</div>
+                              <div style={{ fontSize:'clamp(11px,0.9vw,13px)', color:'#64748b' }}>{ngoMissionCount} missions · {ngoVolCount} registrations</div>
+                            </div>
+                            <span style={{ padding:'4px 12px', background:'#d1fae5', color:'#065f46', borderRadius:'99px', fontSize:'clamp(10px,0.85vw,12px)', fontWeight:'700', flexShrink:0 }}>✓ Verified</span>
+                          </div>
+                        )
+                      }) : <p style={{ color:'#94a3b8', fontSize:'clamp(13px,1.1vw,16px)' }}>No NGO partners yet</p>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Missions */}
+                <div style={{ background:'white', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9', marginBottom:'32px' }}>
+                  <h2 style={{ margin:'0 0 24px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a' }}>
+                    🌍 Recent Missions
+                  </h2>
+                  <div style={{ overflowX:'auto' }}>
+                    <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'clamp(13px,1.1vw,16px)' }}>
+                      <thead>
+                        <tr style={{ background:'#f8fafc' }}>
+                          {['Mission', 'NGO', 'Date', 'Location', 'Registered', 'Status'].map(h => (
+                            <th key={h} style={{ padding:'clamp(10px,1.2vw,16px)', textAlign:'left', fontWeight:'700', color:'#475569', fontSize:'clamp(11px,0.9vw,13px)', textTransform:'uppercase', letterSpacing:'0.5px', borderBottom:'2px solid #e2e8f0', whiteSpace:'nowrap' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recentMissions.map((m: any) => {
+                          const regs = missionRegistrations.filter((r: any) => r.missionId === m.id).length
+                          const isPast = m.date < new Date().toISOString().split('T')[0]
+                          return (
+                            <tr key={m.id} style={{ borderBottom:'1px solid #f1f5f9' }}
+                              onMouseOver={e => (e.currentTarget.style.background = '#fafafa')}
+                              onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+                            >
+                              <td style={{ padding:'clamp(10px,1.2vw,16px)', fontWeight:'600', color:'#1e293b', maxWidth:'200px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{m.title}</td>
+                              <td style={{ padding:'clamp(10px,1.2vw,16px)', color:'#64748b' }}>{m.organizer || '—'}</td>
+                              <td style={{ padding:'clamp(10px,1.2vw,16px)', color:'#64748b', whiteSpace:'nowrap' }}>{m.date}</td>
+                              <td style={{ padding:'clamp(10px,1.2vw,16px)', color:'#64748b' }}>{m.location}</td>
+                              <td style={{ padding:'clamp(10px,1.2vw,16px)', fontWeight:'700', color:'#6366f1' }}>{regs}</td>
+                              <td style={{ padding:'clamp(10px,1.2vw,16px)' }}>
+                                <span style={{ padding:'4px 12px', borderRadius:'99px', fontSize:'clamp(10px,0.85vw,12px)', fontWeight:'700', background: isPast ? '#f1f5f9' : '#d1fae5', color: isPast ? '#64748b' : '#065f46' }}>
+                                  {isPast ? 'Completed' : 'Active'}
+                                </span>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                    {recentMissions.length === 0 && <p style={{ textAlign:'center', color:'#94a3b8', padding:'32px', fontSize:'clamp(13px,1.1vw,16px)' }}>No missions yet</p>}
+                  </div>
+                </div>
+
+                {/* Sponsorship / Investment Section */}
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'clamp(16px,2vw,32px)', marginBottom:'32px' }}>
+                  {/* Why Sponsor */}
+                  <div style={{ background:'linear-gradient(135deg,#0f172a,#1e3a5f)', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', color:'white' }}>
+                    <h2 style={{ margin:'0 0 20px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#f0c040' }}>💛 Why Partner With Us</h2>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
+                      {[
+                        { icon:'🎯', title:'Brand Visibility', desc:'Your logo on volunteer certificates, missions, and across 12 language markets' },
+                        { icon:'📊', title:'Impact Reports', desc:'Quarterly CSR-ready reports showing hours, volunteers, and communities reached' },
+                        { icon:'🌐', title:'Global Reach', desc:`${totalVols} volunteers across Southeast Asia and beyond` },
+                        { icon:'🤝', title:'Mission Co-branding', desc:'Co-host volunteer events with your company name attached to real community impact' },
+                      ].map(item => (
+                        <div key={item.title} style={{ display:'flex', gap:'14px', alignItems:'flex-start' }}>
+                          <div style={{ fontSize:'clamp(20px,2vw,28px)', flexShrink:0, marginTop:'2px' }}>{item.icon}</div>
+                          <div>
+                            <div style={{ fontWeight:'700', fontSize:'clamp(13px,1.1vw,16px)', marginBottom:'4px' }}>{item.title}</div>
+                            <div style={{ fontSize:'clamp(11px,0.9vw,14px)', color:'rgba(255,255,255,0.65)', lineHeight:1.5 }}>{item.desc}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sponsorship Tiers */}
+                  <div style={{ background:'white', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9' }}>
+                    <h2 style={{ margin:'0 0 20px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a' }}>🏅 Sponsorship Tiers</h2>
+                    <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                      {[
+                        { tier:'Bronze Partner', amount:'$1,000 / yr', perks:['Logo on platform', 'Monthly report', '1 co-hosted mission'], color:'#b45309', bg:'#fffbeb', border:'#fde68a' },
+                        { tier:'Silver Partner', amount:'$5,000 / yr', perks:['All Bronze +', 'Certificate branding', 'Quarterly CSR report', '3 co-hosted missions'], color:'#475569', bg:'#f8fafc', border:'#e2e8f0' },
+                        { tier:'Gold Partner', amount:'$15,000 / yr', perks:['All Silver +', 'Featured NGO spotlight', 'Custom mission categories', 'Unlimited co-hosted missions', 'Direct dashboard access'], color:'#92400e', bg:'#fef3c7', border:'#f59e0b' },
+                      ].map(t => (
+                        <div key={t.tier} style={{ background: t.bg, border:`2px solid ${t.border}`, borderRadius:'16px', padding:'clamp(14px,1.5vw,20px)' }}>
+                          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'10px' }}>
+                            <span style={{ fontWeight:'800', fontSize:'clamp(13px,1.1vw,17px)', color: t.color }}>{t.tier}</span>
+                            <span style={{ fontWeight:'800', fontSize:'clamp(13px,1.1vw,17px)', color: t.color }}>{t.amount}</span>
+                          </div>
+                          <div style={{ display:'flex', flexWrap:'wrap', gap:'6px' }}>
+                            {t.perks.map(p => (
+                              <span key={p} style={{ fontSize:'clamp(10px,0.85vw,13px)', background:'rgba(0,0,0,0.06)', padding:'3px 10px', borderRadius:'99px', color:'#374151' }}>✓ {p}</span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Platform Growth Story */}
+                <div style={{ background:'linear-gradient(135deg,#f0fdf4,#ecfdf5)', border:'1px solid #bbf7d0', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', marginBottom:'32px' }}>
+                  <h2 style={{ margin:'0 0 24px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#065f46' }}>📈 Platform Impact Summary</h2>
+                  <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:'clamp(16px,2vw,28px)' }}>
+                    {[
+                      { label:'Volunteer Hours Logged', value: totalHours.toLocaleString() + 'h', icon:'⏱' },
+                      { label:'Communities Reached', value: totalNGOs.toString() + '+', icon:'🏘' },
+                      { label:'Volunteer Registrations', value: totalRegistrations.toLocaleString(), icon:'📝' },
+                      { label:'Certificates of Service', value: totalCertIssued.toLocaleString(), icon:'🎓' },
+                      { label:'Avg Hours / Volunteer', value: avgHoursPerVol + 'h', icon:'👤' },
+                      { label:'Mission Completion Rate', value: totalMissions > 0 ? Math.round((completedMissions/totalMissions)*100)+'%' : '—', icon:'✅' },
+                    ].map(item => (
+                      <div key={item.label} style={{ textAlign:'center', background:'white', borderRadius:'16px', padding:'clamp(18px,2vw,28px)', boxShadow:'0 2px 12px rgba(0,0,0,0.05)' }}>
+                        <div style={{ fontSize:'clamp(28px,3vw,40px)', marginBottom:'8px' }}>{item.icon}</div>
+                        <div style={{ fontSize:'clamp(24px,2.5vw,36px)', fontWeight:'800', color:'#059669', marginBottom:'4px' }}>{item.value}</div>
+                        <div style={{ fontSize:'clamp(11px,0.9vw,14px)', color:'#374151', fontWeight:'600', lineHeight:1.3 }}>{item.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Footer CTA */}
+                <div style={{ textAlign:'center', padding:'clamp(32px,4vw,56px)', background:'#f8fafc', borderRadius:'24px', border:'1px solid #e2e8f0' }}>
+                  <div style={{ fontSize:'clamp(28px,3vw,44px)', marginBottom:'16px' }}>🤝</div>
+                  <h2 style={{ margin:'0 0 12px', fontSize:'clamp(20px,2.5vw,36px)', fontWeight:'800', color:'#0f172a' }}>Interested in Partnering?</h2>
+                  <p style={{ margin:'0 0 28px', fontSize:'clamp(14px,1.2vw,18px)', color:'#64748b', maxWidth:'520px', marginLeft:'auto', marginRight:'auto', lineHeight:1.6 }}>
+                    Reach out to discuss sponsorship opportunities, CSR partnerships, or investment in the KindWorld platform.
+                  </p>
+                  <a href="mailto:contact@kindworld.app" style={{ display:'inline-block', padding:'clamp(14px,1.5vw,20px) clamp(28px,3vw,48px)', background:'linear-gradient(135deg,#1a2744,#253860)', color:'white', borderRadius:'14px', fontWeight:'700', fontSize:'clamp(14px,1.2vw,18px)', textDecoration:'none', boxShadow:'0 8px 24px rgba(26,39,68,0.25)' }}>
+                    📧 Contact Us
+                  </a>
+                </div>
+
+              </div>
+            )
+          })()}
+
         </div>
       </div>
     )
