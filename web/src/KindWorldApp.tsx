@@ -6,7 +6,7 @@ import emailjs from '@emailjs/browser'
 interface User {
   id: string
   name: string
-  role: 'student' | 'ngo' | 'admin'
+  role: 'student' | 'ngo' | 'admin' | 'sponsor'
   hours: number
   email: string
   avatar: string
@@ -37,12 +37,19 @@ interface User {
   ngoWebsite?: string
   ngoLogo?: string
   ngoProfileComplete?: boolean
-  ngoDocumentUrl?: string   // legal doc link
-  ngoPortfolioUrl?: string  // portfolio link
-  ngoDocumentNote?: string  // brief description of submitted docs
+  ngoDocumentUrl?: string
+  ngoPortfolioUrl?: string
+  ngoDocumentNote?: string
   city?: string
   country?: string
   interests?: string[]
+  // Sponsor-specific profile
+  companyName?: string
+  companyLogo?: string
+  companyIndustry?: string
+  companyWebsite?: string
+  sponsorTier?: 'bronze' | 'silver' | 'gold'
+  sponsoredMissionIds?: number[]
 }
 
 interface NoShowRecord {
@@ -296,6 +303,30 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: 'Learn More',
     dashboard: 'Dashboard',
     investor: 'Investor',
+    sponsorImpact: 'Impact Report',
+    roleSponsor: 'Company / Sponsor',
+    sponsorDashboardSubtitle: 'Manage your sponsorships and track community impact',
+    viewImpactReport: 'View Impact Report',
+    sponsoredMissions: 'Sponsored Missions',
+    volunteersReached: 'Volunteers Reached',
+    certIssued: 'Certificates Issued',
+    noSponsoredMissions: 'No sponsored missions yet',
+    sponsorImpactDesc: 'Your sponsorship is making a real difference in communities worldwide.',
+    viewFullReport: 'View Full Report',
+    sponsorTier: 'Sponsor Tier',
+    sponsorBenefits: 'Your Tier Benefits',
+    upgradeTierHint: 'Contact us to upgrade your tier and unlock more benefits.',
+    allSponsoredMissions: 'All Sponsored Missions',
+    expandImpact: 'Expand Your Impact',
+    expandImpactDesc: 'Upgrade your sponsorship tier or sponsor more missions to amplify your CSR footprint.',
+    missionsByCategory: 'Missions by Category',
+    active: 'Active',
+    completed: 'Completed',
+    contactUs: 'Contact Us',
+    organizer: 'Organizer',
+    date: 'Date',
+    category: 'Category',
+    status: 'Status',
     missions: 'Missions',
     certificates: 'Certificates',
     badges: 'Badges',
@@ -1030,6 +1061,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: 'Pelajari Selengkapnya',
     dashboard: 'Beranda',
     investor: 'Investor',
+    sponsorImpact: 'Laporan Dampak',
+    roleSponsor: 'Perusahaan / Sponsor',
+    sponsorDashboardSubtitle: 'Kelola sponsor Anda dan pantau dampak komunitas',
+    viewImpactReport: 'Lihat Laporan Dampak',
+    sponsoredMissions: 'Kegiatan yang Disponsori',
+    volunteersReached: 'Relawan yang Dijangkau',
+    certIssued: 'Sertifikat Diterbitkan',
+    noSponsoredMissions: 'Belum ada kegiatan yang disponsori',
+    sponsorImpactDesc: 'Dukungan Anda membuat perbedaan nyata di seluruh komunitas.',
+    viewFullReport: 'Lihat Laporan Lengkap',
+    sponsorTier: 'Tingkat Sponsor',
+    sponsorBenefits: 'Manfaat Tingkat Anda',
+    upgradeTierHint: 'Hubungi kami untuk meningkatkan tingkat dan membuka lebih banyak manfaat.',
+    allSponsoredMissions: 'Semua Kegiatan yang Disponsori',
+    expandImpact: 'Perluas Dampak Anda',
+    expandImpactDesc: 'Tingkatkan tier sponsor atau sponsori lebih banyak kegiatan untuk memperbesar jejak CSR Anda.',
+    missionsByCategory: 'Kegiatan berdasarkan Kategori',
     missions: 'Kegiatan',
     certificates: 'Sertifikat',
     badges: 'Lencana',
@@ -1643,6 +1691,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: '了解更多',
     dashboard: '仪表板',
     investor: '投资者',
+    sponsorImpact: '影响报告',
+    roleSponsor: '企业 / 赞助商',
+    sponsorDashboardSubtitle: '管理您的赞助并追踪社区影响',
+    viewImpactReport: '查看影响报告',
+    sponsoredMissions: '赞助的活动',
+    volunteersReached: '触达志工数',
+    certIssued: '已颁发证书',
+    noSponsoredMissions: '暂无赞助活动',
+    sponsorImpactDesc: '您的赞助正在全球社区中产生真实影响。',
+    viewFullReport: '查看完整报告',
+    sponsorTier: '赞助级别',
+    sponsorBenefits: '您的级别权益',
+    upgradeTierHint: '联系我们升级您的级别以解锁更多权益。',
+    allSponsoredMissions: '全部赞助活动',
+    expandImpact: '扩大您的影响',
+    expandImpactDesc: '升级赞助级别或赞助更多活动，扩大您的企业社会责任足迹。',
+    missionsByCategory: '按类别划分的活动',
     missions: '任务',
     certificates: '证书',
     badges: '徽章',
@@ -2255,6 +2320,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: '了解更多',
     dashboard: '儀表板',
     investor: '投資者',
+    sponsorImpact: '影響報告',
+    roleSponsor: '企業 / 贊助商',
+    sponsorDashboardSubtitle: '管理您的贊助並追蹤社區影響',
+    viewImpactReport: '查看影響報告',
+    sponsoredMissions: '贊助的活動',
+    volunteersReached: '觸達志工數',
+    certIssued: '已頒發證書',
+    noSponsoredMissions: '尚無贊助活動',
+    sponsorImpactDesc: '您的贊助正在全球社區中產生真實影響。',
+    viewFullReport: '查看完整報告',
+    sponsorTier: '贊助級別',
+    sponsorBenefits: '您的級別權益',
+    upgradeTierHint: '聯繫我們升級您的級別以解鎖更多權益。',
+    allSponsoredMissions: '全部贊助活動',
+    expandImpact: '擴大您的影響',
+    expandImpactDesc: '升級贊助級別或贊助更多活動，擴大您的企業社會責任足跡。',
+    missionsByCategory: '依類別劃分的活動',
     missions: '任務',
     certificates: '證書',
     badges: '徽章',
@@ -2868,6 +2950,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: 'Saber Más',
     dashboard: 'Panel',
     investor: 'Inversor',
+    sponsorImpact: 'Informe de Impacto',
+    roleSponsor: 'Empresa / Patrocinador',
+    sponsorDashboardSubtitle: 'Gestiona tus patrocinios y realiza un seguimiento del impacto comunitario',
+    viewImpactReport: 'Ver Informe de Impacto',
+    sponsoredMissions: 'Misiones Patrocinadas',
+    volunteersReached: 'Voluntarios Alcanzados',
+    certIssued: 'Certificados Emitidos',
+    noSponsoredMissions: 'No hay misiones patrocinadas aún',
+    sponsorImpactDesc: 'Tu patrocinio está marcando una diferencia real en comunidades de todo el mundo.',
+    viewFullReport: 'Ver Informe Completo',
+    sponsorTier: 'Nivel de Patrocinador',
+    sponsorBenefits: 'Beneficios de Tu Nivel',
+    upgradeTierHint: 'Contáctanos para mejorar tu nivel y desbloquear más beneficios.',
+    allSponsoredMissions: 'Todas las Misiones Patrocinadas',
+    expandImpact: 'Amplía Tu Impacto',
+    expandImpactDesc: 'Mejora tu nivel de patrocinio o patrocina más misiones para amplificar tu huella de RSC.',
+    missionsByCategory: 'Misiones por Categoría',
     missions: 'Misiones',
     certificates: 'Certificados',
     badges: 'Insignias',
@@ -3459,6 +3558,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: 'En Savoir Plus',
     dashboard: 'Tableau de Bord',
     investor: 'Investisseur',
+    sponsorImpact: "Rapport d'Impact",
+    roleSponsor: 'Entreprise / Sponsor',
+    sponsorDashboardSubtitle: 'Gérez vos parrainages et suivez l\'impact communautaire',
+    viewImpactReport: "Voir le Rapport d'Impact",
+    sponsoredMissions: 'Missions Parrainées',
+    volunteersReached: 'Bénévoles Atteints',
+    certIssued: 'Certificats Émis',
+    noSponsoredMissions: 'Aucune mission parrainée pour l\'instant',
+    sponsorImpactDesc: 'Votre parrainage fait une vraie différence dans les communautés du monde entier.',
+    viewFullReport: 'Voir le Rapport Complet',
+    sponsorTier: 'Niveau de Sponsor',
+    sponsorBenefits: 'Vos Avantages de Niveau',
+    upgradeTierHint: 'Contactez-nous pour upgrader votre niveau et débloquer plus d\'avantages.',
+    allSponsoredMissions: 'Toutes les Missions Parrainées',
+    expandImpact: 'Élargissez Votre Impact',
+    expandImpactDesc: 'Upgradez votre niveau ou parrainez plus de missions pour amplifier votre empreinte RSE.',
+    missionsByCategory: 'Missions par Catégorie',
     missions: 'Missions',
     certificates: 'Certificats',
     badges: 'Badges',
@@ -4050,6 +4166,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: 'Saiba Mais',
     dashboard: 'Painel',
     investor: 'Investidor',
+    sponsorImpact: 'Relatório de Impacto',
+    roleSponsor: 'Empresa / Patrocinador',
+    sponsorDashboardSubtitle: 'Gerencie seus patrocínios e acompanhe o impacto comunitário',
+    viewImpactReport: 'Ver Relatório de Impacto',
+    sponsoredMissions: 'Missões Patrocinadas',
+    volunteersReached: 'Voluntários Alcançados',
+    certIssued: 'Certificados Emitidos',
+    noSponsoredMissions: 'Nenhuma missão patrocinada ainda',
+    sponsorImpactDesc: 'Seu patrocínio está fazendo uma diferença real nas comunidades do mundo inteiro.',
+    viewFullReport: 'Ver Relatório Completo',
+    sponsorTier: 'Nível de Patrocinador',
+    sponsorBenefits: 'Benefícios do Seu Nível',
+    upgradeTierHint: 'Contate-nos para subir de nível e desbloquear mais benefícios.',
+    allSponsoredMissions: 'Todas as Missões Patrocinadas',
+    expandImpact: 'Amplie Seu Impacto',
+    expandImpactDesc: 'Suba de nível ou patrocine mais missões para amplificar sua pegada de RSC.',
+    missionsByCategory: 'Missões por Categoria',
     missions: 'Missões',
     certificates: 'Certificados',
     badges: 'Distintivos',
@@ -4641,6 +4774,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: '詳細を見る',
     dashboard: 'ダッシュボード',
     investor: '投資家',
+    sponsorImpact: 'インパクトレポート',
+    roleSponsor: '企業 / スポンサー',
+    sponsorDashboardSubtitle: 'スポンサーシップの管理とコミュニティへの影響の追跡',
+    viewImpactReport: 'インパクトレポートを見る',
+    sponsoredMissions: 'スポンサーのミッション',
+    volunteersReached: 'ボランティア到達数',
+    certIssued: '発行済み証明書',
+    noSponsoredMissions: 'スポンサーのミッションはまだありません',
+    sponsorImpactDesc: 'あなたのスポンサーシップは世界中のコミュニティに本物の変化をもたらしています。',
+    viewFullReport: '完全レポートを見る',
+    sponsorTier: 'スポンサーランク',
+    sponsorBenefits: 'ランクの特典',
+    upgradeTierHint: 'ランクアップして更多の特典を解放するにはお問い合わせください。',
+    allSponsoredMissions: '全スポンサーミッション',
+    expandImpact: 'インパクトを拡大する',
+    expandImpactDesc: 'スポンサーランクのアップグレードやより多くのミッションのスポンサーで、CSRへの貢献を拡大しましょう。',
+    missionsByCategory: 'カテゴリ別ミッション',
     missions: 'ミッション',
     certificates: '証明書',
     badges: 'バッジ',
@@ -5232,6 +5382,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: 'เรียนรู้เพิ่มเติม',
     dashboard: 'แดชบอร์ด',
     investor: 'นักลงทุน',
+    sponsorImpact: 'รายงานผลกระทบ',
+    roleSponsor: 'บริษัท / ผู้สนับสนุน',
+    sponsorDashboardSubtitle: 'จัดการการสนับสนุนและติดตามผลกระทบของชุมชน',
+    viewImpactReport: 'ดูรายงานผลกระทบ',
+    sponsoredMissions: 'ภารกิจที่สนับสนุน',
+    volunteersReached: 'อาสาสมัครที่เข้าถึงได้',
+    certIssued: 'ใบรับรองที่ออก',
+    noSponsoredMissions: 'ยังไม่มีภารกิจที่สนับสนุน',
+    sponsorImpactDesc: 'การสนับสนุนของคุณกำลังสร้างความแตกต่างที่แท้จริงในชุมชนทั่วโลก',
+    viewFullReport: 'ดูรายงานฉบับเต็ม',
+    sponsorTier: 'ระดับผู้สนับสนุน',
+    sponsorBenefits: 'สิทธิประโยชน์ระดับของคุณ',
+    upgradeTierHint: 'ติดต่อเราเพื่ออัปเกรดระดับและปลดล็อคสิทธิประโยชน์เพิ่มเติม',
+    allSponsoredMissions: 'ภารกิจที่สนับสนุนทั้งหมด',
+    expandImpact: 'ขยายผลกระทบของคุณ',
+    expandImpactDesc: 'อัปเกรดระดับหรือสนับสนุนภารกิจเพิ่มเติมเพื่อขยายรอยเท้า CSR ของคุณ',
+    missionsByCategory: 'ภารกิจตามหมวดหมู่',
     missions: 'ภารกิจ',
     certificates: 'ใบรับรอง',
     badges: 'เหรียญตรา',
@@ -5823,6 +5990,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: 'Tìm hiểu thêm',
     dashboard: 'Bảng điều khiển',
     investor: 'Nhà đầu tư',
+    sponsorImpact: 'Báo cáo Tác động',
+    roleSponsor: 'Doanh nghiệp / Nhà tài trợ',
+    sponsorDashboardSubtitle: 'Quản lý tài trợ và theo dõi tác động cộng đồng',
+    viewImpactReport: 'Xem Báo cáo Tác động',
+    sponsoredMissions: 'Nhiệm vụ được Tài trợ',
+    volunteersReached: 'Tình nguyện viên Tiếp cận',
+    certIssued: 'Chứng chỉ Đã cấp',
+    noSponsoredMissions: 'Chưa có nhiệm vụ được tài trợ',
+    sponsorImpactDesc: 'Sự tài trợ của bạn đang tạo ra sự khác biệt thực sự trong các cộng đồng trên toàn thế giới.',
+    viewFullReport: 'Xem Báo cáo Đầy đủ',
+    sponsorTier: 'Cấp độ Nhà tài trợ',
+    sponsorBenefits: 'Quyền lợi Cấp độ của Bạn',
+    upgradeTierHint: 'Liên hệ với chúng tôi để nâng cấp và mở khóa thêm quyền lợi.',
+    allSponsoredMissions: 'Tất cả Nhiệm vụ được Tài trợ',
+    expandImpact: 'Mở rộng Tác động của Bạn',
+    expandImpactDesc: 'Nâng cấp cấp độ tài trợ hoặc tài trợ thêm nhiệm vụ để khuếch đại dấu ấn CSR của bạn.',
+    missionsByCategory: 'Nhiệm vụ theo Danh mục',
     missions: 'Nhiệm vụ',
     certificates: 'Chứng chỉ',
     badges: 'Huy hiệu',
@@ -6414,6 +6598,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: '더 알아보기',
     dashboard: '대시보드',
     investor: '투자자',
+    sponsorImpact: '영향 보고서',
+    roleSponsor: '기업 / 스폰서',
+    sponsorDashboardSubtitle: '후원을 관리하고 커뮤니티 영향을 추적하세요',
+    viewImpactReport: '영향 보고서 보기',
+    sponsoredMissions: '후원한 미션',
+    volunteersReached: '연결된 봉사자',
+    certIssued: '발급된 인증서',
+    noSponsoredMissions: '아직 후원한 미션이 없습니다',
+    sponsorImpactDesc: '귀하의 후원은 전 세계 커뮤니티에 실질적인 변화를 만들고 있습니다.',
+    viewFullReport: '전체 보고서 보기',
+    sponsorTier: '스폰서 등급',
+    sponsorBenefits: '등급 혜택',
+    upgradeTierHint: '등급 업그레이드 및 더 많은 혜택 해제를 위해 문의하세요.',
+    allSponsoredMissions: '모든 후원 미션',
+    expandImpact: '영향력 확대',
+    expandImpactDesc: '후원 등급을 업그레이드하거나 더 많은 미션을 후원하여 CSR 발자국을 확대하세요.',
+    missionsByCategory: '카테고리별 미션',
     missions: '미션',
     certificates: '인증서',
     badges: '배지',
@@ -7005,6 +7206,23 @@ const localTranslations: Record<string, Record<string, string>> = {
     learnMore: 'Mehr erfahren',
     dashboard: 'Dashboard',
     investor: 'Investor',
+    sponsorImpact: 'Wirkungsbericht',
+    roleSponsor: 'Unternehmen / Sponsor',
+    sponsorDashboardSubtitle: 'Verwalten Sie Ihre Sponsorings und verfolgen Sie den Community-Impact',
+    viewImpactReport: 'Wirkungsbericht anzeigen',
+    sponsoredMissions: 'Gesponserte Missionen',
+    volunteersReached: 'Erreichte Freiwillige',
+    certIssued: 'Ausgestellte Zertifikate',
+    noSponsoredMissions: 'Noch keine gesponserten Missionen',
+    sponsorImpactDesc: 'Ihr Sponsoring macht einen echten Unterschied in Gemeinschaften weltweit.',
+    viewFullReport: 'Vollständigen Bericht anzeigen',
+    sponsorTier: 'Sponsor-Stufe',
+    sponsorBenefits: 'Ihre Stufen-Vorteile',
+    upgradeTierHint: 'Kontaktieren Sie uns, um Ihre Stufe zu upgraden und mehr Vorteile freizuschalten.',
+    allSponsoredMissions: 'Alle gesponserten Missionen',
+    expandImpact: 'Erweitern Sie Ihren Impact',
+    expandImpactDesc: 'Upgraden Sie Ihre Sponsor-Stufe oder sponsern Sie mehr Missionen, um Ihren CSR-Fußabdruck zu vergrößern.',
+    missionsByCategory: 'Missionen nach Kategorie',
     missions: 'Missionen',
     certificates: 'Zertifikate',
     badges: 'Abzeichen',
@@ -7760,7 +7978,7 @@ export default function KindWorldApp() {
       document.head.appendChild(styleSheet)
     }
   }
-  const [currentPage, setCurrentPage] = useState<'landing' | 'learnmore' | 'signin' | 'dashboard' | 'missions' | 'badges' | 'certificates' | 'profile' | 'friends' | 'leaderboard' | 'badgeManagement' | 'reports' | 'settings' | 'investor'>('landing')
+  const [currentPage, setCurrentPage] = useState<'landing' | 'learnmore' | 'signin' | 'dashboard' | 'missions' | 'badges' | 'certificates' | 'profile' | 'friends' | 'leaderboard' | 'badgeManagement' | 'reports' | 'settings' | 'investor' | 'sponsorImpact'>('landing')
   const [badgeManagementUser, setBadgeManagementUser] = useState<any>(null)
   const [user, setUser] = useState<User | null>(null)
 
@@ -7970,7 +8188,7 @@ export default function KindWorldApp() {
     }
   }, [])
 
-  const [selectedRole, setSelectedRole] = useState<'student' | 'ngo' | 'admin'>('student')
+  const [selectedRole, setSelectedRole] = useState<'student' | 'ngo' | 'admin' | 'sponsor'>('student')
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
   const [showMonthDetails, setShowMonthDetails] = useState(false)
   const [chartTimePeriod, setChartTimePeriod] = useState<'6months' | 'year' | 'allTime'>('6months')
@@ -7999,6 +8217,9 @@ export default function KindWorldApp() {
   })
   const [certRequests, setCertRequests] = useState<CertRequest[]>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_cert_requests') || '[]') } catch { return [] }
+  })
+  const [sponsorProfile, setSponsorProfile] = useState<{companyName:string,companyLogo:string,industry:string,website:string,tier:'bronze'|'silver'|'gold',sponsoredMissionIds:number[],contactName:string,contactEmail:string}>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_sponsor_profile') || 'null') || { companyName:'',companyLogo:'',industry:'',website:'',tier:'bronze',sponsoredMissionIds:[],contactName:'',contactEmail:'' } } catch { return { companyName:'',companyLogo:'',industry:'',website:'',tier:'bronze',sponsoredMissionIds:[],contactName:'',contactEmail:'' } }
   })
   const [noShowRecords, setNoShowRecords] = useState<NoShowRecord[]>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_noshow') || '[]') } catch { return [] }
@@ -8906,12 +9127,13 @@ export default function KindWorldApp() {
     }
   }, [notifications])
 
-  const performSignIn = (role?: 'student' | 'ngo' | 'admin') => {
+  const performSignIn = (role?: 'student' | 'ngo' | 'admin' | 'sponsor') => {
     const signInRole = role || selectedRole
     setIsLoading(true)
     setTimeout(() => {
       const userEmail = signInRole === 'student' ? 'alex.chen@gmail.com' :
-               signInRole === 'ngo' ? 'admin@redcross.org' : 'admin@kindworld.com'
+               signInRole === 'ngo' ? 'admin@redcross.org' :
+               signInRole === 'sponsor' ? 'sponsor@techcorp.com' : 'admin@kindworld.com'
 
       // Check if user exists in allUsers to get their badges
       const existingUser = allUsers.find((u: any) => u.email === userEmail)
@@ -8919,13 +9141,20 @@ export default function KindWorldApp() {
       const userData: User = {
         id: existingUser?.id || `user_${Date.now()}`,
         name: signInRole === 'student' ? 'Alex Chen' :
-              signInRole === 'ngo' ? 'Red Cross International' : 'System Administrator',
+              signInRole === 'ngo' ? 'Red Cross International' :
+              signInRole === 'sponsor' ? 'TechCorp Solutions' : 'System Administrator',
         role: signInRole,
         hours: signInRole === 'student' ? 610 : signInRole === 'ngo' ? 2100 : 0,
         email: userEmail,
         avatar: signInRole === 'student' ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face' :
                 signInRole === 'ngo' ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face' :
+                signInRole === 'sponsor' ? 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=100&h=100&fit=crop' :
                 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+        companyName: signInRole === 'sponsor' ? 'TechCorp Solutions' : undefined,
+        companyIndustry: signInRole === 'sponsor' ? 'Technology' : undefined,
+        companyWebsite: signInRole === 'sponsor' ? 'https://techcorp.example.com' : undefined,
+        sponsorTier: signInRole === 'sponsor' ? 'gold' : undefined,
+        sponsoredMissionIds: signInRole === 'sponsor' ? [1, 2, 3, 4, 5] : undefined,
         joinDate: '2025-08-15',
         badges: [
           { id: 'b1', name: 'Community Champion', icon: '🏆', earnedDate: '2025-12-01', company: 'KindWorld' },
@@ -8944,6 +9173,19 @@ export default function KindWorldApp() {
 
       setUser(userData)
       setSelectedRole(signInRole)
+      // Initialize sponsorProfile for demo sponsor login
+      if (signInRole === 'sponsor') {
+        setSponsorProfile(prev => ({
+          ...prev,
+          companyName: 'TechCorp Solutions',
+          industry: 'Technology',
+          website: 'https://techcorp.example.com',
+          tier: 'gold',
+          sponsoredMissionIds: [1, 2, 3, 4, 5],
+          contactName: 'Sarah Johnson',
+          contactEmail: 'sponsor@techcorp.com'
+        }))
+      }
       // Sync user hours into allUsers to keep data consistent
       setAllUsers((prev: any[]) => prev.map((u: any) =>
         u.email === userData.email ? { ...u, hours: userData.hours, completedMissions: userData.completedMissions } : u
@@ -8986,6 +9228,10 @@ export default function KindWorldApp() {
     { email: 'admin@redcross.org', password: 'ngo123' }
   ]
 
+  const sponsorCredentials = [
+    { email: 'sponsor@techcorp.com', password: 'sponsor123' }
+  ]
+
   const handleSignIn = () => {
     if (!signInForm.email.trim() || !signInForm.password.trim()) {
       setSignInError(t('pleaseFillAllFields') || 'Please enter your email and password')
@@ -9012,6 +9258,18 @@ export default function KindWorldApp() {
       if (signInForm.password === ngoMatch.password) {
         setSignInError('')
         performSignIn('ngo')
+      } else {
+        setSignInError(t('invalidCredentials') || 'Invalid email or password')
+      }
+      return
+    }
+
+    // Check if trying to log in as Sponsor via credentials
+    const sponsorMatch = sponsorCredentials.find(c => c.email === emailLower)
+    if (sponsorMatch) {
+      if (signInForm.password === sponsorMatch.password) {
+        setSignInError('')
+        performSignIn('sponsor')
       } else {
         setSignInError(t('invalidCredentials') || 'Invalid email or password')
       }
@@ -9513,6 +9771,9 @@ export default function KindWorldApp() {
   useEffect(() => {
     localStorage.setItem('kindworld_cert_requests', JSON.stringify(certRequests))
   }, [certRequests])
+  useEffect(() => {
+    localStorage.setItem('kindworld_sponsor_profile', JSON.stringify(sponsorProfile))
+  }, [sponsorProfile])
 
   // Reload cert programs and requests from localStorage whenever the logged-in user changes
   // or whenever the user navigates to the certificates page — so approved status is always fresh
@@ -11404,13 +11665,14 @@ export default function KindWorldApp() {
           {/* Role Selection */}
           <div style={{ marginBottom: '24px' }}>
             <p style={{ marginBottom: '12px', fontWeight: '500', color: '#374151', fontSize: '14px' }}>{t('selectRole')}</p>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {(['student', 'ngo'] as const).map((role) => (
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {(['student', 'ngo', 'sponsor'] as const).map((role) => (
                 <button
                   key={role}
                   onClick={() => setSelectedRole(role)}
                   style={{
                     flex: 1,
+                    minWidth: '90px',
                     padding: '14px 8px',
                     border: selectedRole === role ? '2px solid var(--tp)' : '1px solid #e5e7eb',
                     background: selectedRole === role ? 'var(--tl)' : 'white',
@@ -11423,7 +11685,7 @@ export default function KindWorldApp() {
                     color: selectedRole === role ? 'var(--tp)' : '#6b7280'
                   }}
                 >
-                  {role === 'student' ? `👤 ${t('roleVolunteer')}` : `🏢 ${t('roleNGO')}`}
+                  {role === 'student' ? `👤 ${t('roleVolunteer')}` : role === 'ngo' ? `🏢 ${t('roleNGO')}` : `💼 ${t('roleSponsor')}`}
                 </button>
               ))}
             </div>
@@ -12070,9 +12332,10 @@ export default function KindWorldApp() {
                   return ['dashboard', 'missions', 'certificates', 'profile', 'settings']
                 }
                 if (user?.role === 'admin') return ['dashboard', 'missions', 'reports', 'investor', 'profile', 'settings']
+                if (user?.role === 'sponsor') return ['dashboard', 'sponsorImpact', 'profile', 'settings']
                 return ['dashboard', 'missions', 'badges', 'certificates', 'leaderboard', 'friends', 'profile', 'settings']
               })().map((page) => {
-                const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', badgeManagement:'🛡️', investor:'💼' }
+                const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', badgeManagement:'🛡️', investor:'💼', sponsorImpact:'📈' }
                 const isActive = currentPage === page
                 return (
                   <button
@@ -15943,7 +16206,108 @@ export default function KindWorldApp() {
                     </div>
                   )
                 })()
-              ) : (
+              ) : user.role === 'sponsor' ? (() => {
+                // Sponsor Dashboard
+                const sponsoredMissions = missions.filter((m: any) => sponsorProfile.sponsoredMissionIds.includes(m.id))
+                const sponsoredRegs = missionRegistrations.filter((r: any) => sponsorProfile.sponsoredMissionIds.includes(r.missionId))
+                const totalSponsoredHours = sponsoredMissions.reduce((s: number, m: any) => s + (m.hours || 3) * (missionRegistrations.filter((r: any) => r.missionId === m.id).length), 0)
+                const uniqueVols = new Set(sponsoredRegs.map((r: any) => r.volunteerId || r.volunteer?.id)).size
+                const tierColors: Record<string,string> = { gold: '#d97706', silver: '#6b7280', bronze: '#b45309' }
+                const tierBgs: Record<string,string> = { gold: '#fffbeb', silver: '#f9fafb', bronze: '#fef3c7' }
+                const tier = sponsorProfile.tier || 'bronze'
+                return (
+                  <div>
+                    {/* Header */}
+                    <div style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                      <div style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', boxShadow: '0 8px 24px rgba(59,130,246,0.3)' }}>
+                        💼
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                          <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1f2937', margin: 0 }}>
+                            {sponsorProfile.companyName || user.name}
+                          </h2>
+                          <span style={{ padding: '4px 14px', background: tierBgs[tier], color: tierColors[tier], borderRadius: '20px', fontSize: '13px', fontWeight: '700', border: `1px solid ${tierColors[tier]}40`, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            {tier === 'gold' ? '⭐ Gold Sponsor' : tier === 'silver' ? '🥈 Silver Sponsor' : '🥉 Bronze Sponsor'}
+                          </span>
+                        </div>
+                        <p style={{ color: '#6b7280', fontSize: '16px', margin: '4px 0 0' }}>{t('sponsorDashboardSubtitle')}</p>
+                      </div>
+                      <button
+                        onClick={() => setCurrentPage('sponsorImpact' as any)}
+                        style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '15px', boxShadow: '0 4px 12px rgba(59,130,246,0.3)' }}
+                      >
+                        📈 {t('viewImpactReport')}
+                      </button>
+                    </div>
+
+                    {/* KPI Cards */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+                      {[
+                        { icon: '🌍', value: sponsoredMissions.length, label: t('sponsoredMissions'), color: '#3b82f6', bg: 'linear-gradient(135deg, #eff6ff, #dbeafe)' },
+                        { icon: '👥', value: uniqueVols, label: t('volunteersReached'), color: '#059669', bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5)' },
+                        { icon: '⏱️', value: `${totalSponsoredHours}h`, label: t('totalHoursLabel'), color: '#7c3aed', bg: 'linear-gradient(135deg, #f5f3ff, #ede9fe)' },
+                        { icon: '🏅', value: certRequests.filter((r: any) => r.status === 'approved' && sponsorProfile.sponsoredMissionIds.includes(r.missionId)).length, label: t('certIssued'), color: '#d97706', bg: 'linear-gradient(135deg, #fffbeb, #fef3c7)' }
+                      ].map((kpi, i) => (
+                        <div key={i} style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', textAlign: 'center' }}>
+                          <div style={{ fontSize: '36px', marginBottom: '8px' }}>{kpi.icon}</div>
+                          <div style={{ fontSize: '32px', fontWeight: '800', color: kpi.color, lineHeight: '1' }}>{kpi.value}</div>
+                          <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '6px', fontWeight: '500' }}>{kpi.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Sponsored Missions */}
+                    <div style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '28px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>🌍 {t('sponsoredMissions')}</h3>
+                        <span style={{ fontSize: '13px', color: '#6b7280' }}>{sponsoredMissions.length} {t('totalMissionsLabel').toLowerCase()}</span>
+                      </div>
+                      {sponsoredMissions.length === 0 ? (
+                        <p style={{ color: '#9ca3af', textAlign: 'center', padding: '24px 0' }}>{t('noSponsoredMissions')}</p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {sponsoredMissions.slice(0, 5).map((m: any) => {
+                            const regs = missionRegistrations.filter((r: any) => r.missionId === m.id).length
+                            const isPast = m.date < new Date().toISOString().split('T')[0]
+                            return (
+                              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 16px', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                                <div style={{ width: '44px', height: '44px', background: 'linear-gradient(135deg, #3b82f6, #1e40af)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>
+                                  {m.category === 'Education' ? '📚' : m.category === 'Environment' ? '🌱' : m.category === 'Healthcare' ? '❤️' : m.category === 'Community' ? '🏘️' : '🌍'}
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '15px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.title}</div>
+                                  <div style={{ fontSize: '13px', color: '#6b7280' }}>{m.organizer} · {m.date}</div>
+                                </div>
+                                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                  <div style={{ fontWeight: '700', color: '#3b82f6', fontSize: '15px' }}>{regs} {t('volunteersLabel2').toLowerCase()}</div>
+                                  <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '8px', background: isPast ? '#f3f4f6' : '#ecfdf5', color: isPast ? '#6b7280' : '#059669', fontWeight: '600' }}>
+                                    {isPast ? t('completed') : t('active')}
+                                  </span>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Impact Summary */}
+                    <div style={{ background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)', borderRadius: '20px', padding: '28px', color: 'white' }}>
+                      <h3 style={{ fontSize: '20px', fontWeight: '700', margin: '0 0 16px' }}>🏆 {t('impactSummary')}</h3>
+                      <p style={{ margin: '0 0 20px', opacity: 0.9, fontSize: '15px' }}>{t('sponsorImpactDesc')}</p>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        <button onClick={() => setCurrentPage('sponsorImpact' as any)} style={{ padding: '10px 20px', background: 'white', color: '#1e40af', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
+                          📊 {t('viewFullReport')}
+                        </button>
+                        <button onClick={() => setCurrentPage('profile' as any)} style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
+                          ✏️ {t('editProfile')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })() : (
                 // Student/Volunteer Dashboard
                 <div>
                   <div style={{ marginBottom: '48px' }}>
@@ -22638,6 +23002,153 @@ export default function KindWorldApp() {
               </div>
             </div>
           )}
+
+          {/* ── SPONSOR IMPACT REPORT ── */}
+          {currentPage === 'sponsorImpact' && user?.role === 'sponsor' && (() => {
+            const sponsoredMissions = missions.filter((m: any) => sponsorProfile.sponsoredMissionIds.includes(m.id))
+            const sponsoredRegs = missionRegistrations.filter((r: any) => sponsorProfile.sponsoredMissionIds.includes(r.missionId))
+            const totalSponsoredHours = sponsoredMissions.reduce((s: number, m: any) => s + (m.hours || 3) * (missionRegistrations.filter((r: any) => r.missionId === m.id).length), 0)
+            const uniqueVols = new Set(sponsoredRegs.map((r: any) => r.volunteerId || r.volunteer?.id)).size
+            const completedSponsored = sponsoredMissions.filter((m: any) => m.date < new Date().toISOString().split('T')[0]).length
+            const activeSponsored = sponsoredMissions.filter((m: any) => m.date >= new Date().toISOString().split('T')[0]).length
+            const certEarned = certRequests.filter((r: any) => r.status === 'approved' && sponsorProfile.sponsoredMissionIds.includes(r.missionId)).length
+            const catBreakdown = sponsoredMissions.reduce((acc: Record<string,number>, m: any) => { acc[m.category] = (acc[m.category] || 0) + 1; return acc }, {} as Record<string,number>)
+            const catEntries = Object.entries(catBreakdown).sort((a, b) => b[1] - a[1])
+            const maxCat = catEntries[0]?.[1] || 1
+            const tier = sponsorProfile.tier || 'bronze'
+            const tierColors: Record<string,string> = { gold: '#d97706', silver: '#6b7280', bronze: '#b45309' }
+            const tierBenefits: Record<string,string[]> = {
+              gold: ['Priority mission placement', 'Dedicated account manager', 'Custom certificate branding', 'Quarterly impact reports', 'CSR press kit'],
+              silver: ['Featured mission listing', 'Monthly impact reports', 'Certificate co-branding', 'Social media mentions'],
+              bronze: ['Mission listing', 'Annual impact report', 'Certificate acknowledgment']
+            }
+            return (
+              <div style={{ animation: 'fadeIn 0.5s ease' }}>
+                {/* Header */}
+                <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                  <button onClick={() => setCurrentPage('dashboard')} style={{ padding: '8px 16px', background: '#f3f4f6', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
+                    ← {t('dashboard')}
+                  </button>
+                  <div style={{ flex: 1 }}>
+                    <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#1f2937', margin: 0 }}>📈 {t('sponsorImpact')}</h2>
+                    <p style={{ color: '#6b7280', margin: '4px 0 0', fontSize: '15px' }}>{sponsorProfile.companyName || user.name} · {new Date().toLocaleDateString(language === 'zh-tw' ? 'zh-TW' : language === 'zh-cn' ? 'zh-CN' : 'en-US', { year: 'numeric', month: 'long' })}</p>
+                  </div>
+                  <span style={{ padding: '6px 16px', background: tier === 'gold' ? '#fffbeb' : tier === 'silver' ? '#f9fafb' : '#fef3c7', color: tierColors[tier], border: `1px solid ${tierColors[tier]}40`, borderRadius: '20px', fontWeight: '700', fontSize: '14px', textTransform: 'uppercase' }}>
+                    {tier === 'gold' ? '⭐ Gold' : tier === 'silver' ? '🥈 Silver' : '🥉 Bronze'} {t('sponsorTier')}
+                  </span>
+                </div>
+
+                {/* Top KPI row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+                  {[
+                    { icon: '🌍', val: sponsoredMissions.length, lbl: t('sponsoredMissions'), color: '#3b82f6' },
+                    { icon: '👥', val: uniqueVols, lbl: t('volunteersReached'), color: '#059669' },
+                    { icon: '⏱️', val: `${totalSponsoredHours}h`, lbl: t('totalHoursLabel'), color: '#7c3aed' },
+                    { icon: '✅', val: completedSponsored, lbl: t('completed'), color: '#059669' },
+                    { icon: '🔥', val: activeSponsored, lbl: t('active'), color: '#f59e0b' },
+                    { icon: '🎓', val: certEarned, lbl: t('certIssued'), color: '#d97706' }
+                  ].map((k, i) => (
+                    <div key={i} style={{ background: 'white', borderRadius: '16px', padding: '20px', textAlign: 'center', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+                      <div style={{ fontSize: '28px' }}>{k.icon}</div>
+                      <div style={{ fontSize: '28px', fontWeight: '800', color: k.color, lineHeight: '1.1', marginTop: '4px' }}>{k.val}</div>
+                      <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px', fontWeight: '500' }}>{k.lbl}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Two column: category chart + tier benefits */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '28px' }}>
+                  {/* Category Breakdown */}
+                  <div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                    <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1f2937', margin: '0 0 20px' }}>📊 {t('missionsByCategory')}</h3>
+                    {catEntries.length === 0 ? (
+                      <p style={{ color: '#9ca3af', textAlign: 'center', padding: '20px 0' }}>{t('noSponsoredMissions')}</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        {catEntries.map(([cat, count]) => (
+                          <div key={cat}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                              <span style={{ fontSize: '14px', fontWeight: '500', color: '#374151' }}>{cat}</span>
+                              <span style={{ fontSize: '14px', fontWeight: '700', color: '#3b82f6' }}>{count}</span>
+                            </div>
+                            <div style={{ background: '#f3f4f6', borderRadius: '8px', height: '10px', overflow: 'hidden' }}>
+                              <div style={{ width: `${(count / maxCat) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #3b82f6, #1e40af)', borderRadius: '8px', transition: 'width 0.6s ease' }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Tier Benefits */}
+                  <div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                    <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1f2937', margin: '0 0 20px' }}>⭐ {t('sponsorBenefits')}</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {(tierBenefits[tier] || tierBenefits.bronze).map((b, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: '#f9fafb', borderRadius: '10px' }}>
+                          <span style={{ color: tierColors[tier], fontSize: '16px' }}>✓</span>
+                          <span style={{ fontSize: '14px', color: '#374151' }}>{b}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ marginTop: '16px', padding: '12px 16px', background: 'linear-gradient(135deg, #eff6ff, #dbeafe)', borderRadius: '12px', fontSize: '13px', color: '#1e40af', fontWeight: '500' }}>
+                      💡 {t('upgradeTierHint')}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Full missions table */}
+                <div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '28px' }}>
+                  <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1f2937', margin: '0 0 20px' }}>📋 {t('allSponsoredMissions')}</h3>
+                  {sponsoredMissions.length === 0 ? (
+                    <p style={{ color: '#9ca3af', textAlign: 'center', padding: '24px 0' }}>{t('noSponsoredMissions')}</p>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+                            {[t('missionTitle'), t('organizer'), t('date'), t('category'), t('volunteersLabel2'), t('status')].map(h => (
+                              <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: '600', color: '#6b7280', whiteSpace: 'nowrap' }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sponsoredMissions.map((m: any, idx: number) => {
+                            const regs = missionRegistrations.filter((r: any) => r.missionId === m.id).length
+                            const isPast = m.date < new Date().toISOString().split('T')[0]
+                            return (
+                              <tr key={m.id} style={{ borderBottom: '1px solid #f3f4f6', background: idx % 2 === 0 ? 'white' : '#fafafa' }}>
+                                <td style={{ padding: '12px 14px', fontWeight: '500', color: '#1f2937', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.title}</td>
+                                <td style={{ padding: '12px 14px', color: '#6b7280' }}>{m.organizer}</td>
+                                <td style={{ padding: '12px 14px', color: '#6b7280', whiteSpace: 'nowrap' }}>{m.date}</td>
+                                <td style={{ padding: '12px 14px' }}><span style={{ padding: '2px 10px', background: '#eff6ff', color: '#1e40af', borderRadius: '8px', fontWeight: '500' }}>{m.category}</span></td>
+                                <td style={{ padding: '12px 14px', fontWeight: '700', color: '#3b82f6' }}>{regs}</td>
+                                <td style={{ padding: '12px 14px' }}><span style={{ padding: '2px 10px', borderRadius: '8px', background: isPast ? '#f3f4f6' : '#ecfdf5', color: isPast ? '#6b7280' : '#059669', fontWeight: '600', fontSize: '12px' }}>{isPast ? t('completed') : t('active')}</span></td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* CTA - upgrade or contact */}
+                <div style={{ background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)', borderRadius: '20px', padding: '32px', color: 'white', textAlign: 'center' }}>
+                  <h3 style={{ fontSize: '22px', fontWeight: '800', margin: '0 0 8px' }}>🚀 {t('expandImpact')}</h3>
+                  <p style={{ opacity: 0.9, margin: '0 0 24px', fontSize: '15px' }}>{t('expandImpactDesc')}</p>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <a href={`mailto:partnerships@kindworld.com?subject=Sponsor Upgrade - ${sponsorProfile.companyName}`} style={{ padding: '12px 28px', background: 'white', color: '#1e40af', border: 'none', borderRadius: '12px', fontWeight: '700', fontSize: '15px', textDecoration: 'none', display: 'inline-block' }}>
+                      ✉️ {t('contactUs')}
+                    </a>
+                    <button onClick={() => setCurrentPage('dashboard')} style={{ padding: '12px 28px', background: 'rgba(255,255,255,0.15)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '15px' }}>
+                      ← {t('backToDashboard')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
 
           {/* ── INVESTOR / COMPANY DASHBOARD ── */}
           {currentPage === 'investor' && user?.role === 'admin' && (() => {
