@@ -364,6 +364,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1 Year',
     allTime: 'All Time',
     logout: 'Logout',
+    goodMorning: 'Good morning',
+    goodAfternoon: 'Good afternoon',
+    goodEvening: 'Good evening',
+    goodNight: 'Good night',
     // Hero slides
     volunteerPlatform: 'VOLUNTEER PLATFORM',
     heroTitle1: 'Empower Communities',
@@ -933,6 +937,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: 'Own transportation',
     transportCarpool: 'Need carpool',
     transportPublic: 'Public transit',
+    missionSpecificDetails: 'Mission-Specific Details',
+    transportationLabel: 'Transportation',
+    specialSkillsOptional: 'Special Skills (optional)',
+    specialSkillsPlaceholder: 'e.g. First aid, Photography',
+    notesForOrganizer: 'Notes for the organizer (optional)',
+    notesForOrganizerPlaceholder: 'Any additional notes for the NGO...',
+    agreeTermsFullText: 'I agree to the mission terms and conditions. I understand that my information will be shared with the mission organizers for coordination purposes. I confirm that the information provided is accurate.',
+    joinProfileShared: 'Your profile info will be shared with the NGO',
+    updateMyProfile: 'Update my profile →',
+    completeProfileBannerTitle: 'Complete your profile for a faster join experience',
+    completeProfileBannerDesc: "Add your emergency contact, phone number, allergies and T-shirt size to your profile once — it'll be auto-shared every time you join a mission.",
+    completeMyProfile: 'Complete my profile →',
+    ngoProfilePromptTitle: 'Complete your NGO profile to build trust with volunteers',
+    ngoProfilePromptDesc: 'Add your description and website — they\'ll appear on all your mission cards, helping volunteers understand your mission.',
     selectRegion: 'Select Region',
     selectLanguage: 'Select Language',
     nearbyMissions: 'My Location',
@@ -1134,6 +1152,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1 Tahun',
     allTime: 'Semua',
     logout: 'Keluar',
+    goodMorning: 'Selamat pagi',
+    goodAfternoon: 'Selamat siang',
+    goodEvening: 'Selamat sore',
+    goodNight: 'Selamat malam',
     // Hero slides
     volunteerPlatform: 'PLATFORM RELAWAN',
     heroTitle1: 'Berdayakan Komunitas',
@@ -1678,6 +1700,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: 'Kendaraan sendiri',
     transportCarpool: 'Butuh tumpangan',
     transportPublic: 'Transportasi umum',
+    missionSpecificDetails: 'Detail Khusus Kegiatan',
+    transportationLabel: 'Transportasi',
+    specialSkillsOptional: 'Keahlian Khusus (opsional)',
+    specialSkillsPlaceholder: 'mis. Pertolongan pertama, Fotografi',
+    notesForOrganizer: 'Catatan untuk penyelenggara (opsional)',
+    notesForOrganizerPlaceholder: 'Catatan tambahan untuk NGO...',
+    agreeTermsFullText: 'Saya menyetujui syarat dan ketentuan kegiatan. Saya memahami bahwa informasi saya akan dibagikan kepada penyelenggara. Saya mengkonfirmasi bahwa informasi yang diberikan akurat.',
+    joinProfileShared: 'Info profil Anda akan dibagikan ke NGO',
+    updateMyProfile: 'Perbarui profil saya →',
+    completeProfileBannerTitle: 'Lengkapi profil untuk pengalaman bergabung yang lebih cepat',
+    completeProfileBannerDesc: 'Tambahkan kontak darurat, nomor telepon, alergi, dan ukuran kaos ke profil Anda — akan diisi otomatis setiap kali bergabung.',
+    completeMyProfile: 'Lengkapi profil saya →',
+    ngoProfilePromptTitle: 'Lengkapi profil NGO untuk membangun kepercayaan relawan',
+    ngoProfilePromptDesc: 'Tambahkan deskripsi dan website — akan tampil di semua kartu kegiatan Anda.',
     selectRegion: 'Pilih Wilayah',
     selectLanguage: 'Pilih Bahasa',
     nearbyMissions: 'Lokasi Saya',
@@ -1783,6 +1819,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1年',
     allTime: '全部',
     logout: '登出',
+    goodMorning: '早上好',
+    goodAfternoon: '下午好',
+    goodEvening: '傍晚好',
+    goodNight: '晚上好',
     // Hero slides
     volunteerPlatform: '志愿者平台',
     heroTitle1: '赋能社区',
@@ -2326,6 +2366,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: '自备交通',
     transportCarpool: '需要拼车',
     transportPublic: '公共交通',
+    missionSpecificDetails: '活动专属信息',
+    transportationLabel: '交通方式',
+    specialSkillsOptional: '专业技能（可选）',
+    specialSkillsPlaceholder: '例：急救、摄影',
+    notesForOrganizer: '给主办方的备注（可选）',
+    notesForOrganizerPlaceholder: '给NGO的补充说明...',
+    agreeTermsFullText: '我同意活动条款和条件。我了解我的信息将与活动主办方共享以协调工作。我确认所提供的信息是准确的。',
+    joinProfileShared: '您的个人资料将与NGO共享',
+    updateMyProfile: '更新我的资料 →',
+    completeProfileBannerTitle: '完善个人资料以加快加入体验',
+    completeProfileBannerDesc: '在个人资料中添加紧急联系人、电话、过敏史和T恤尺寸——每次加入活动时自动共享。',
+    completeMyProfile: '完善我的资料 →',
+    ngoProfilePromptTitle: '完善NGO资料以建立志工信任',
+    ngoProfilePromptDesc: '添加描述和网站——将显示在您所有的活动卡片上。',
     selectRegion: '选择地区',
     selectLanguage: '选择语言',
     nearbyMissions: '我的位置',
@@ -2431,6 +2485,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1年',
     allTime: '全部',
     logout: '登出',
+    goodMorning: '早安',
+    goodAfternoon: '午安',
+    goodEvening: '傍晚好',
+    goodNight: '晚安',
     // Hero slides
     volunteerPlatform: '志工平台',
     heroTitle1: '凝聚社區力量',
@@ -2974,6 +3032,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: '自備交通',
     transportCarpool: '需要共乘',
     transportPublic: '公共交通',
+    missionSpecificDetails: '活動專屬資訊',
+    transportationLabel: '交通方式',
+    specialSkillsOptional: '專業技能（可選）',
+    specialSkillsPlaceholder: '例：急救、攝影',
+    notesForOrganizer: '給主辦方的備註（可選）',
+    notesForOrganizerPlaceholder: '給NGO的補充說明...',
+    agreeTermsFullText: '我同意活動條款和條件。我了解我的資訊將與活動主辦方共享以協調工作。我確認所提供的資訊是準確的。',
+    joinProfileShared: '您的個人資料將與NGO共享',
+    updateMyProfile: '更新我的資料 →',
+    completeProfileBannerTitle: '完善個人資料以加快加入體驗',
+    completeProfileBannerDesc: '在個人資料中添加緊急聯絡人、電話、過敏史和T恤尺寸——每次加入活動時自動共享。',
+    completeMyProfile: '完善我的資料 →',
+    ngoProfilePromptTitle: '完善NGO資料以建立志工信任',
+    ngoProfilePromptDesc: '添加描述和網站——將顯示在您所有的活動卡片上。',
     selectRegion: '選擇地區',
     selectLanguage: '選擇語言',
     nearbyMissions: '我的位置',
@@ -3080,6 +3152,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1 Año',
     allTime: 'Todo',
     logout: 'Cerrar Sesión',
+    goodMorning: 'Buenos días',
+    goodAfternoon: 'Buenas tardes',
+    goodEvening: 'Buenas tardes',
+    goodNight: 'Buenas noches',
     volunteerPlatform: 'PLATAFORMA DE VOLUNTARIADO',
     heroTitle1: 'Empodera Comunidades',
     heroSubtitle1: 'Transforma vidas a través de la acción compasiva',
@@ -3602,6 +3678,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: 'Transporte propio',
     transportCarpool: 'Compartir viaje',
     transportPublic: 'Transporte público',
+    missionSpecificDetails: 'Detalles Específicos de la Misión',
+    transportationLabel: 'Transporte',
+    specialSkillsOptional: 'Habilidades Especiales (opcional)',
+    specialSkillsPlaceholder: 'ej. Primeros auxilios, Fotografía',
+    notesForOrganizer: 'Notas para el organizador (opcional)',
+    notesForOrganizerPlaceholder: 'Notas adicionales para la ONG...',
+    agreeTermsFullText: 'Acepto los términos y condiciones de la misión. Entiendo que mi información será compartida con los organizadores. Confirmo que la información proporcionada es precisa.',
+    joinProfileShared: 'Tu información de perfil se compartirá con la ONG',
+    updateMyProfile: 'Actualizar mi perfil →',
+    completeProfileBannerTitle: 'Completa tu perfil para una experiencia de inscripción más rápida',
+    completeProfileBannerDesc: 'Añade tu contacto de emergencia, teléfono, alergias y talla de camiseta — se compartirá automáticamente cada vez que te unas.',
+    completeMyProfile: 'Completar mi perfil →',
+    ngoProfilePromptTitle: 'Completa el perfil de tu ONG para generar confianza',
+    ngoProfilePromptDesc: 'Añade una descripción y sitio web — aparecerán en todas tus tarjetas de misión.',
     selectRegion: 'Seleccionar Región',
     selectLanguage: 'Seleccionar Idioma',
     nearbyMissions: 'Mi Ubicación',
@@ -3707,6 +3797,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1 An',
     allTime: 'Tout',
     logout: 'Déconnexion',
+    goodMorning: 'Bonjour',
+    goodAfternoon: 'Bon après-midi',
+    goodEvening: 'Bonsoir',
+    goodNight: 'Bonne nuit',
     volunteerPlatform: 'PLATEFORME DE BÉNÉVOLAT',
     heroTitle1: 'Autonomiser les Communautés',
     heroSubtitle1: 'Transformez des vies par l\'action compatissante',
@@ -4229,6 +4323,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: 'Transport personnel',
     transportCarpool: 'Covoiturage',
     transportPublic: 'Transport public',
+    missionSpecificDetails: 'Détails Spécifiques à la Mission',
+    transportationLabel: 'Transport',
+    specialSkillsOptional: 'Compétences Spéciales (optionnel)',
+    specialSkillsPlaceholder: 'ex. Premiers secours, Photographie',
+    notesForOrganizer: 'Notes pour l\'organisateur (optionnel)',
+    notesForOrganizerPlaceholder: 'Notes supplémentaires pour l\'ONG...',
+    agreeTermsFullText: 'J\'accepte les conditions de la mission. Je comprends que mes informations seront partagées avec les organisateurs. Je confirme que les informations fournies sont exactes.',
+    joinProfileShared: 'Vos infos de profil seront partagées avec l\'ONG',
+    updateMyProfile: 'Mettre à jour mon profil →',
+    completeProfileBannerTitle: 'Complétez votre profil pour rejoindre plus vite',
+    completeProfileBannerDesc: 'Ajoutez votre contact d\'urgence, téléphone, allergies et taille — partagés automatiquement à chaque inscription.',
+    completeMyProfile: 'Compléter mon profil →',
+    ngoProfilePromptTitle: 'Complétez votre profil ONG pour gagner la confiance des bénévoles',
+    ngoProfilePromptDesc: 'Ajoutez une description et un site web — ils apparaîtront sur toutes vos cartes de mission.',
     selectRegion: 'Sélectionner la Région',
     selectLanguage: 'Sélectionner la Langue',
     nearbyMissions: 'Ma Position',
@@ -4334,6 +4442,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1 Ano',
     allTime: 'Tudo',
     logout: 'Sair',
+    goodMorning: 'Bom dia',
+    goodAfternoon: 'Boa tarde',
+    goodEvening: 'Boa tarde',
+    goodNight: 'Boa noite',
     volunteerPlatform: 'PLATAFORMA DE VOLUNTARIADO',
     heroTitle1: 'Empodere Comunidades',
     heroSubtitle1: 'Transforme vidas através da ação compassiva',
@@ -4856,6 +4968,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: 'Transporte próprio',
     transportCarpool: 'Carona',
     transportPublic: 'Transporte público',
+    missionSpecificDetails: 'Detalhes Específicos da Missão',
+    transportationLabel: 'Transporte',
+    specialSkillsOptional: 'Habilidades Especiais (opcional)',
+    specialSkillsPlaceholder: 'ex. Primeiros socorros, Fotografia',
+    notesForOrganizer: 'Notas para o organizador (opcional)',
+    notesForOrganizerPlaceholder: 'Notas adicionais para a ONG...',
+    agreeTermsFullText: 'Concordo com os termos e condições da missão. Entendo que meus dados serão compartilhados com os organizadores. Confirmo que as informações fornecidas são precisas.',
+    joinProfileShared: 'Suas informações de perfil serão compartilhadas com a ONG',
+    updateMyProfile: 'Atualizar meu perfil →',
+    completeProfileBannerTitle: 'Complete seu perfil para uma experiência de inscrição mais rápida',
+    completeProfileBannerDesc: 'Adicione contato de emergência, telefone, alergias e tamanho de camiseta — serão compartilhados automaticamente a cada inscrição.',
+    completeMyProfile: 'Completar meu perfil →',
+    ngoProfilePromptTitle: 'Complete o perfil da ONG para ganhar a confiança dos voluntários',
+    ngoProfilePromptDesc: 'Adicione uma descrição e site — aparecerão em todos os seus cartões de missão.',
     selectRegion: 'Selecionar Região',
     selectLanguage: 'Selecionar Idioma',
     nearbyMissions: 'Minha Localização',
@@ -4961,6 +5087,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1年',
     allTime: '全期間',
     logout: 'ログアウト',
+    goodMorning: 'おはようございます',
+    goodAfternoon: 'こんにちは',
+    goodEvening: 'こんにちは',
+    goodNight: 'こんばんは',
     volunteerPlatform: 'ボランティアプラットフォーム',
     heroTitle1: 'コミュニティを支援',
     heroSubtitle1: '思いやりの行動で人生を変える',
@@ -5483,6 +5613,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: '自家用車',
     transportCarpool: '相乗り',
     transportPublic: '公共交通',
+    missionSpecificDetails: 'ミッション専用情報',
+    transportationLabel: '交通手段',
+    specialSkillsOptional: '専門スキル（任意）',
+    specialSkillsPlaceholder: '例：応急処置、写真撮影',
+    notesForOrganizer: '主催者へのメモ（任意）',
+    notesForOrganizerPlaceholder: 'NGOへの補足事項...',
+    agreeTermsFullText: 'ミッションの利用規約に同意します。情報が主催者と共有されることを理解し、提供した情報が正確であることを確認します。',
+    joinProfileShared: 'プロフィール情報がNGOと共有されます',
+    updateMyProfile: 'プロフィールを更新 →',
+    completeProfileBannerTitle: 'プロフィールを完成させてスムーズに参加',
+    completeProfileBannerDesc: '緊急連絡先・電話番号・アレルギー・Tシャツサイズを登録すると、毎回自動で共有されます。',
+    completeMyProfile: 'プロフィールを完成させる →',
+    ngoProfilePromptTitle: 'NGOプロフィールを完成させてボランティアの信頼を得ましょう',
+    ngoProfilePromptDesc: '説明とウェブサイトを追加すると、すべてのミッションカードに表示されます。',
     selectRegion: '地域を選択',
     selectLanguage: '言語を選択',
     nearbyMissions: '現在地',
@@ -5588,6 +5732,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1 ปี',
     allTime: 'ทั้งหมด',
     logout: 'ออกจากระบบ',
+    goodMorning: 'อรุณสวัสดิ์',
+    goodAfternoon: 'สวัสดีตอนบ่าย',
+    goodEvening: 'สวัสดีตอนเย็น',
+    goodNight: 'ราตรีสวัสดิ์',
     volunteerPlatform: 'แพลตฟอร์มอาสาสมัคร',
     heroTitle1: 'เสริมพลังชุมชน',
     heroSubtitle1: 'เปลี่ยนชีวิตผ่านการกระทำด้วยความเมตตา',
@@ -6110,6 +6258,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: 'มีรถส่วนตัว',
     transportCarpool: 'ต้องการรถรับส่ง',
     transportPublic: 'ขนส่งสาธารณะ',
+    missionSpecificDetails: 'รายละเอียดเฉพาะภารกิจ',
+    transportationLabel: 'การเดินทาง',
+    specialSkillsOptional: 'ทักษะพิเศษ (ไม่บังคับ)',
+    specialSkillsPlaceholder: 'เช่น การปฐมพยาบาล การถ่ายภาพ',
+    notesForOrganizer: 'หมายเหตุถึงผู้จัดงาน (ไม่บังคับ)',
+    notesForOrganizerPlaceholder: 'หมายเหตุเพิ่มเติมสำหรับ NGO...',
+    agreeTermsFullText: 'ฉันยอมรับข้อกำหนดและเงื่อนไขของภารกิจ และยืนยันว่าข้อมูลที่ให้ไว้ถูกต้อง',
+    joinProfileShared: 'ข้อมูลโปรไฟล์ของคุณจะถูกแชร์กับ NGO',
+    updateMyProfile: 'อัปเดตโปรไฟล์ของฉัน →',
+    completeProfileBannerTitle: 'กรอกข้อมูลโปรไฟล์เพื่อสมัครได้เร็วขึ้น',
+    completeProfileBannerDesc: 'เพิ่มผู้ติดต่อฉุกเฉิน เบอร์โทร อาหารที่แพ้ และไซส์เสื้อ — ระบบจะแชร์อัตโนมัติทุกครั้ง',
+    completeMyProfile: 'กรอกข้อมูลโปรไฟล์ →',
+    ngoProfilePromptTitle: 'สร้างความน่าเชื่อถือด้วยการกรอกโปรไฟล์ NGO',
+    ngoProfilePromptDesc: 'เพิ่มคำอธิบายและเว็บไซต์ — จะปรากฏในการ์ดภารกิจทั้งหมดของคุณ',
     selectRegion: 'เลือกภูมิภาค',
     selectLanguage: 'เลือกภาษา',
     nearbyMissions: 'ตำแหน่งของฉัน',
@@ -6215,6 +6377,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1 Năm',
     allTime: 'Tất cả',
     logout: 'Đăng xuất',
+    goodMorning: 'Chào buổi sáng',
+    goodAfternoon: 'Chào buổi chiều',
+    goodEvening: 'Chào buổi tối',
+    goodNight: 'Chúc ngủ ngon',
     volunteerPlatform: 'NỀN TẢNG TÌNH NGUYỆN',
     heroTitle1: 'Trao quyền cho cộng đồng',
     heroSubtitle1: 'Thay đổi cuộc sống thông qua hành động nhân ái',
@@ -6737,6 +6903,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: 'Có phương tiện riêng',
     transportCarpool: 'Cần đưa đón',
     transportPublic: 'Phương tiện công cộng',
+    missionSpecificDetails: 'Thông tin Riêng của Nhiệm vụ',
+    transportationLabel: 'Phương tiện',
+    specialSkillsOptional: 'Kỹ năng Đặc biệt (tùy chọn)',
+    specialSkillsPlaceholder: 'vd. Sơ cứu, Nhiếp ảnh',
+    notesForOrganizer: 'Ghi chú cho ban tổ chức (tùy chọn)',
+    notesForOrganizerPlaceholder: 'Ghi chú thêm cho NGO...',
+    agreeTermsFullText: 'Tôi đồng ý với các điều khoản của nhiệm vụ và xác nhận rằng thông tin cung cấp là chính xác.',
+    joinProfileShared: 'Thông tin hồ sơ của bạn sẽ được chia sẻ với NGO',
+    updateMyProfile: 'Cập nhật hồ sơ →',
+    completeProfileBannerTitle: 'Hoàn thiện hồ sơ để tham gia nhanh hơn',
+    completeProfileBannerDesc: 'Thêm liên lạc khẩn cấp, số điện thoại, dị ứng và size áo — sẽ tự động chia sẻ mỗi lần tham gia.',
+    completeMyProfile: 'Hoàn thiện hồ sơ →',
+    ngoProfilePromptTitle: 'Hoàn thiện hồ sơ NGO để tạo niềm tin với tình nguyện viên',
+    ngoProfilePromptDesc: 'Thêm mô tả và website — sẽ xuất hiện trên tất cả thẻ nhiệm vụ của bạn.',
     selectRegion: 'Chọn khu vực',
     selectLanguage: 'Chọn ngôn ngữ',
     nearbyMissions: 'Vị trí của tôi',
@@ -6842,6 +7022,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1년',
     allTime: '전체',
     logout: '로그아웃',
+    goodMorning: '좋은 아침이에요',
+    goodAfternoon: '안녕하세요',
+    goodEvening: '좋은 저녁이에요',
+    goodNight: '안녕히 주무세요',
     volunteerPlatform: '봉사 플랫폼',
     heroTitle1: '커뮤니티 역량 강화',
     heroSubtitle1: '자비로운 행동을 통해 삶을 변화시키세요',
@@ -7364,6 +7548,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: '자가 교통',
     transportCarpool: '픽업 필요',
     transportPublic: '대중 교통',
+    missionSpecificDetails: '미션 전용 정보',
+    transportationLabel: '교통수단',
+    specialSkillsOptional: '특기 사항 (선택)',
+    specialSkillsPlaceholder: '예: 응급처치, 사진촬영',
+    notesForOrganizer: '주최자에게 메모 (선택)',
+    notesForOrganizerPlaceholder: 'NGO에 추가 메모...',
+    agreeTermsFullText: '미션 이용약관에 동의하며 제공한 정보가 정확함을 확인합니다.',
+    joinProfileShared: '내 프로필 정보가 NGO와 공유됩니다',
+    updateMyProfile: '프로필 업데이트 →',
+    completeProfileBannerTitle: '프로필을 완성하면 더 빠르게 참여할 수 있어요',
+    completeProfileBannerDesc: '긴급 연락처, 전화번호, 알레르기, 티셔츠 사이즈를 등록하면 매번 자동으로 공유됩니다.',
+    completeMyProfile: '프로필 완성하기 →',
+    ngoProfilePromptTitle: 'NGO 프로필을 완성해 봉사자의 신뢰를 얻으세요',
+    ngoProfilePromptDesc: '설명과 웹사이트를 추가하면 모든 미션 카드에 표시됩니다.',
     selectRegion: '지역 선택',
     selectLanguage: '언어 선택',
     nearbyMissions: '내 위치',
@@ -7469,6 +7667,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     oneYear: '1 Jahr',
     allTime: 'Gesamt',
     logout: 'Abmelden',
+    goodMorning: 'Guten Morgen',
+    goodAfternoon: 'Guten Tag',
+    goodEvening: 'Guten Abend',
+    goodNight: 'Gute Nacht',
     volunteerPlatform: 'FREIWILLIGENPLATTFORM',
     heroTitle1: 'Gemeinschaften stärken',
     heroSubtitle1: 'Leben durch mitfühlendes Handeln verändern',
@@ -7991,6 +8193,20 @@ const localTranslations: Record<string, Record<string, string>> = {
     transportOwn: 'Eigener Transport',
     transportCarpool: 'Mitfahrgelegenheit benötigt',
     transportPublic: 'Öffentliche Verkehrsmittel',
+    missionSpecificDetails: 'Missionsspezifische Details',
+    transportationLabel: 'Transport',
+    specialSkillsOptional: 'Besondere Fähigkeiten (optional)',
+    specialSkillsPlaceholder: 'z.B. Erste Hilfe, Fotografie',
+    notesForOrganizer: 'Anmerkungen für den Veranstalter (optional)',
+    notesForOrganizerPlaceholder: 'Weitere Hinweise für die NGO...',
+    agreeTermsFullText: 'Ich stimme den Missions-AGB zu. Ich bestätige, dass meine Angaben korrekt sind und mit den Organisatoren geteilt werden.',
+    joinProfileShared: 'Ihre Profilinformationen werden mit der NGO geteilt',
+    updateMyProfile: 'Mein Profil aktualisieren →',
+    completeProfileBannerTitle: 'Vervollständigen Sie Ihr Profil für ein schnelleres Beitreten',
+    completeProfileBannerDesc: 'Notfallkontakt, Telefon, Allergien und T-Shirt-Größe einmalig angeben — wird bei jeder Anmeldung automatisch geteilt.',
+    completeMyProfile: 'Mein Profil vervollständigen →',
+    ngoProfilePromptTitle: 'NGO-Profil vervollständigen, um Vertrauen bei Freiwilligen aufzubauen',
+    ngoProfilePromptDesc: 'Beschreibung und Website hinzufügen — erscheinen auf allen Missionskarten.',
     selectRegion: 'Region auswählen',
     selectLanguage: 'Sprache auswählen',
     nearbyMissions: 'Mein Standort',
@@ -12724,7 +12940,7 @@ export default function KindWorldApp() {
                   e.currentTarget.style.borderColor = '#fecaca'
                 }}
               >
-                Logout
+                {t('logout')}
               </button>
             </div>
           </div>
@@ -16558,10 +16774,10 @@ export default function KindWorldApp() {
                         }}>
                           {(() => {
                             const h = new Date().getHours()
-                            if (h < 12) return `🌅 Good morning, ${user.name}!`
-                            if (h < 17) return `☀️ Good afternoon, ${user.name}!`
-                            if (h < 21) return `🌇 Good evening, ${user.name}!`
-                            return `🌙 Good night, ${user.name}!`
+                            if (h < 12) return `🌅 ${t('goodMorning')}, ${user.name}!`
+                            if (h < 17) return `☀️ ${t('goodAfternoon')}, ${user.name}!`
+                            if (h < 21) return `🌇 ${t('goodEvening')}, ${user.name}!`
+                            return `🌙 ${t('goodNight')}, ${user.name}!`
                           })()}
                         </h2>
                         <p style={{ color: '#6b7280', fontSize: '17px', margin: 0, marginTop: '6px' }}>
@@ -17496,8 +17712,8 @@ export default function KindWorldApp() {
                   <div style={{ background:'linear-gradient(135deg,#fffbeb,#fef3c7)', border:'1px solid #fde68a', borderRadius:'16px', padding:'20px 24px', display:'flex', gap:'16px', alignItems:'center' }}>
                     <span style={{ fontSize:'28px', flexShrink:0 }}>✍️</span>
                     <div style={{ flex:1 }}>
-                      <p style={{ fontWeight:'700', color:'#92400e', margin:'0 0 4px', fontSize:'15px' }}>Complete your NGO profile to build trust with volunteers</p>
-                      <p style={{ fontSize:'13px', color:'#b45309', margin:0 }}>Add your description and website — they'll appear on all your mission cards, helping volunteers understand your mission.</p>
+                      <p style={{ fontWeight:'700', color:'#92400e', margin:'0 0 4px', fontSize:'15px' }}>{t('ngoProfilePromptTitle')}</p>
+                      <p style={{ fontSize:'13px', color:'#b45309', margin:0 }}>{t('ngoProfilePromptDesc')}</p>
                     </div>
                     <button onClick={()=>setCurrentPage('profile')} style={{ padding:'10px 20px', background:'#d97706', color:'white', border:'none', borderRadius:'10px', fontSize:'13px', fontWeight:'700', cursor:'pointer', flexShrink:0 }}>
                       Complete Profile →
@@ -18253,7 +18469,7 @@ export default function KindWorldApp() {
                       alignItems: 'center',
                       gap: '6px'
                     }}>
-                      ⏱️ {joiningMission.hours} hours
+                      ⏱️ {joiningMission.hours} {t('hoursUnit')}
                     </span>
                   </div>
                 </div>
@@ -18268,20 +18484,20 @@ export default function KindWorldApp() {
                       <div style={{ background:'linear-gradient(135deg, #f0fdf4, #dcfce7)', border:'1px solid #bbf7d0', borderRadius:'14px', padding:'16px 20px', marginBottom:'24px', display:'flex', gap:'12px', alignItems:'flex-start' }}>
                         <span style={{ fontSize:'20px', flexShrink:0 }}>✅</span>
                         <div>
-                          <p style={{ fontSize:'14px', fontWeight:'700', color:'#166534', margin:'0 0 4px' }}>Your profile info will be shared with the NGO</p>
+                          <p style={{ fontSize:'14px', fontWeight:'700', color:'#166534', margin:'0 0 4px' }}>{t('joinProfileShared')}</p>
                           <p style={{ fontSize:'13px', color:'#16a34a', margin:0, lineHeight:1.5 }}>
                             Name: <b>{user?.name}</b> · Phone: <b>{savedUser.phone}</b> · Emergency: <b>{savedUser.emergencyContactName}</b> ({savedUser.emergencyContactRelation || '—'}) · Allergies: <b>{savedUser.allergies || 'None'}</b> · T-Shirt: <b>{savedUser.tshirtSize || '—'}</b>
                           </p>
-                          <button onClick={()=>setCurrentPage('profile')} style={{ fontSize:'12px', color:'#15803d', background:'none', border:'none', cursor:'pointer', padding:0, marginTop:'6px', textDecoration:'underline', fontWeight:'600' }}>Update my profile →</button>
+                          <button onClick={()=>setCurrentPage('profile')} style={{ fontSize:'12px', color:'#15803d', background:'none', border:'none', cursor:'pointer', padding:0, marginTop:'6px', textDecoration:'underline', fontWeight:'600' }}>{t('updateMyProfile')}</button>
                         </div>
                       </div>
                     ) : (
                       <div style={{ background:'#fffbeb', border:'1px solid #fde68a', borderRadius:'14px', padding:'16px 20px', marginBottom:'24px', display:'flex', gap:'12px', alignItems:'flex-start' }}>
                         <span style={{ fontSize:'20px', flexShrink:0 }}>⚠️</span>
                         <div>
-                          <p style={{ fontSize:'14px', fontWeight:'700', color:'#92400e', margin:'0 0 4px' }}>Complete your profile for a faster join experience</p>
-                          <p style={{ fontSize:'13px', color:'#b45309', margin:'0 0 6px', lineHeight:1.5 }}>Add your emergency contact, phone number, allergies and T-shirt size to your profile once — it'll be auto-shared every time you join a mission.</p>
-                          <button onClick={()=>setCurrentPage('profile')} style={{ fontSize:'12px', color:'#d97706', background:'none', border:'none', cursor:'pointer', padding:0, textDecoration:'underline', fontWeight:'600' }}>Complete my profile →</button>
+                          <p style={{ fontSize:'14px', fontWeight:'700', color:'#92400e', margin:'0 0 4px' }}>{t('completeProfileBannerTitle')}</p>
+                          <p style={{ fontSize:'13px', color:'#b45309', margin:'0 0 6px', lineHeight:1.5 }}>{t('completeProfileBannerDesc')}</p>
+                          <button onClick={()=>setCurrentPage('profile')} style={{ fontSize:'12px', color:'#d97706', background:'none', border:'none', cursor:'pointer', padding:0, textDecoration:'underline', fontWeight:'600' }}>{t('completeMyProfile')}</button>
                         </div>
                       </div>
                     )
@@ -18291,11 +18507,11 @@ export default function KindWorldApp() {
                     {/* Transportation + Special Skills — the only truly event-specific fields */}
                     <div style={{ background:'#f0f9ff', padding:'20px', borderRadius:'16px', border:'1px solid #bae6fd' }}>
                       <h4 style={{ margin:'0 0 16px 0', fontSize:'14px', fontWeight:'600', color:'#075985', textTransform:'uppercase', letterSpacing:'0.5px' }}>
-                        Mission-Specific Details
+                        {t('missionSpecificDetails')}
                       </h4>
                       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
                         <div>
-                          <label style={{ display:'block', marginBottom:'6px', fontWeight:'500', color:'#374151', fontSize:'14px' }}>Transportation</label>
+                          <label style={{ display:'block', marginBottom:'6px', fontWeight:'500', color:'#374151', fontSize:'14px' }}>{t('transportationLabel')}</label>
                           <select value={missionRegistration.transportation} onChange={(e)=>setMissionRegistration({...missionRegistration, transportation: e.target.value})} style={{ width:'100%', padding:'12px 16px', border:'2px solid #bae6fd', borderRadius:'12px', fontSize:'14px', outline:'none', background:'white', boxSizing:'border-box', cursor:'pointer' }}>
                             <option value="own">{t('transportOwn')}</option>
                             <option value="carpool">{t('transportCarpool')}</option>
@@ -18303,13 +18519,13 @@ export default function KindWorldApp() {
                           </select>
                         </div>
                         <div>
-                          <label style={{ display:'block', marginBottom:'6px', fontWeight:'500', color:'#374151', fontSize:'14px' }}>Special Skills (optional)</label>
-                          <input type="text" value={missionRegistration.specialSkills} onChange={(e)=>setMissionRegistration({...missionRegistration, specialSkills: e.target.value})} placeholder="e.g. First aid, Photography" style={{ width:'100%', padding:'12px 16px', border:'2px solid #bae6fd', borderRadius:'12px', fontSize:'14px', outline:'none', background:'white', boxSizing:'border-box' }} />
+                          <label style={{ display:'block', marginBottom:'6px', fontWeight:'500', color:'#374151', fontSize:'14px' }}>{t('specialSkillsOptional')}</label>
+                          <input type="text" value={missionRegistration.specialSkills} onChange={(e)=>setMissionRegistration({...missionRegistration, specialSkills: e.target.value})} placeholder={t('specialSkillsPlaceholder')} style={{ width:'100%', padding:'12px 16px', border:'2px solid #bae6fd', borderRadius:'12px', fontSize:'14px', outline:'none', background:'white', boxSizing:'border-box' }} />
                         </div>
                       </div>
                       <div style={{ marginTop:'16px' }}>
-                        <label style={{ display:'block', marginBottom:'6px', fontWeight:'500', color:'#374151', fontSize:'14px' }}>Notes for the organizer (optional)</label>
-                        <textarea value={missionRegistration.notes} onChange={(e)=>setMissionRegistration({...missionRegistration, notes: e.target.value})} placeholder="Any additional notes for the NGO..." rows={2} style={{ width:'100%', padding:'12px 16px', border:'2px solid #bae6fd', borderRadius:'12px', fontSize:'14px', outline:'none', background:'white', resize:'vertical', fontFamily:'inherit', boxSizing:'border-box' }} />
+                        <label style={{ display:'block', marginBottom:'6px', fontWeight:'500', color:'#374151', fontSize:'14px' }}>{t('notesForOrganizer')}</label>
+                        <textarea value={missionRegistration.notes} onChange={(e)=>setMissionRegistration({...missionRegistration, notes: e.target.value})} placeholder={t('notesForOrganizerPlaceholder')} rows={2} style={{ width:'100%', padding:'12px 16px', border:'2px solid #bae6fd', borderRadius:'12px', fontSize:'14px', outline:'none', background:'white', resize:'vertical', fontFamily:'inherit', boxSizing:'border-box' }} />
                       </div>
                     </div>
                     {/* Terms Agreement */}
@@ -18339,7 +18555,7 @@ export default function KindWorldApp() {
                         color: '#4b5563',
                         lineHeight: '1.5'
                       }}>
-                        I agree to the mission terms and conditions. I understand that my information will be shared with the mission organizers for coordination purposes. I confirm that the information provided is accurate. *
+                        {t('agreeTermsFullText')} *
                       </label>
                     </div>
                   </div>
