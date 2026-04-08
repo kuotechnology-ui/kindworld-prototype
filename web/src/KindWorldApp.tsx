@@ -153,6 +153,7 @@ interface Mission {
   region?: string
   country?: string
   language?: string
+  registrationDeadline?: string  // ISO datetime string, e.g. "2026-05-10T18:00"
   report?: {
     text: string
     photos: string[]
@@ -658,6 +659,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: 'Date',
     durationHours: 'Duration (hours)',
     maxParticipantsLabel: 'Max Participants',
+    registrationSettings: 'Registration Settings',
+    participantLimitLabel: 'Participant Limit',
+    participantLimitHint: 'Registration closes automatically when full',
+    autoClosesWhenFull: 'Auto-closes when full',
+    registrationDeadlineLabel: 'Registration Deadline',
+    registrationDeadlineHint: 'Registration closes at this date & time',
+    registrationFull: 'Registration Full',
+    registrationClosed: 'Registration Closed',
+    spotsLeft: 'spots left',
+    regDeadline: 'Deadline',
     categoryLabel: 'Category',
     difficultyLabel: 'Difficulty',
     categoryEnvironment: 'Environment',
@@ -1443,6 +1454,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: 'Tanggal',
     durationHours: 'Durasi (jam)',
     maxParticipantsLabel: 'Peserta Maksimal',
+    registrationSettings: 'Pengaturan Pendaftaran',
+    participantLimitLabel: 'Batas Peserta',
+    participantLimitHint: 'Pendaftaran tutup otomatis saat penuh',
+    autoClosesWhenFull: 'Tutup otomatis saat penuh',
+    registrationDeadlineLabel: 'Batas Waktu Pendaftaran',
+    registrationDeadlineHint: 'Pendaftaran ditutup pada waktu ini',
+    registrationFull: 'Pendaftaran Penuh',
+    registrationClosed: 'Pendaftaran Ditutup',
+    spotsLeft: 'slot tersisa',
+    regDeadline: 'Batas',
     categoryLabel: 'Kategori',
     difficultyLabel: 'Tingkat Kesulitan',
     categoryEnvironment: 'Lingkungan',
@@ -2110,6 +2131,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: '日期',
     durationHours: '时长（小时）',
     maxParticipantsLabel: '最大参与人数',
+    registrationSettings: '报名设置',
+    participantLimitLabel: '人数上限',
+    participantLimitHint: '名额满时自动关闭报名',
+    autoClosesWhenFull: '满员自动关闭',
+    registrationDeadlineLabel: '报名截止时间',
+    registrationDeadlineHint: '截止时间后报名自动关闭',
+    registrationFull: '报名已满',
+    registrationClosed: '报名已关闭',
+    spotsLeft: '个名额剩余',
+    regDeadline: '截止',
     categoryLabel: '类别',
     difficultyLabel: '难度',
     categoryEnvironment: '环境',
@@ -2776,6 +2807,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: '日期',
     durationHours: '時長（小時）',
     maxParticipantsLabel: '最大參與人數',
+    registrationSettings: '報名設定',
+    participantLimitLabel: '人數上限',
+    participantLimitHint: '名額滿時自動關閉報名',
+    autoClosesWhenFull: '滿員自動關閉',
+    registrationDeadlineLabel: '報名截止時間',
+    registrationDeadlineHint: '截止時間後報名自動關閉',
+    registrationFull: '報名已滿',
+    registrationClosed: '報名已關閉',
+    spotsLeft: '個名額剩餘',
+    regDeadline: '截止',
     categoryLabel: '類別',
     difficultyLabel: '難度',
     categoryEnvironment: '環境',
@@ -3433,6 +3474,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: 'Fecha',
     durationHours: 'Duración (horas)',
     maxParticipantsLabel: 'Máx Participantes',
+    registrationSettings: 'Configuración de Inscripción',
+    participantLimitLabel: 'Límite de Participantes',
+    participantLimitHint: 'La inscripción se cierra automáticamente al llenarse',
+    autoClosesWhenFull: 'Se cierra automáticamente al completarse',
+    registrationDeadlineLabel: 'Fecha Límite de Inscripción',
+    registrationDeadlineHint: 'La inscripción se cierra en esta fecha y hora',
+    registrationFull: 'Inscripción Completa',
+    registrationClosed: 'Inscripción Cerrada',
+    spotsLeft: 'lugares disponibles',
+    regDeadline: 'Límite',
     categoryLabel: 'Categoría',
     difficultyLabel: 'Dificultad',
     categoryEnvironment: 'Medio Ambiente',
@@ -4078,6 +4129,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: 'Date',
     durationHours: 'Durée (heures)',
     maxParticipantsLabel: 'Max Participants',
+    registrationSettings: "Paramètres d'Inscription",
+    participantLimitLabel: 'Limite de Participants',
+    participantLimitHint: "L'inscription se ferme automatiquement quand c'est complet",
+    autoClosesWhenFull: 'Fermeture automatique quand complet',
+    registrationDeadlineLabel: "Date Limite d'Inscription",
+    registrationDeadlineHint: "L'inscription se ferme à cette date et heure",
+    registrationFull: 'Inscription Complète',
+    registrationClosed: 'Inscription Fermée',
+    spotsLeft: 'places restantes',
+    regDeadline: 'Limite',
     categoryLabel: 'Catégorie',
     difficultyLabel: 'Difficulté',
     categoryEnvironment: 'Environnement',
@@ -4723,6 +4784,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: 'Data',
     durationHours: 'Duração (horas)',
     maxParticipantsLabel: 'Máx Participantes',
+    registrationSettings: 'Configurações de Inscrição',
+    participantLimitLabel: 'Limite de Participantes',
+    participantLimitHint: 'A inscrição fecha automaticamente quando estiver cheia',
+    autoClosesWhenFull: 'Fecha automaticamente quando cheia',
+    registrationDeadlineLabel: 'Prazo de Inscrição',
+    registrationDeadlineHint: 'A inscrição fecha nesta data e hora',
+    registrationFull: 'Inscrição Esgotada',
+    registrationClosed: 'Inscrição Encerrada',
+    spotsLeft: 'vagas restantes',
+    regDeadline: 'Prazo',
     categoryLabel: 'Categoria',
     difficultyLabel: 'Dificuldade',
     categoryEnvironment: 'Meio Ambiente',
@@ -5368,6 +5439,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: '日付',
     durationHours: '期間（時間）',
     maxParticipantsLabel: '最大参加者',
+    registrationSettings: '登録設定',
+    participantLimitLabel: '参加者上限',
+    participantLimitHint: '定員になると自動的に登録締切',
+    autoClosesWhenFull: '定員時に自動締切',
+    registrationDeadlineLabel: '登録締切日時',
+    registrationDeadlineHint: 'この日時に登録を自動締め切ります',
+    registrationFull: '定員満員',
+    registrationClosed: '登録締切',
+    spotsLeft: '席残り',
+    regDeadline: '締切',
     categoryLabel: 'カテゴリ',
     difficultyLabel: '難易度',
     categoryEnvironment: '環境',
@@ -6013,6 +6094,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: 'วันที่',
     durationHours: 'ระยะเวลา (ชั่วโมง)',
     maxParticipantsLabel: 'ผู้เข้าร่วมสูงสุด',
+    registrationSettings: 'ตั้งค่าการลงทะเบียน',
+    participantLimitLabel: 'จำกัดจำนวนผู้เข้าร่วม',
+    participantLimitHint: 'ปิดรับสมัครอัตโนมัติเมื่อเต็ม',
+    autoClosesWhenFull: 'ปิดอัตโนมัติเมื่อเต็ม',
+    registrationDeadlineLabel: 'วันหมดเขตลงทะเบียน',
+    registrationDeadlineHint: 'ปิดรับสมัครเมื่อถึงวันและเวลานี้',
+    registrationFull: 'เต็มแล้ว',
+    registrationClosed: 'ปิดรับสมัครแล้ว',
+    spotsLeft: 'ที่นั่งคงเหลือ',
+    regDeadline: 'หมดเขต',
     categoryLabel: 'หมวดหมู่',
     difficultyLabel: 'ความยาก',
     categoryEnvironment: 'สิ่งแวดล้อม',
@@ -6658,6 +6749,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: 'Ngày',
     durationHours: 'Thời lượng (giờ)',
     maxParticipantsLabel: 'Số người tham gia tối đa',
+    registrationSettings: 'Cài đặt Đăng ký',
+    participantLimitLabel: 'Giới hạn người tham gia',
+    participantLimitHint: 'Đăng ký tự động đóng khi hết chỗ',
+    autoClosesWhenFull: 'Tự động đóng khi đủ',
+    registrationDeadlineLabel: 'Hạn chót Đăng ký',
+    registrationDeadlineHint: 'Đăng ký đóng vào ngày giờ này',
+    registrationFull: 'Đã đủ người',
+    registrationClosed: 'Đã đóng đăng ký',
+    spotsLeft: 'chỗ còn lại',
+    regDeadline: 'Hạn chót',
     categoryLabel: 'Danh mục',
     difficultyLabel: 'Độ khó',
     categoryEnvironment: 'Môi trường',
@@ -7303,6 +7404,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: '날짜',
     durationHours: '기간 (시간)',
     maxParticipantsLabel: '최대 참가자',
+    registrationSettings: '등록 설정',
+    participantLimitLabel: '참가자 제한',
+    participantLimitHint: '정원이 차면 자동으로 등록 마감',
+    autoClosesWhenFull: '정원 마감 시 자동 종료',
+    registrationDeadlineLabel: '등록 마감일',
+    registrationDeadlineHint: '이 날짜/시간에 등록이 자동으로 닫힙니다',
+    registrationFull: '정원 마감',
+    registrationClosed: '등록 마감',
+    spotsLeft: '자리 남음',
+    regDeadline: '마감',
     categoryLabel: '카테고리',
     difficultyLabel: '난이도',
     categoryEnvironment: '환경',
@@ -7948,6 +8059,16 @@ const localTranslations: Record<string, Record<string, string>> = {
     dateLabel: 'Datum',
     durationHours: 'Dauer (Stunden)',
     maxParticipantsLabel: 'Max. Teilnehmer',
+    registrationSettings: 'Anmeldeeinstellungen',
+    participantLimitLabel: 'Teilnehmerlimit',
+    participantLimitHint: 'Anmeldung schließt automatisch bei Vollbelegung',
+    autoClosesWhenFull: 'Automatisch schließen bei Vollbelegung',
+    registrationDeadlineLabel: 'Anmeldeschluss',
+    registrationDeadlineHint: 'Anmeldung schließt an diesem Datum und Uhrzeit',
+    registrationFull: 'Anmeldung voll',
+    registrationClosed: 'Anmeldung geschlossen',
+    spotsLeft: 'Plätze frei',
+    regDeadline: 'Frist',
     categoryLabel: 'Kategorie',
     difficultyLabel: 'Schwierigkeit',
     categoryEnvironment: 'Umwelt',
@@ -8707,7 +8828,8 @@ export default function KindWorldApp() {
     difficulty: 'Easy',
     region: 'SEA',
     country: '',
-    imageUrl: ''
+    imageUrl: '',
+    registrationDeadline: ''
   })
   const [newCertificate, setNewCertificate] = useState({
     name: '',
@@ -9495,6 +9617,13 @@ export default function KindWorldApp() {
       printWindow.focus()
     }
     setNotifications(prev => [...prev, `📊 ${t('ngoImpactReportGenerated')}`])
+  }
+
+  const isRegistrationClosed = (mission: Mission): boolean => {
+    const regCount = missionRegistrations.filter((r: any) => r.missionId === mission.id).length
+    if (mission.maxParticipants > 0 && regCount >= mission.maxParticipants) return true
+    if (mission.registrationDeadline && new Date(mission.registrationDeadline) <= new Date()) return true
+    return false
   }
 
   const joinMission = (missionId: number) => {
@@ -15120,7 +15249,8 @@ export default function KindWorldApp() {
                                   difficulty: activity.difficulty,
                                   region: activity.region || 'SEA',
                                   country: activity.country || '',
-                                  imageUrl: activity.imageUrl || ''
+                                  imageUrl: activity.imageUrl || '',
+                                  registrationDeadline: activity.registrationDeadline || ''
                                 })
                               }}
                               style={{
@@ -15382,7 +15512,7 @@ export default function KindWorldApp() {
                           <button
                             onClick={() => {
                               setEditingMission(null)
-                              setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
+                              setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
                             }}
                             style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#718096' }}
                           >
@@ -15451,6 +15581,20 @@ export default function KindWorldApp() {
                               />
                             </div>
                           </div>
+                          {/* Registration Deadline (Edit) */}
+                          <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '12px', padding: '14px 16px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '700', color: '#075985', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>⏰ {t('registrationSettings')}</label>
+                            <div>
+                              <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#374151', fontSize: '13px' }}>{t('registrationDeadlineLabel')}</label>
+                              <input
+                                type="datetime-local"
+                                value={newActivity.registrationDeadline || ''}
+                                onChange={(e) => setNewActivity({...newActivity, registrationDeadline: e.target.value})}
+                                style={{ width: '100%', padding: '10px 12px', border: '2px solid #bae6fd', borderRadius: '10px', fontSize: '13px', outline: 'none', background: 'white', boxSizing: 'border-box' }}
+                              />
+                            </div>
+                          </div>
+
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <div>
                               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2d3748' }}>{t('categoryFormLabel')}</label>
@@ -15497,7 +15641,8 @@ export default function KindWorldApp() {
                                           category: newActivity.category,
                                           difficulty: newActivity.difficulty as 'Easy' | 'Medium' | 'Hard',
                                           imageUrl: newActivity.imageUrl || '',
-                                          image: newActivity.imageUrl || m.image
+                                          image: newActivity.imageUrl || m.image,
+                                          registrationDeadline: newActivity.registrationDeadline || undefined
                                         }
                                       : m
                                   )
@@ -15506,7 +15651,7 @@ export default function KindWorldApp() {
                                 })
                                 setNotifications(prev => [...prev, `✅ Mission "${newActivity.title}" updated successfully!`])
                                 setEditingMission(null)
-                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
+                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
                               }}
                               style={{
                                 flex: 1,
@@ -15525,7 +15670,7 @@ export default function KindWorldApp() {
                             <button
                               onClick={() => {
                                 setEditingMission(null)
-                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
+                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
                               }}
                               style={{
                                 flex: 1,
@@ -18026,6 +18171,37 @@ export default function KindWorldApp() {
                         </div>
                       )}
                     </div>
+                    {/* Registration status bar */}
+                    {(() => {
+                      const regCount = missionRegistrations.filter((r: any) => r.missionId === mission.id).length
+                      const isFull = mission.maxParticipants > 0 && regCount >= mission.maxParticipants
+                      const isPastDeadline = !!(mission.registrationDeadline && new Date(mission.registrationDeadline) <= new Date())
+                      const spotsLeft = Math.max(0, mission.maxParticipants - regCount)
+                      const fillPct = Math.min(100, Math.round((regCount / mission.maxParticipants) * 100))
+                      return (
+                        <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              {isFull ? (
+                                <span style={{ fontSize: '12px', fontWeight: '700', color: '#dc2626', background: '#fef2f2', padding: '3px 10px', borderRadius: '8px', border: '1px solid #fecaca' }}>🔒 {t('registrationFull')}</span>
+                              ) : isPastDeadline ? (
+                                <span style={{ fontSize: '12px', fontWeight: '700', color: '#6b7280', background: '#f3f4f6', padding: '3px 10px', borderRadius: '8px' }}>⏰ {t('registrationClosed')}</span>
+                              ) : (
+                                <span style={{ fontSize: '12px', fontWeight: '600', color: '#059669' }}>👥 {regCount}/{mission.maxParticipants} · {spotsLeft} {t('spotsLeft')}</span>
+                              )}
+                              {mission.registrationDeadline && !isPastDeadline && (
+                                <span style={{ fontSize: '11px', color: '#d97706', fontWeight: '600', background: '#fffbeb', padding: '2px 8px', borderRadius: '6px', border: '1px solid #fde68a' }}>
+                                  ⏰ {t('regDeadline')}: {new Date(mission.registrationDeadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ background: '#e5e7eb', borderRadius: '6px', height: '5px', overflow: 'hidden' }}>
+                            <div style={{ width: `${fillPct}%`, height: '100%', background: isFull ? '#dc2626' : fillPct >= 80 ? '#f59e0b' : '#22c55e', borderRadius: '6px', transition: 'width 0.4s ease' }} />
+                          </div>
+                        </div>
+                      )
+                    })()}
                     {/* Show different buttons based on user role */}
                     {user?.role === 'ngo' || user?.role === 'admin' ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', flexShrink: 0 }}>
@@ -18111,6 +18287,11 @@ export default function KindWorldApp() {
                           </button>
                         )}
                         {(() => { const _td = new Date(); const _tds = `${_td.getFullYear()}-${String(_td.getMonth()+1).padStart(2,'0')}-${String(_td.getDate()).padStart(2,'0')}`; return mission.date >= _tds })() && (
+                          isRegistrationClosed(mission) && !joinedMissionIds.has(mission.id) ? (
+                            <span style={{ padding: '10px 18px', background: '#f3f4f6', color: '#6b7280', borderRadius: '12px', fontSize: '13px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              {missionRegistrations.filter((r: any) => r.missionId === mission.id).length >= mission.maxParticipants ? `🔒 ${t('registrationFull')}` : `⏰ ${t('registrationClosed')}`}
+                            </span>
+                          ) : (
                           <button
                             onClick={() => {
                               if (joinedMissionIds.has(mission.id)) {
@@ -18164,6 +18345,7 @@ export default function KindWorldApp() {
                           >
                             {joinedMissionIds.has(mission.id) ? t('leaveMission') : t('joinMission')}
                           </button>
+                          )
                         )}
                         {/* Submit Hours button for joined + completed missions */}
                         {joinedMissionIds.has(mission.id) && new Date(mission.date) <= new Date() && (() => {
@@ -22362,6 +22544,36 @@ export default function KindWorldApp() {
                     </div>
                   </div>
 
+                  {/* Registration Deadline */}
+                  <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '14px', padding: '16px 20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '18px' }}>⏰</span>
+                      <label style={{ fontWeight: '700', color: '#075985', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('registrationSettings')}</label>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#374151', fontSize: '13px' }}>{t('participantLimitLabel')}</label>
+                        <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#6b7280' }}>{t('participantLimitHint')}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '13px', color: '#374151', flexShrink: 0 }}>{t('maxParticipantsLabel')}: <strong style={{ color: '#3b82f6' }}>{newActivity.maxParticipants}</strong></span>
+                          <span style={{ fontSize: '12px', padding: '3px 10px', background: '#dbeafe', color: '#1e40af', borderRadius: '20px', fontWeight: '600' }}>{t('autoClosesWhenFull')}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#374151', fontSize: '13px' }}>{t('registrationDeadlineLabel')}</label>
+                        <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#6b7280' }}>{t('registrationDeadlineHint')}</p>
+                        <input
+                          type="datetime-local"
+                          value={newActivity.registrationDeadline}
+                          onChange={(e) => setNewActivity({...newActivity, registrationDeadline: e.target.value})}
+                          style={{ width: '100%', padding: '10px 12px', border: '2px solid #bae6fd', borderRadius: '10px', fontSize: '13px', outline: 'none', background: 'white', boxSizing: 'border-box' }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#bae6fd'}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2d3748' }}>
@@ -22585,7 +22797,8 @@ export default function KindWorldApp() {
                             joined: false,
                             region: newActivity.region,
                             country: newActivity.country,
-                            language: language
+                            language: language,
+                            registrationDeadline: newActivity.registrationDeadline || undefined
                           }
                           setMissions(prev => {
                             const updated = [...prev, newMission]
@@ -22593,7 +22806,7 @@ export default function KindWorldApp() {
                             return updated
                           })
                           setNotifications(prev => [...prev, `✅ Activity "${newActivity.title}" created successfully! Students can now see and join it on the Missions page.`])
-                          setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '' })
+                          setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
                           setShowCreateActivity(false)
                         }
                       }}
