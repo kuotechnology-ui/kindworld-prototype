@@ -142,7 +142,9 @@ interface Mission {
   hours: number
   participants: string
   maxParticipants: number
+  minParticipants?: number
   currentParticipants: number
+  checkInCode?: string  // 6-char alphanumeric, generated on mission creation
   category: string
   difficulty: 'Easy' | 'Medium' | 'Hard'
   organizer: string
@@ -184,6 +186,28 @@ interface CertRequest {
   status: 'pending' | 'approved' | 'rejected'
   requestedAt: string
   approvedAt?: string
+}
+
+interface SponsorCampaign {
+  id: string
+  sponsorEmail: string
+  sponsorName: string
+  companyName: string
+  ngoEmail: string
+  ngoName: string
+  missionId?: number
+  missionTitle?: string
+  title: string
+  amount: number
+  currency: 'USD' | 'THB' | 'SGD' | 'MYR'
+  status: 'draft' | 'pendingPayment' | 'pendingVerification' | 'active' | 'completed' | 'rejected'
+  paymentProofUrl?: string
+  paymentProofNote?: string
+  ngoConfirmedAt?: string
+  ngoConfirmedBy?: string
+  auditLog: { at: string; by: string; action: string }[]
+  createdAt: string
+  updatedAt: string
 }
 
 // Scroll animation hook — triggers once when element enters viewport
@@ -340,6 +364,38 @@ const localTranslations: Record<string, Record<string, string>> = {
     date: 'Date',
     category: 'Category',
     status: 'Status',
+    // Campaign flow
+    campaigns: 'Campaigns',
+    newCampaign: 'New Campaign',
+    createCampaignSubtitle: 'Fund an NGO mission and track your social impact',
+    campaignTitle: 'Campaign Title',
+    campaignTitlePlaceholder: 'e.g. Green Schools Initiative 2026',
+    selectNgo: 'Select NGO',
+    selectNgoPlaceholder: '— Choose a verified NGO —',
+    linkMission: 'Link to Mission',
+    noLinkedMission: 'No specific mission',
+    pledgeAmount: 'Pledge Amount',
+    currency: 'Currency',
+    paymentNote: 'Payment Note',
+    paymentNotePlaceholder: 'e.g. Bank transfer scheduled for May 10',
+    campaignWorkflow: 'After submission → Upload payment proof → NGO confirms receipt → Campaign goes active',
+    submitCampaign: 'Submit Campaign',
+    noCampaignsYet: 'No campaigns yet. Create your first campaign to fund a mission.',
+    uploadPaymentProofHint: 'Please upload proof of payment to proceed.',
+    uploadProof: 'Upload Proof',
+    campaignActiveNote: 'Campaign is active. NGO has confirmed your payment.',
+    campaignStatus_draft: 'Draft',
+    campaignStatus_pendingPayment: 'Pending Payment',
+    campaignStatus_pendingVerification: 'Pending Verification',
+    campaignStatus_active: 'Active',
+    campaignStatus_completed: 'Completed',
+    campaignStatus_rejected: 'Rejected',
+    incomingCampaigns: 'Incoming Campaigns',
+    paymentProofReceived: 'Payment proof received — please review and confirm',
+    viewProof: 'View proof document',
+    confirmPayment: 'Confirm Payment Received',
+    reject: 'Reject',
+    optional: 'optional',
     missions: 'Missions',
     certificates: 'Certificates',
     badges: 'Badges',
@@ -665,6 +721,10 @@ const localTranslations: Record<string, Record<string, string>> = {
     autoClosesWhenFull: 'Auto-closes when full',
     registrationDeadlineLabel: 'Registration Deadline',
     registrationDeadlineHint: 'Registration closes at this date & time',
+    minParticipantsLabel: 'Minimum Participants',
+    minParticipantsHint: 'Mission may be cancelled if minimum is not reached',
+    checkInCodeLabel: 'Check-In Code',
+    checkInCodeHint: 'Volunteers enter this code to confirm attendance',
     registrationFull: 'Registration Full',
     registrationClosed: 'Registration Closed',
     spotsLeft: 'spots left',
@@ -990,6 +1050,12 @@ const localTranslations: Record<string, Record<string, string>> = {
     settingsTitle: 'Settings',
     settingsAppearance: 'Appearance',
     settingsAppearanceDesc: 'Personalise the look and feel of KindWorld',
+    settingsFontSize: 'Text Size',
+    settingsFontSizeDesc: 'Adjust the text size across the app',
+    fontSizeSm: 'Small',
+    fontSizeMd: 'Medium',
+    fontSizeLg: 'Large',
+    fontSizeXl: 'Extra Large',
     settingsLanguage: 'Language & Region',
     settingsLanguageDesc: 'Choose your preferred language',
     settingsManageDesc: 'Manage your account preferences',
@@ -1757,7 +1823,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Bahasa Pilihan',
     continueSetup: 'Lanjutkan',
     skipForNow: 'Lewati untuk saat ini',
-    settings: 'Pengaturan', settingsTitle: 'Pengaturan', settingsAppearance: 'Tampilan', settingsAppearanceDesc: 'Sesuaikan tampilan KindWorld', settingsLanguage: 'Bahasa & Wilayah', settingsLanguageDesc: 'Pilih bahasa pilihan Anda', settingsManageDesc: 'Kelola preferensi akun Anda', settingsNotifications: 'Notifikasi', settingsNotifDesc: 'Pilih apa yang ingin Anda dapatkan notifikasinya', settingsMissionUpdates: 'Pembaruan misi', settingsMissionUpdatesDesc: 'Dapatkan notifikasi saat misi yang Anda ikuti diperbarui atau dibatalkan', settingsAnnouncements: 'Pengumuman LSM', settingsAnnouncementsDesc: 'Terima pengumuman dari organisasi yang misinya telah Anda ikuti', settingsFriendReqNotif: 'Permintaan teman', settingsFriendReqNotifDesc: 'Beri tahu saya saat seseorang mengirim permintaan pertemanan', settingsHourAlert: 'Verifikasi jam', settingsHourAlertDesc: 'Pemberitahuan saat jam sukarelawan Anda disetujui atau ditolak', settingsWeeklyDigest: 'Rangkuman dampak mingguan', settingsWeeklyDigestDesc: 'Ringkasan mingguan aktivitas sukarelawan dan sorotan platform Anda', settingsPrivacy: 'Privasi', settingsPrivacyDesc: 'Kendalikan siapa yang dapat melihat informasi Anda', settingsPublicProfile: 'Profil publik', settingsPublicProfileDesc: 'Siapa saja di KindWorld dapat melihat profil dan statistik sukarelawan Anda', settingsShowLeaderboard: 'Tampilkan di papan peringkat', settingsShowLeaderboardDesc: 'Muncul di peringkat papan peringkat komunitas', settingsShareActivity: 'Bagikan aktivitas', settingsShareActivityDesc: 'Biarkan teman melihat saat Anda bergabung misi atau mendapat lencana', settingsAllowContact: 'Izinkan organisasi menghubungi saya', settingsAllowContactDesc: 'LSM dapat menghubungi Anda langsung untuk peluang sukarelawan yang relevan', settingsAccount: 'Akun', settingsAccountDesc: 'Kelola data akun Anda', settingsExportData: 'Ekspor data saya', settingsExportDesc: 'Unduh salinan aktivitas sukarelawan Anda sebagai PDF', exportMyDataTitle: 'Data Relawan Saya', exportProfileSection: 'Profil', exportActivitySection: 'Aktivitas', exportGeneratedBy: 'Dibuat oleh KindWorld', settingsSignOut: 'Keluar', settingsSignOutDesc: 'Anda akan dikembalikan ke halaman utama',
+    settings: 'Pengaturan', settingsTitle: 'Pengaturan', settingsAppearance: 'Tampilan', settingsAppearanceDesc: 'Sesuaikan tampilan KindWorld', settingsFontSize: 'Ukuran Teks', settingsFontSizeDesc: 'Sesuaikan ukuran teks di seluruh aplikasi', fontSizeSm: 'Kecil', fontSizeMd: 'Sedang', fontSizeLg: 'Besar', fontSizeXl: 'Sangat Besar', settingsLanguage: 'Bahasa & Wilayah', settingsLanguageDesc: 'Pilih bahasa pilihan Anda', settingsManageDesc: 'Kelola preferensi akun Anda', settingsNotifications: 'Notifikasi', settingsNotifDesc: 'Pilih apa yang ingin Anda dapatkan notifikasinya', settingsMissionUpdates: 'Pembaruan misi', settingsMissionUpdatesDesc: 'Dapatkan notifikasi saat misi yang Anda ikuti diperbarui atau dibatalkan', settingsAnnouncements: 'Pengumuman LSM', settingsAnnouncementsDesc: 'Terima pengumuman dari organisasi yang misinya telah Anda ikuti', settingsFriendReqNotif: 'Permintaan teman', settingsFriendReqNotifDesc: 'Beri tahu saya saat seseorang mengirim permintaan pertemanan', settingsHourAlert: 'Verifikasi jam', settingsHourAlertDesc: 'Pemberitahuan saat jam sukarelawan Anda disetujui atau ditolak', settingsWeeklyDigest: 'Rangkuman dampak mingguan', settingsWeeklyDigestDesc: 'Ringkasan mingguan aktivitas sukarelawan dan sorotan platform Anda', settingsPrivacy: 'Privasi', settingsPrivacyDesc: 'Kendalikan siapa yang dapat melihat informasi Anda', settingsPublicProfile: 'Profil publik', settingsPublicProfileDesc: 'Siapa saja di KindWorld dapat melihat profil dan statistik sukarelawan Anda', settingsShowLeaderboard: 'Tampilkan di papan peringkat', settingsShowLeaderboardDesc: 'Muncul di peringkat papan peringkat komunitas', settingsShareActivity: 'Bagikan aktivitas', settingsShareActivityDesc: 'Biarkan teman melihat saat Anda bergabung misi atau mendapat lencana', settingsAllowContact: 'Izinkan organisasi menghubungi saya', settingsAllowContactDesc: 'LSM dapat menghubungi Anda langsung untuk peluang sukarelawan yang relevan', settingsAccount: 'Akun', settingsAccountDesc: 'Kelola data akun Anda', settingsExportData: 'Ekspor data saya', settingsExportDesc: 'Unduh salinan aktivitas sukarelawan Anda sebagai PDF', exportMyDataTitle: 'Data Relawan Saya', exportProfileSection: 'Profil', exportActivitySection: 'Aktivitas', exportGeneratedBy: 'Dibuat oleh KindWorld', settingsSignOut: 'Keluar', settingsSignOutDesc: 'Anda akan dikembalikan ke halaman utama',
     leaderboard: 'Papan Peringkat', leaderboardTitle: 'Relawan Terbaik', leaderboardDesc: 'Menghargai anggota komunitas kami yang paling berdampak', topByHours: 'Teratas berdasarkan Jam', topByBadges: 'Teratas berdasarkan Lencana', yourRank: 'Peringkat Anda', rankLabel: 'Peringkat', notRankedYet: 'Selesaikan misi untuk muncul di papan peringkat!',
     notifications: 'Notifikasi', markAllRead: 'Tandai semua dibaca', noNotifications: 'Belum ada notifikasi', notificationsDesc: 'Pembaruan aktivitas Anda akan muncul di sini',
     userNotFound: 'Pengguna tidak ditemukan.', cannotAddSelf: 'Anda tidak dapat menambahkan diri sendiri.', alreadyFriends: 'Anda sudah berteman dengan pengguna ini.', yourProgress: 'Kemajuan Anda', hoursToNextBadge: 'Jam Relawan', missionsToNextBadge: 'Misi Diselesaikan', orgsToNextBadge: 'Organisasi Dibantu', centuryClubDesc: 'Capai 100 jam untuk mendapatkan lencana Century Club', missionMasterDesc: 'Selesaikan 10 misi untuk mendapatkan lencana Mission Master', communityBuilderDesc: 'Bantu 5 organisasi untuk mendapatkan lencana Community Builder',
@@ -2433,7 +2499,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: '首选语言',
     continueSetup: '继续',
     skipForNow: '暂时跳过',
-    settings: '设置', settingsTitle: '设置', settingsAppearance: '外观', settingsAppearanceDesc: '个性化 KindWorld 的外观', settingsLanguage: '语言与地区', settingsLanguageDesc: '选择您的首选语言', settingsManageDesc: '管理您的账户偏好', settingsNotifications: '通知', settingsNotifDesc: '选择您希望接收哪些通知', settingsMissionUpdates: '任务更新', settingsMissionUpdatesDesc: '当您参与的任务更新或取消时获得通知', settingsAnnouncements: '机构公告', settingsAnnouncementsDesc: '接收您已加入其任务的组织的公告', settingsFriendReqNotif: '好友请求', settingsFriendReqNotifDesc: '当有人向我发送好友请求时通知我', settingsHourAlert: '小时验证', settingsHourAlertDesc: '当我提交的志愿服务时间被批准或拒绝时提醒', settingsWeeklyDigest: '每周影响摘要', settingsWeeklyDigestDesc: '您志愿活动和平台亮点的每周摘要', settingsPrivacy: '隐私', settingsPrivacyDesc: '控制谁可以看到您的信息', settingsPublicProfile: '公开个人资料', settingsPublicProfileDesc: 'KindWorld上的任何人都可以查看您的个人资料和志愿统计', settingsShowLeaderboard: '显示在排行榜', settingsShowLeaderboardDesc: '出现在社区排行榜排名中', settingsShareActivity: '分享活动', settingsShareActivityDesc: '让朋友在动态中看到您加入任务或获得徽章', settingsAllowContact: '允许机构联系我', settingsAllowContactDesc: '非政府组织可以直接联系您，提供相关志愿机会', settingsAccount: '账户', settingsAccountDesc: '管理您的账户数据', settingsExportData: '导出我的数据', settingsExportDesc: '以PDF格式下载您的志愿活动副本', exportMyDataTitle: '我的志愿者数据', exportProfileSection: '个人资料', exportActivitySection: '活动记录', exportGeneratedBy: '由KindWorld生成', settingsSignOut: '退出登录', settingsSignOutDesc: '您将被返回至主页',
+    settings: '设置', settingsTitle: '设置', settingsAppearance: '外观', settingsAppearanceDesc: '个性化 KindWorld 的外观', settingsFontSize: '文字大小', settingsFontSizeDesc: '调整应用中的文字大小', fontSizeSm: '小', fontSizeMd: '中', fontSizeLg: '大', fontSizeXl: '超大', settingsLanguage: '语言与地区', settingsLanguageDesc: '选择您的首选语言', settingsManageDesc: '管理您的账户偏好', settingsNotifications: '通知', settingsNotifDesc: '选择您希望接收哪些通知', settingsMissionUpdates: '任务更新', settingsMissionUpdatesDesc: '当您参与的任务更新或取消时获得通知', settingsAnnouncements: '机构公告', settingsAnnouncementsDesc: '接收您已加入其任务的组织的公告', settingsFriendReqNotif: '好友请求', settingsFriendReqNotifDesc: '当有人向我发送好友请求时通知我', settingsHourAlert: '小时验证', settingsHourAlertDesc: '当我提交的志愿服务时间被批准或拒绝时提醒', settingsWeeklyDigest: '每周影响摘要', settingsWeeklyDigestDesc: '您志愿活动和平台亮点的每周摘要', settingsPrivacy: '隐私', settingsPrivacyDesc: '控制谁可以看到您的信息', settingsPublicProfile: '公开个人资料', settingsPublicProfileDesc: 'KindWorld上的任何人都可以查看您的个人资料和志愿统计', settingsShowLeaderboard: '显示在排行榜', settingsShowLeaderboardDesc: '出现在社区排行榜排名中', settingsShareActivity: '分享活动', settingsShareActivityDesc: '让朋友在动态中看到您加入任务或获得徽章', settingsAllowContact: '允许机构联系我', settingsAllowContactDesc: '非政府组织可以直接联系您，提供相关志愿机会', settingsAccount: '账户', settingsAccountDesc: '管理您的账户数据', settingsExportData: '导出我的数据', settingsExportDesc: '以PDF格式下载您的志愿活动副本', exportMyDataTitle: '我的志愿者数据', exportProfileSection: '个人资料', exportActivitySection: '活动记录', exportGeneratedBy: '由KindWorld生成', settingsSignOut: '退出登录', settingsSignOutDesc: '您将被返回至主页',
     leaderboard: '排行榜', leaderboardTitle: '顶尖志愿者', leaderboardDesc: '向最具影响力的社区成员致敬', topByHours: '按小时排名', topByBadges: '按徽章排名', yourRank: '您的排名', rankLabel: '排名', notRankedYet: '完成任务以出现在排行榜上！',
     notifications: '通知', markAllRead: '全部标记已读', noNotifications: '暂无通知', notificationsDesc: '您的活动更新将显示在这里',
     userNotFound: '用户未找到。', cannotAddSelf: '您不能添加自己为好友。', alreadyFriends: '您们已经是好友了。', yourProgress: '您的进度', hoursToNextBadge: '志愿者小时', missionsToNextBadge: '已完成任务', orgsToNextBadge: '帮助的组织', centuryClubDesc: '达到100小时获得世纪俱乐部徽章', missionMasterDesc: '完成10个任务获得任务大师徽章', communityBuilderDesc: '帮助5个组织获得社区建设者徽章',
@@ -3109,7 +3175,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: '首選語言',
     continueSetup: '繼續',
     skipForNow: '暫時跳過',
-    settings: '設定', settingsTitle: '設定', settingsAppearance: '外觀', settingsAppearanceDesc: '個人化 KindWorld 的外觀', settingsLanguage: '語言與地區', settingsLanguageDesc: '選擇您的偏好語言', settingsManageDesc: '管理您的帳號偏好設定', settingsNotifications: '通知', settingsNotifDesc: '選擇您希望接收哪些通知', settingsMissionUpdates: '任務更新', settingsMissionUpdatesDesc: '當您參與的任務更新或取消時獲得通知', settingsAnnouncements: '機構公告', settingsAnnouncementsDesc: '接收您已加入其任務的組織的公告', settingsFriendReqNotif: '好友請求', settingsFriendReqNotifDesc: '當有人向我發送好友請求時通知我', settingsHourAlert: '小時驗證', settingsHourAlertDesc: '當我提交的志願服務時間被批准或拒絕時提醒', settingsWeeklyDigest: '每週影響摘要', settingsWeeklyDigestDesc: '您志願活動和平台亮點的每週摘要', settingsPrivacy: '隱私', settingsPrivacyDesc: '控制誰可以看到您的資訊', settingsPublicProfile: '公開個人資料', settingsPublicProfileDesc: 'KindWorld上的任何人都可以查看您的個人資料和志願統計', settingsShowLeaderboard: '顯示在排行榜', settingsShowLeaderboardDesc: '出現在社群排行榜排名中', settingsShareActivity: '分享活動', settingsShareActivityDesc: '讓朋友在動態中看到您加入任務或獲得徽章', settingsAllowContact: '允許機構聯繫我', settingsAllowContactDesc: '非政府組織可以直接聯繫您，提供相關志願機會', settingsAccount: '帳號', settingsAccountDesc: '管理您的帳號資料', settingsExportData: '匯出我的資料', settingsExportDesc: '以PDF格式下載您的志願活動副本', exportMyDataTitle: '我的志工資料', exportProfileSection: '個人資料', exportActivitySection: '活動記錄', exportGeneratedBy: '由KindWorld生成', settingsSignOut: '登出', settingsSignOutDesc: '您將被返回至主頁',
+    settings: '設定', settingsTitle: '設定', settingsAppearance: '外觀', settingsAppearanceDesc: '個人化 KindWorld 的外觀', settingsFontSize: '文字大小', settingsFontSizeDesc: '調整應用中的文字大小', fontSizeSm: '小', fontSizeMd: '中', fontSizeLg: '大', fontSizeXl: '超大', settingsLanguage: '語言與地區', settingsLanguageDesc: '選擇您的偏好語言', settingsManageDesc: '管理您的帳號偏好設定', settingsNotifications: '通知', settingsNotifDesc: '選擇您希望接收哪些通知', settingsMissionUpdates: '任務更新', settingsMissionUpdatesDesc: '當您參與的任務更新或取消時獲得通知', settingsAnnouncements: '機構公告', settingsAnnouncementsDesc: '接收您已加入其任務的組織的公告', settingsFriendReqNotif: '好友請求', settingsFriendReqNotifDesc: '當有人向我發送好友請求時通知我', settingsHourAlert: '小時驗證', settingsHourAlertDesc: '當我提交的志願服務時間被批准或拒絕時提醒', settingsWeeklyDigest: '每週影響摘要', settingsWeeklyDigestDesc: '您志願活動和平台亮點的每週摘要', settingsPrivacy: '隱私', settingsPrivacyDesc: '控制誰可以看到您的資訊', settingsPublicProfile: '公開個人資料', settingsPublicProfileDesc: 'KindWorld上的任何人都可以查看您的個人資料和志願統計', settingsShowLeaderboard: '顯示在排行榜', settingsShowLeaderboardDesc: '出現在社群排行榜排名中', settingsShareActivity: '分享活動', settingsShareActivityDesc: '讓朋友在動態中看到您加入任務或獲得徽章', settingsAllowContact: '允許機構聯繫我', settingsAllowContactDesc: '非政府組織可以直接聯繫您，提供相關志願機會', settingsAccount: '帳號', settingsAccountDesc: '管理您的帳號資料', settingsExportData: '匯出我的資料', settingsExportDesc: '以PDF格式下載您的志願活動副本', exportMyDataTitle: '我的志工資料', exportProfileSection: '個人資料', exportActivitySection: '活動記錄', exportGeneratedBy: '由KindWorld生成', settingsSignOut: '登出', settingsSignOutDesc: '您將被返回至主頁',
     leaderboard: '排行榜', leaderboardTitle: '頂尖志工', leaderboardDesc: '向最具影響力的社區成員致敬', topByHours: '按小時排名', topByBadges: '按徽章排名', yourRank: '您的排名', rankLabel: '排名', notRankedYet: '完成任務以出現在排行榜上！',
     notifications: '通知', markAllRead: '全部標記已讀', noNotifications: '暫無通知', notificationsDesc: '您的活動更新將顯示在這裡',
     userNotFound: '找不到此使用者。', cannotAddSelf: '您無法將自己加為好友。', alreadyFriends: '您們已經是好友了。', yourProgress: '您的進度', hoursToNextBadge: '志工時數', missionsToNextBadge: '已完成任務', orgsToNextBadge: '幫助的組織', centuryClubDesc: '達到100小時獲得世紀俱樂部徽章', missionMasterDesc: '完成10個任務獲得任務大師徽章', communityBuilderDesc: '幫助5個組織獲得社區建設者徽章',
@@ -3765,7 +3831,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Idioma Preferido',
     continueSetup: 'Continuar',
     skipForNow: 'Saltar',
-    settings: 'Configuración', settingsTitle: 'Configuración', settingsAppearance: 'Apariencia', settingsAppearanceDesc: 'Personaliza el aspecto de KindWorld', settingsLanguage: 'Idioma y Región', settingsLanguageDesc: 'Elige tu idioma preferido', settingsManageDesc: 'Gestiona tus preferencias de cuenta', settingsNotifications: 'Notificaciones', settingsNotifDesc: 'Elige de qué quieres recibir notificaciones', settingsMissionUpdates: 'Actualizaciones de misiones', settingsMissionUpdatesDesc: 'Recibe notificaciones cuando una misión en la que participas se actualiza o cancela', settingsAnnouncements: 'Anuncios de ONG', settingsAnnouncementsDesc: 'Recibe anuncios de organizaciones cuyas misiones has unido', settingsFriendReqNotif: 'Solicitudes de amistad', settingsFriendReqNotifDesc: 'Notifícame cuando alguien me envíe una solicitud de amistad', settingsHourAlert: 'Verificaciones de horas', settingsHourAlertDesc: 'Alerta cuando mis horas de voluntariado enviadas sean aprobadas o rechazadas', settingsWeeklyDigest: 'Resumen semanal de impacto', settingsWeeklyDigestDesc: 'Un resumen semanal de tu actividad de voluntariado y destacados de la plataforma', settingsPrivacy: 'Privacidad', settingsPrivacyDesc: 'Controla quién puede ver tu información', settingsPublicProfile: 'Perfil público', settingsPublicProfileDesc: 'Cualquier persona en KindWorld puede ver tu perfil y estadísticas de voluntariado', settingsShowLeaderboard: 'Mostrar en clasificación', settingsShowLeaderboardDesc: 'Aparecer en las clasificaciones del leaderboard comunitario', settingsShareActivity: 'Compartir actividad', settingsShareActivityDesc: 'Permite que los amigos vean cuando te unes a misiones o ganas insignias en su feed', settingsAllowContact: 'Permitir que organizaciones me contacten', settingsAllowContactDesc: 'Las ONG pueden contactarte directamente para oportunidades de voluntariado relevantes', settingsAccount: 'Cuenta', settingsAccountDesc: 'Gestiona los datos de tu cuenta', settingsExportData: 'Exportar mis datos', settingsExportDesc: 'Descarga una copia de tu actividad de voluntariado como PDF', exportMyDataTitle: 'Mis datos de voluntariado', exportProfileSection: 'Perfil', exportActivitySection: 'Actividad', exportGeneratedBy: 'Generado por KindWorld', settingsSignOut: 'Cerrar sesión', settingsSignOutDesc: 'Serás redirigido a la página de inicio',
+    settings: 'Configuración', settingsTitle: 'Configuración', settingsAppearance: 'Apariencia', settingsAppearanceDesc: 'Personaliza el aspecto de KindWorld', settingsFontSize: 'Tamaño de Texto', settingsFontSizeDesc: 'Ajusta el tamaño del texto en toda la aplicación', fontSizeSm: 'Pequeño', fontSizeMd: 'Mediano', fontSizeLg: 'Grande', fontSizeXl: 'Extra Grande', settingsLanguage: 'Idioma y Región', settingsLanguageDesc: 'Elige tu idioma preferido', settingsManageDesc: 'Gestiona tus preferencias de cuenta', settingsNotifications: 'Notificaciones', settingsNotifDesc: 'Elige de qué quieres recibir notificaciones', settingsMissionUpdates: 'Actualizaciones de misiones', settingsMissionUpdatesDesc: 'Recibe notificaciones cuando una misión en la que participas se actualiza o cancela', settingsAnnouncements: 'Anuncios de ONG', settingsAnnouncementsDesc: 'Recibe anuncios de organizaciones cuyas misiones has unido', settingsFriendReqNotif: 'Solicitudes de amistad', settingsFriendReqNotifDesc: 'Notifícame cuando alguien me envíe una solicitud de amistad', settingsHourAlert: 'Verificaciones de horas', settingsHourAlertDesc: 'Alerta cuando mis horas de voluntariado enviadas sean aprobadas o rechazadas', settingsWeeklyDigest: 'Resumen semanal de impacto', settingsWeeklyDigestDesc: 'Un resumen semanal de tu actividad de voluntariado y destacados de la plataforma', settingsPrivacy: 'Privacidad', settingsPrivacyDesc: 'Controla quién puede ver tu información', settingsPublicProfile: 'Perfil público', settingsPublicProfileDesc: 'Cualquier persona en KindWorld puede ver tu perfil y estadísticas de voluntariado', settingsShowLeaderboard: 'Mostrar en clasificación', settingsShowLeaderboardDesc: 'Aparecer en las clasificaciones del leaderboard comunitario', settingsShareActivity: 'Compartir actividad', settingsShareActivityDesc: 'Permite que los amigos vean cuando te unes a misiones o ganas insignias en su feed', settingsAllowContact: 'Permitir que organizaciones me contacten', settingsAllowContactDesc: 'Las ONG pueden contactarte directamente para oportunidades de voluntariado relevantes', settingsAccount: 'Cuenta', settingsAccountDesc: 'Gestiona los datos de tu cuenta', settingsExportData: 'Exportar mis datos', settingsExportDesc: 'Descarga una copia de tu actividad de voluntariado como PDF', exportMyDataTitle: 'Mis datos de voluntariado', exportProfileSection: 'Perfil', exportActivitySection: 'Actividad', exportGeneratedBy: 'Generado por KindWorld', settingsSignOut: 'Cerrar sesión', settingsSignOutDesc: 'Serás redirigido a la página de inicio',
     leaderboard: 'Clasificación', leaderboardTitle: 'Mejores Voluntarios', leaderboardDesc: 'Celebrando a los miembros más impactantes de nuestra comunidad', topByHours: 'Por Horas', topByBadges: 'Por Insignias', yourRank: 'Tu Rango', rankLabel: 'Rango', notRankedYet: '¡Completa misiones para aparecer en la clasificación!',
     notifications: 'Notificaciones', markAllRead: 'Marcar todo como leído', noNotifications: 'Sin notificaciones', notificationsDesc: 'Tus actualizaciones de actividad aparecerán aquí',
     userNotFound: 'Usuario no encontrado.', cannotAddSelf: 'No puedes añadirte a ti mismo.', alreadyFriends: 'Ya sois amigos.', yourProgress: 'Tu Progreso', hoursToNextBadge: 'Horas Voluntarias', missionsToNextBadge: 'Misiones Completadas', orgsToNextBadge: 'Organizaciones Ayudadas', centuryClubDesc: 'Alcanza 100 horas para ganar la insignia Century Club', missionMasterDesc: 'Completa 10 misiones para ganar la insignia Mission Master', communityBuilderDesc: 'Ayuda a 5 organizaciones para ganar la insignia Community Builder',
@@ -4420,7 +4486,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Langue Préférée',
     continueSetup: 'Continuer',
     skipForNow: 'Passer',
-    settings: 'Paramètres', settingsTitle: 'Paramètres', settingsAppearance: 'Apparence', settingsAppearanceDesc: 'Personnalisez l\'apparence de KindWorld', settingsLanguage: 'Langue et Région', settingsLanguageDesc: 'Choisissez votre langue préférée', settingsManageDesc: 'Gérez vos préférences de compte', settingsNotifications: 'Notifications', settingsNotifDesc: 'Choisissez ce dont vous souhaitez être notifié', settingsMissionUpdates: 'Mises à jour des missions', settingsMissionUpdatesDesc: 'Soyez notifié quand une mission que vous avez rejointe est mise à jour ou annulée', settingsAnnouncements: 'Annonces des ONG', settingsAnnouncementsDesc: 'Recevez les annonces des organisations dont vous avez rejoint les missions', settingsFriendReqNotif: 'Demandes d\'amis', settingsFriendReqNotifDesc: 'Recevez une notification quand quelqu\'un vous envoie une demande d\'ami', settingsHourAlert: 'Vérifications des heures', settingsHourAlertDesc: 'Alerte quand mes heures de bénévolat soumises sont approuvées ou refusées', settingsWeeklyDigest: 'Résumé hebdomadaire d\'impact', settingsWeeklyDigestDesc: 'Un résumé hebdomadaire de votre activité bénévole et des faits saillants de la plateforme', settingsPrivacy: 'Confidentialité', settingsPrivacyDesc: 'Contrôlez qui peut voir vos informations', settingsPublicProfile: 'Profil public', settingsPublicProfileDesc: 'N\'importe qui sur KindWorld peut voir votre profil et vos statistiques de bénévolat', settingsShowLeaderboard: 'Afficher dans le classement', settingsShowLeaderboardDesc: 'Apparaître dans les classements du leaderboard communautaire', settingsShareActivity: 'Partager l\'activité', settingsShareActivityDesc: 'Laissez vos amis voir quand vous rejoignez des missions ou gagnez des badges', settingsAllowContact: 'Autoriser les organisations à me contacter', settingsAllowContactDesc: 'Les ONG peuvent vous contacter directement pour des opportunités de bénévolat pertinentes', settingsAccount: 'Compte', settingsAccountDesc: 'Gérez les données de votre compte', settingsExportData: 'Exporter mes données', settingsExportDesc: 'Téléchargez une copie de votre activité bénévole en PDF', exportMyDataTitle: 'Mes données de bénévolat', exportProfileSection: 'Profil', exportActivitySection: 'Activité', exportGeneratedBy: 'Généré par KindWorld', settingsSignOut: 'Se déconnecter', settingsSignOutDesc: 'Vous serez redirigé vers la page d\'accueil',
+    settings: 'Paramètres', settingsTitle: 'Paramètres', settingsAppearance: 'Apparence', settingsAppearanceDesc: 'Personnalisez l\'apparence de KindWorld', settingsFontSize: 'Taille du Texte', settingsFontSizeDesc: 'Ajustez la taille du texte dans l\'application', fontSizeSm: 'Petit', fontSizeMd: 'Moyen', fontSizeLg: 'Grand', fontSizeXl: 'Très Grand', settingsLanguage: 'Langue et Région', settingsLanguageDesc: 'Choisissez votre langue préférée', settingsManageDesc: 'Gérez vos préférences de compte', settingsNotifications: 'Notifications', settingsNotifDesc: 'Choisissez ce dont vous souhaitez être notifié', settingsMissionUpdates: 'Mises à jour des missions', settingsMissionUpdatesDesc: 'Soyez notifié quand une mission que vous avez rejointe est mise à jour ou annulée', settingsAnnouncements: 'Annonces des ONG', settingsAnnouncementsDesc: 'Recevez les annonces des organisations dont vous avez rejoint les missions', settingsFriendReqNotif: 'Demandes d\'amis', settingsFriendReqNotifDesc: 'Recevez une notification quand quelqu\'un vous envoie une demande d\'ami', settingsHourAlert: 'Vérifications des heures', settingsHourAlertDesc: 'Alerte quand mes heures de bénévolat soumises sont approuvées ou refusées', settingsWeeklyDigest: 'Résumé hebdomadaire d\'impact', settingsWeeklyDigestDesc: 'Un résumé hebdomadaire de votre activité bénévole et des faits saillants de la plateforme', settingsPrivacy: 'Confidentialité', settingsPrivacyDesc: 'Contrôlez qui peut voir vos informations', settingsPublicProfile: 'Profil public', settingsPublicProfileDesc: 'N\'importe qui sur KindWorld peut voir votre profil et vos statistiques de bénévolat', settingsShowLeaderboard: 'Afficher dans le classement', settingsShowLeaderboardDesc: 'Apparaître dans les classements du leaderboard communautaire', settingsShareActivity: 'Partager l\'activité', settingsShareActivityDesc: 'Laissez vos amis voir quand vous rejoignez des missions ou gagnez des badges', settingsAllowContact: 'Autoriser les organisations à me contacter', settingsAllowContactDesc: 'Les ONG peuvent vous contacter directement pour des opportunités de bénévolat pertinentes', settingsAccount: 'Compte', settingsAccountDesc: 'Gérez les données de votre compte', settingsExportData: 'Exporter mes données', settingsExportDesc: 'Téléchargez une copie de votre activité bénévole en PDF', exportMyDataTitle: 'Mes données de bénévolat', exportProfileSection: 'Profil', exportActivitySection: 'Activité', exportGeneratedBy: 'Généré par KindWorld', settingsSignOut: 'Se déconnecter', settingsSignOutDesc: 'Vous serez redirigé vers la page d\'accueil',
     leaderboard: 'Classement', leaderboardTitle: 'Meilleurs Bénévoles', leaderboardDesc: 'Célébrant les membres les plus impactants de notre communauté', topByHours: 'Par Heures', topByBadges: 'Par Badges', yourRank: 'Votre Rang', rankLabel: 'Rang', notRankedYet: 'Complétez des missions pour apparaître dans le classement !',
     notifications: 'Notifications', markAllRead: 'Tout marquer comme lu', noNotifications: 'Pas de notifications', notificationsDesc: "Vos mises à jour d'activité apparaîtront ici",
     userNotFound: 'Utilisateur non trouvé.', cannotAddSelf: 'Vous ne pouvez pas vous ajouter vous-même.', alreadyFriends: "Vous êtes déjà amis.", yourProgress: 'Votre Progrès', hoursToNextBadge: "Heures Bénévoles", missionsToNextBadge: 'Missions Complétées', orgsToNextBadge: 'Organisations Aidées', centuryClubDesc: 'Atteignez 100 heures pour gagner le badge Century Club', missionMasterDesc: 'Complétez 10 missions pour gagner le badge Mission Master', communityBuilderDesc: 'Aidez 5 organisations pour gagner le badge Community Builder',
@@ -5075,7 +5141,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Idioma Preferido',
     continueSetup: 'Continuar',
     skipForNow: 'Pular',
-    settings: 'Configurações', settingsTitle: 'Configurações', settingsAppearance: 'Aparência', settingsAppearanceDesc: 'Personalize a aparência do KindWorld', settingsLanguage: 'Idioma e Região', settingsLanguageDesc: 'Escolha seu idioma preferido', settingsManageDesc: 'Gerencie suas preferências de conta', settingsNotifications: 'Notificações', settingsNotifDesc: 'Escolha sobre o que deseja ser notificado', settingsMissionUpdates: 'Atualizações de missões', settingsMissionUpdatesDesc: 'Seja notificado quando uma missão que participou for atualizada ou cancelada', settingsAnnouncements: 'Anúncios de ONGs', settingsAnnouncementsDesc: 'Receba anúncios das organizações cujas missões você entrou', settingsFriendReqNotif: 'Pedidos de amizade', settingsFriendReqNotifDesc: 'Me notifique quando alguém me enviar um pedido de amizade', settingsHourAlert: 'Verificações de horas', settingsHourAlertDesc: 'Alerta quando minhas horas de voluntariado enviadas forem aprovadas ou rejeitadas', settingsWeeklyDigest: 'Resumo semanal de impacto', settingsWeeklyDigestDesc: 'Um resumo semanal da sua atividade voluntária e destaques da plataforma', settingsPrivacy: 'Privacidade', settingsPrivacyDesc: 'Controle quem pode ver suas informações', settingsPublicProfile: 'Perfil público', settingsPublicProfileDesc: 'Qualquer pessoa no KindWorld pode ver seu perfil e estatísticas de voluntariado', settingsShowLeaderboard: 'Mostrar no leaderboard', settingsShowLeaderboardDesc: 'Aparecer nos rankings do leaderboard da comunidade', settingsShareActivity: 'Compartilhar atividade', settingsShareActivityDesc: 'Deixe amigos ver quando você entra em missões ou ganha badges', settingsAllowContact: 'Permitir que organizações me contaktem', settingsAllowContactDesc: 'ONGs podem entrar em contato diretamente para oportunidades relevantes', settingsAccount: 'Conta', settingsAccountDesc: 'Gerencie os dados da sua conta', settingsExportData: 'Exportar meus dados', settingsExportDesc: 'Baixe uma cópia da sua atividade voluntária em PDF', exportMyDataTitle: 'Meus dados de voluntariado', exportProfileSection: 'Perfil', exportActivitySection: 'Atividade', exportGeneratedBy: 'Gerado pelo KindWorld', settingsSignOut: 'Sair', settingsSignOutDesc: 'Você será redirecionado para a página inicial',
+    settings: 'Configurações', settingsTitle: 'Configurações', settingsAppearance: 'Aparência', settingsAppearanceDesc: 'Personalize a aparência do KindWorld', settingsFontSize: 'Tamanho do Texto', settingsFontSizeDesc: 'Ajustar o tamanho do texto em toda a aplicação', fontSizeSm: 'Pequeno', fontSizeMd: 'Médio', fontSizeLg: 'Grande', fontSizeXl: 'Extra Grande', settingsLanguage: 'Idioma e Região', settingsLanguageDesc: 'Escolha seu idioma preferido', settingsManageDesc: 'Gerencie suas preferências de conta', settingsNotifications: 'Notificações', settingsNotifDesc: 'Escolha sobre o que deseja ser notificado', settingsMissionUpdates: 'Atualizações de missões', settingsMissionUpdatesDesc: 'Seja notificado quando uma missão que participou for atualizada ou cancelada', settingsAnnouncements: 'Anúncios de ONGs', settingsAnnouncementsDesc: 'Receba anúncios das organizações cujas missões você entrou', settingsFriendReqNotif: 'Pedidos de amizade', settingsFriendReqNotifDesc: 'Me notifique quando alguém me enviar um pedido de amizade', settingsHourAlert: 'Verificações de horas', settingsHourAlertDesc: 'Alerta quando minhas horas de voluntariado enviadas forem aprovadas ou rejeitadas', settingsWeeklyDigest: 'Resumo semanal de impacto', settingsWeeklyDigestDesc: 'Um resumo semanal da sua atividade voluntária e destaques da plataforma', settingsPrivacy: 'Privacidade', settingsPrivacyDesc: 'Controle quem pode ver suas informações', settingsPublicProfile: 'Perfil público', settingsPublicProfileDesc: 'Qualquer pessoa no KindWorld pode ver seu perfil e estatísticas de voluntariado', settingsShowLeaderboard: 'Mostrar no leaderboard', settingsShowLeaderboardDesc: 'Aparecer nos rankings do leaderboard da comunidade', settingsShareActivity: 'Compartilhar atividade', settingsShareActivityDesc: 'Deixe amigos ver quando você entra em missões ou ganha badges', settingsAllowContact: 'Permitir que organizações me contaktem', settingsAllowContactDesc: 'ONGs podem entrar em contato diretamente para oportunidades relevantes', settingsAccount: 'Conta', settingsAccountDesc: 'Gerencie os dados da sua conta', settingsExportData: 'Exportar meus dados', settingsExportDesc: 'Baixe uma cópia da sua atividade voluntária em PDF', exportMyDataTitle: 'Meus dados de voluntariado', exportProfileSection: 'Perfil', exportActivitySection: 'Atividade', exportGeneratedBy: 'Gerado pelo KindWorld', settingsSignOut: 'Sair', settingsSignOutDesc: 'Você será redirecionado para a página inicial',
     leaderboard: 'Classificação', leaderboardTitle: 'Melhores Voluntários', leaderboardDesc: 'Celebrando os membros mais impactantes da nossa comunidade', topByHours: 'Por Horas', topByBadges: 'Por Medalhas', yourRank: 'Sua Posição', rankLabel: 'Posição', notRankedYet: 'Complete missões para aparecer no ranking!',
     notifications: 'Notificações', markAllRead: 'Marcar tudo como lido', noNotifications: 'Sem notificações', notificationsDesc: 'Suas atualizações de atividade aparecerão aqui',
     userNotFound: 'Usuário não encontrado.', cannotAddSelf: 'Você não pode adicionar a si mesmo.', alreadyFriends: 'Vocês já são amigos.', yourProgress: 'Seu Progresso', hoursToNextBadge: 'Horas Voluntárias', missionsToNextBadge: 'Missões Concluídas', orgsToNextBadge: 'Organizações Ajudadas', centuryClubDesc: 'Alcance 100 horas para ganhar a medalha Century Club', missionMasterDesc: 'Complete 10 missões para ganhar a medalha Mission Master', communityBuilderDesc: 'Ajude 5 organizações para ganhar a medalha Community Builder',
@@ -5730,7 +5796,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: '希望言語',
     continueSetup: '続ける',
     skipForNow: 'スキップ',
-    settings: '設定', settingsTitle: '設定', settingsAppearance: '外観', settingsAppearanceDesc: 'KindWorldの外観をカスタマイズ', settingsLanguage: '言語と地域', settingsLanguageDesc: '使用する言語を選択してください', settingsManageDesc: 'アカウントの設定を管理します', settingsNotifications: '通知', settingsNotifDesc: '通知を受け取る内容を選択してください', settingsMissionUpdates: 'ミッションの更新', settingsMissionUpdatesDesc: '参加中のミッションが更新またはキャンセルされたときに通知されます', settingsAnnouncements: '団体からのお知らせ', settingsAnnouncementsDesc: '参加したミッションの組織からのお知らせを受け取ります', settingsFriendReqNotif: 'フレンドリクエスト', settingsFriendReqNotifDesc: '誰かからフレンドリクエストが届いたときに通知されます', settingsHourAlert: '時間の確認', settingsHourAlertDesc: '提出したボランティア時間が承認または却下されたときにアラートを受け取ります', settingsWeeklyDigest: '週刊インパクトダイジェスト', settingsWeeklyDigestDesc: 'ボランティア活動とプラットフォームの週刊まとめ', settingsPrivacy: 'プライバシー', settingsPrivacyDesc: '情報を見られる範囲を管理します', settingsPublicProfile: '公開プロフィール', settingsPublicProfileDesc: 'KindWorldの誰でもあなたのプロフィールとボランティア統計を見ることができます', settingsShowLeaderboard: 'ランキングに表示', settingsShowLeaderboardDesc: 'コミュニティランキングにあなたの順位を表示します', settingsShareActivity: 'アクティビティを共有', settingsShareActivityDesc: 'ミッション参加やバッジ獲得を友達のフィードに表示します', settingsAllowContact: '組織からの連絡を許可', settingsAllowContactDesc: '関連するボランティア機会のために団体から直接連絡を受け取ることができます', settingsAccount: 'アカウント', settingsAccountDesc: 'アカウントとデータを管理します', settingsExportData: 'データをエクスポート', settingsExportDesc: 'ボランティア活動のコピーをPDFとしてダウンロードします', exportMyDataTitle: 'ボランティアデータ', exportProfileSection: 'プロフィール', exportActivitySection: '活動記録', exportGeneratedBy: 'KindWorld作成', settingsSignOut: 'サインアウト', settingsSignOutDesc: 'ランディングページに戻ります',
+    settings: '設定', settingsTitle: '設定', settingsAppearance: '外観', settingsAppearanceDesc: 'KindWorldの外観をカスタマイズ', settingsFontSize: 'テキストサイズ', settingsFontSizeDesc: 'アプリ全体のテキストサイズを調整します', fontSizeSm: '小', fontSizeMd: '中', fontSizeLg: '大', fontSizeXl: '特大', settingsLanguage: '言語と地域', settingsLanguageDesc: '使用する言語を選択してください', settingsManageDesc: 'アカウントの設定を管理します', settingsNotifications: '通知', settingsNotifDesc: '通知を受け取る内容を選択してください', settingsMissionUpdates: 'ミッションの更新', settingsMissionUpdatesDesc: '参加中のミッションが更新またはキャンセルされたときに通知されます', settingsAnnouncements: '団体からのお知らせ', settingsAnnouncementsDesc: '参加したミッションの組織からのお知らせを受け取ります', settingsFriendReqNotif: 'フレンドリクエスト', settingsFriendReqNotifDesc: '誰かからフレンドリクエストが届いたときに通知されます', settingsHourAlert: '時間の確認', settingsHourAlertDesc: '提出したボランティア時間が承認または却下されたときにアラートを受け取ります', settingsWeeklyDigest: '週刊インパクトダイジェスト', settingsWeeklyDigestDesc: 'ボランティア活動とプラットフォームの週刊まとめ', settingsPrivacy: 'プライバシー', settingsPrivacyDesc: '情報を見られる範囲を管理します', settingsPublicProfile: '公開プロフィール', settingsPublicProfileDesc: 'KindWorldの誰でもあなたのプロフィールとボランティア統計を見ることができます', settingsShowLeaderboard: 'ランキングに表示', settingsShowLeaderboardDesc: 'コミュニティランキングにあなたの順位を表示します', settingsShareActivity: 'アクティビティを共有', settingsShareActivityDesc: 'ミッション参加やバッジ獲得を友達のフィードに表示します', settingsAllowContact: '組織からの連絡を許可', settingsAllowContactDesc: '関連するボランティア機会のために団体から直接連絡を受け取ることができます', settingsAccount: 'アカウント', settingsAccountDesc: 'アカウントとデータを管理します', settingsExportData: 'データをエクスポート', settingsExportDesc: 'ボランティア活動のコピーをPDFとしてダウンロードします', exportMyDataTitle: 'ボランティアデータ', exportProfileSection: 'プロフィール', exportActivitySection: '活動記録', exportGeneratedBy: 'KindWorld作成', settingsSignOut: 'サインアウト', settingsSignOutDesc: 'ランディングページに戻ります',
     leaderboard: 'リーダーボード', leaderboardTitle: 'トップボランティア', leaderboardDesc: '最も影響力のあるコミュニティメンバーを謼えます', topByHours: '時間別', topByBadges: 'バッジ別', yourRank: 'あなたの順位', rankLabel: '順位', notRankedYet: 'ミッションを完了してランキングに登場しましょう！',
     notifications: '通知', markAllRead: 'すべて既読にする', noNotifications: '通知なし', notificationsDesc: 'アクティビティの更新がここに表示されます',
     userNotFound: 'ユーザーが見つかりません。', cannotAddSelf: '自分自身を追加することはできません。', alreadyFriends: 'すでに友達です。', yourProgress: 'あなたの進捗', hoursToNextBadge: 'ボランティア時間', missionsToNextBadge: '完了ミッション', orgsToNextBadge: '支援組織', centuryClubDesc: '100時間でCentury Clubバッジ獲得', missionMasterDesc: '10ミッション完了でMission Masterバッジ獲得', communityBuilderDesc: '5組織支援でCommunity Builderバッジ獲得',
@@ -6385,7 +6451,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'ภาษาที่ต้องการ',
     continueSetup: 'ดำเนินการต่อ',
     skipForNow: 'ข้ามไปก่อน',
-    settings: 'การตั้งค่า', settingsTitle: 'การตั้งค่า', settingsAppearance: 'รูปลักษณ์', settingsAppearanceDesc: 'ปรับแต่งรูปลักษณ์ของ KindWorld', settingsLanguage: 'ภาษาและภูมิภาค', settingsLanguageDesc: 'เลือกภาษาที่คุณต้องการ', settingsManageDesc: 'จัดการการตั้งค่าบัญชีของคุณ', settingsNotifications: 'การแจ้งเตือน', settingsNotifDesc: 'เลือกสิ่งที่คุณต้องการรับการแจ้งเตือน', settingsMissionUpdates: 'อัปเดตภารกิจ', settingsMissionUpdatesDesc: 'รับการแจ้งเตือนเมื่อภารกิจที่คุณเข้าร่วมได้รับการอัปเดตหรือยกเลิก', settingsAnnouncements: 'ประกาศจากองค์กร', settingsAnnouncementsDesc: 'รับประกาศจากองค์กรที่คุณเข้าร่วมภารกิจ', settingsFriendReqNotif: 'คำขอเป็นเพื่อน', settingsFriendReqNotifDesc: 'รับแจ้งเตือนเมื่อมีคนส่งคำขอเป็นเพื่อนมาให้คุณ', settingsHourAlert: 'การยืนยันชั่วโมง', settingsHourAlertDesc: 'แจ้งเตือนเมื่อชั่วโมงอาสาสมัครที่ส่งได้รับการอนุมัติหรือปฏิเสธ', settingsWeeklyDigest: 'สรุปผลกระทบรายสัปดาห์', settingsWeeklyDigestDesc: 'สรุปรายสัปดาห์ของกิจกรรมอาสาสมัครและไฮไลต์แพลตฟอร์มของคุณ', settingsPrivacy: 'ความเป็นส่วนตัว', settingsPrivacyDesc: 'ควบคุมผู้ที่สามารถเห็นข้อมูลของคุณ', settingsPublicProfile: 'โปรไฟล์สาธารณะ', settingsPublicProfileDesc: 'ทุกคนใน KindWorld สามารถดูโปรไฟล์และสถิติอาสาสมัครของคุณ', settingsShowLeaderboard: 'แสดงในกระดานอันดับ', settingsShowLeaderboardDesc: 'ปรากฏในการจัดอันดับกระดานอันดับของชุมชน', settingsShareActivity: 'แชร์กิจกรรม', settingsShareActivityDesc: 'ให้เพื่อนเห็นเมื่อคุณเข้าร่วมภารกิจหรือได้รับตรา', settingsAllowContact: 'อนุญาตให้องค์กรติดต่อฉัน', settingsAllowContactDesc: 'องค์กรสามารถติดต่อคุณโดยตรงสำหรับโอกาสอาสาสมัครที่เกี่ยวข้อง', settingsAccount: 'บัญชี', settingsAccountDesc: 'จัดการข้อมูลบัญชีของคุณ', settingsExportData: 'ส่งออกข้อมูลของฉัน', settingsExportDesc: 'ดาวน์โหลดสำเนากิจกรรมอาสาสมัครของคุณเป็น PDF', exportMyDataTitle: 'ข้อมูลอาสาสมัครของฉัน', exportProfileSection: 'โปรไฟล์', exportActivitySection: 'กิจกรรม', exportGeneratedBy: 'สร้างโดย KindWorld', settingsSignOut: 'ออกจากระบบ', settingsSignOutDesc: 'คุณจะถูกนำกลับไปยังหน้าหลัก',
+    settings: 'การตั้งค่า', settingsTitle: 'การตั้งค่า', settingsAppearance: 'รูปลักษณ์', settingsAppearanceDesc: 'ปรับแต่งรูปลักษณ์ของ KindWorld', settingsFontSize: 'ขนาดข้อความ', settingsFontSizeDesc: 'ปรับขนาดข้อความทั่วทั้งแอป', fontSizeSm: 'เล็ก', fontSizeMd: 'กลาง', fontSizeLg: 'ใหญ่', fontSizeXl: 'ใหญ่มาก', settingsLanguage: 'ภาษาและภูมิภาค', settingsLanguageDesc: 'เลือกภาษาที่คุณต้องการ', settingsManageDesc: 'จัดการการตั้งค่าบัญชีของคุณ', settingsNotifications: 'การแจ้งเตือน', settingsNotifDesc: 'เลือกสิ่งที่คุณต้องการรับการแจ้งเตือน', settingsMissionUpdates: 'อัปเดตภารกิจ', settingsMissionUpdatesDesc: 'รับการแจ้งเตือนเมื่อภารกิจที่คุณเข้าร่วมได้รับการอัปเดตหรือยกเลิก', settingsAnnouncements: 'ประกาศจากองค์กร', settingsAnnouncementsDesc: 'รับประกาศจากองค์กรที่คุณเข้าร่วมภารกิจ', settingsFriendReqNotif: 'คำขอเป็นเพื่อน', settingsFriendReqNotifDesc: 'รับแจ้งเตือนเมื่อมีคนส่งคำขอเป็นเพื่อนมาให้คุณ', settingsHourAlert: 'การยืนยันชั่วโมง', settingsHourAlertDesc: 'แจ้งเตือนเมื่อชั่วโมงอาสาสมัครที่ส่งได้รับการอนุมัติหรือปฏิเสธ', settingsWeeklyDigest: 'สรุปผลกระทบรายสัปดาห์', settingsWeeklyDigestDesc: 'สรุปรายสัปดาห์ของกิจกรรมอาสาสมัครและไฮไลต์แพลตฟอร์มของคุณ', settingsPrivacy: 'ความเป็นส่วนตัว', settingsPrivacyDesc: 'ควบคุมผู้ที่สามารถเห็นข้อมูลของคุณ', settingsPublicProfile: 'โปรไฟล์สาธารณะ', settingsPublicProfileDesc: 'ทุกคนใน KindWorld สามารถดูโปรไฟล์และสถิติอาสาสมัครของคุณ', settingsShowLeaderboard: 'แสดงในกระดานอันดับ', settingsShowLeaderboardDesc: 'ปรากฏในการจัดอันดับกระดานอันดับของชุมชน', settingsShareActivity: 'แชร์กิจกรรม', settingsShareActivityDesc: 'ให้เพื่อนเห็นเมื่อคุณเข้าร่วมภารกิจหรือได้รับตรา', settingsAllowContact: 'อนุญาตให้องค์กรติดต่อฉัน', settingsAllowContactDesc: 'องค์กรสามารถติดต่อคุณโดยตรงสำหรับโอกาสอาสาสมัครที่เกี่ยวข้อง', settingsAccount: 'บัญชี', settingsAccountDesc: 'จัดการข้อมูลบัญชีของคุณ', settingsExportData: 'ส่งออกข้อมูลของฉัน', settingsExportDesc: 'ดาวน์โหลดสำเนากิจกรรมอาสาสมัครของคุณเป็น PDF', exportMyDataTitle: 'ข้อมูลอาสาสมัครของฉัน', exportProfileSection: 'โปรไฟล์', exportActivitySection: 'กิจกรรม', exportGeneratedBy: 'สร้างโดย KindWorld', settingsSignOut: 'ออกจากระบบ', settingsSignOutDesc: 'คุณจะถูกนำกลับไปยังหน้าหลัก',
     leaderboard: 'ลีดเดอร์บอร์ด', leaderboardTitle: 'อาสาสมัครยอดเยี่ยม', leaderboardDesc: 'เชิดชูสมาชิกที่มีผลกระทบมากที่สุดในชุมชนของเรา', topByHours: 'ตามชั่วโมง', topByBadges: 'ตามเหรียญ', yourRank: 'อันดับของคุณ', rankLabel: 'อันดับ', notRankedYet: 'ทำภารกิจให้สำเร็จเพื่อปรากฏในลีดเดอร์บอร์ด!',
     notifications: 'การแจ้งเตือน', markAllRead: 'ทำเครื่องหมายอ่านทั้งหมด', noNotifications: 'ยังไม่มีการแจ้งเตือน', notificationsDesc: 'การอัปเดตกิจกรรมของคุณจะปรากฏที่นี่',
     userNotFound: 'ไม่พบผู้ใช้', cannotAddSelf: 'คุณไม่สามารถเพิ่มตัวเองเป็นเพื่อน', alreadyFriends: 'คุณเป็นเพื่อนกันแล้ว', yourProgress: 'ความคืบหน้าของคุณ', hoursToNextBadge: 'ชั่วโมงอาสาสมัคร', missionsToNextBadge: 'ภารกิจที่เสร็จสิ้น', orgsToNextBadge: 'องค์กรที่ช่วยเหลือ', centuryClubDesc: 'ถึง 100 ชั่วโมงเพื่อรับเหรียญ Century Club', missionMasterDesc: 'ทำภารกิจ 10 ครั้งเพื่อรับเหรียญ Mission Master', communityBuilderDesc: 'ช่วย 5 องค์กรเพื่อรัปเหรียญ Community Builder',
@@ -7040,7 +7106,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Ngôn ngữ ưa thích',
     continueSetup: 'Tiếp tục',
     skipForNow: 'Bỏ qua lúc này',
-    settings: 'Cài đặt', settingsTitle: 'Cài đặt', settingsAppearance: 'Giao diện', settingsAppearanceDesc: 'Tuỳ chỉnh giao diện KindWorld', settingsLanguage: 'Ngôn ngữ & Khu vực', settingsLanguageDesc: 'Chọn ngôn ngữ ưa thích của bạn', settingsManageDesc: 'Quản lý tùy chọn tài khoản của bạn', settingsNotifications: 'Thông báo', settingsNotifDesc: 'Chọn những gì bạn muốn nhận thông báo', settingsMissionUpdates: 'Cập nhật nhiệm vụ', settingsMissionUpdatesDesc: 'Nhận thông báo khi nhiệm vụ bạn tham gia được cập nhật hoặc hủy', settingsAnnouncements: 'Thông báo từ tổ chức', settingsAnnouncementsDesc: 'Nhận thông báo từ các tổ chức có nhiệm vụ bạn đã tham gia', settingsFriendReqNotif: 'Lời mời kết bạn', settingsFriendReqNotifDesc: 'Thông báo cho tôi khi ai đó gửi lời mời kết bạn', settingsHourAlert: 'Xác minh giờ', settingsHourAlertDesc: 'Cảnh báo khi giờ tình nguyện đã gửi được chấp thuận hoặc từ chối', settingsWeeklyDigest: 'Tóm tắt tác động hàng tuần', settingsWeeklyDigestDesc: 'Tóm tắt hàng tuần về hoạt động tình nguyện và điểm nổi bật của nền tảng', settingsPrivacy: 'Quyền riêng tư', settingsPrivacyDesc: 'Kiểm soát ai có thể xem thông tin của bạn', settingsPublicProfile: 'Hồ sơ công khai', settingsPublicProfileDesc: 'Bất kỳ ai trên KindWorld đều có thể xem hồ sơ và thống kê tình nguyện của bạn', settingsShowLeaderboard: 'Hiển thị trên bảng xếp hạng', settingsShowLeaderboardDesc: 'Xuất hiện trong bảng xếp hạng cộng đồng', settingsShareActivity: 'Chia sẻ hoạt động', settingsShareActivityDesc: 'Cho bạn bè thấy khi bạn tham gia nhiệm vụ hoặc nhận huy hiệu', settingsAllowContact: 'Cho phép tổ chức liên hệ tôi', settingsAllowContactDesc: 'Các tổ chức có thể liên hệ trực tiếp với bạn về các cơ hội tình nguyện phù hợp', settingsAccount: 'Tài khoản', settingsAccountDesc: 'Quản lý dữ liệu tài khoản của bạn', settingsExportData: 'Xuất dữ liệu của tôi', settingsExportDesc: 'Tải xuống bản sao hoạt động tình nguyện của bạn dưới dạng PDF', exportMyDataTitle: 'Dữ liệu tình nguyện của tôi', exportProfileSection: 'Hồ sơ', exportActivitySection: 'Hoạt động', exportGeneratedBy: 'Được tạo bởi KindWorld', settingsSignOut: 'Đăng xuất', settingsSignOutDesc: 'Bạn sẽ được đưa trở lại trang chính',
+    settings: 'Cài đặt', settingsTitle: 'Cài đặt', settingsAppearance: 'Giao diện', settingsAppearanceDesc: 'Tuỳ chỉnh giao diện KindWorld', settingsFontSize: 'Cỡ Chữ', settingsFontSizeDesc: 'Điều chỉnh cỡ chữ trong toàn bộ ứng dụng', fontSizeSm: 'Nhỏ', fontSizeMd: 'Vừa', fontSizeLg: 'Lớn', fontSizeXl: 'Rất Lớn', settingsLanguage: 'Ngôn ngữ & Khu vực', settingsLanguageDesc: 'Chọn ngôn ngữ ưa thích của bạn', settingsManageDesc: 'Quản lý tùy chọn tài khoản của bạn', settingsNotifications: 'Thông báo', settingsNotifDesc: 'Chọn những gì bạn muốn nhận thông báo', settingsMissionUpdates: 'Cập nhật nhiệm vụ', settingsMissionUpdatesDesc: 'Nhận thông báo khi nhiệm vụ bạn tham gia được cập nhật hoặc hủy', settingsAnnouncements: 'Thông báo từ tổ chức', settingsAnnouncementsDesc: 'Nhận thông báo từ các tổ chức có nhiệm vụ bạn đã tham gia', settingsFriendReqNotif: 'Lời mời kết bạn', settingsFriendReqNotifDesc: 'Thông báo cho tôi khi ai đó gửi lời mời kết bạn', settingsHourAlert: 'Xác minh giờ', settingsHourAlertDesc: 'Cảnh báo khi giờ tình nguyện đã gửi được chấp thuận hoặc từ chối', settingsWeeklyDigest: 'Tóm tắt tác động hàng tuần', settingsWeeklyDigestDesc: 'Tóm tắt hàng tuần về hoạt động tình nguyện và điểm nổi bật của nền tảng', settingsPrivacy: 'Quyền riêng tư', settingsPrivacyDesc: 'Kiểm soát ai có thể xem thông tin của bạn', settingsPublicProfile: 'Hồ sơ công khai', settingsPublicProfileDesc: 'Bất kỳ ai trên KindWorld đều có thể xem hồ sơ và thống kê tình nguyện của bạn', settingsShowLeaderboard: 'Hiển thị trên bảng xếp hạng', settingsShowLeaderboardDesc: 'Xuất hiện trong bảng xếp hạng cộng đồng', settingsShareActivity: 'Chia sẻ hoạt động', settingsShareActivityDesc: 'Cho bạn bè thấy khi bạn tham gia nhiệm vụ hoặc nhận huy hiệu', settingsAllowContact: 'Cho phép tổ chức liên hệ tôi', settingsAllowContactDesc: 'Các tổ chức có thể liên hệ trực tiếp với bạn về các cơ hội tình nguyện phù hợp', settingsAccount: 'Tài khoản', settingsAccountDesc: 'Quản lý dữ liệu tài khoản của bạn', settingsExportData: 'Xuất dữ liệu của tôi', settingsExportDesc: 'Tải xuống bản sao hoạt động tình nguyện của bạn dưới dạng PDF', exportMyDataTitle: 'Dữ liệu tình nguyện của tôi', exportProfileSection: 'Hồ sơ', exportActivitySection: 'Hoạt động', exportGeneratedBy: 'Được tạo bởi KindWorld', settingsSignOut: 'Đăng xuất', settingsSignOutDesc: 'Bạn sẽ được đưa trở lại trang chính',
     leaderboard: 'Bảng Xếp Hạng', leaderboardTitle: 'Tình Nguyện Viên Xuất Sắc', leaderboardDesc: 'Tôn vinh những thành viên có ảnh hưởng nhất trong cộng đồng', topByHours: 'Theo Giờ', topByBadges: 'Theo Huy Hiệu', yourRank: 'Thứ Hạng Của Bạn', rankLabel: 'Hạng', notRankedYet: 'Hoàn thành nhiệm vụ để xuất hiện trên bảng xếp hạng!',
     notifications: 'Thông Báo', markAllRead: 'Đánh dấu tất cả đã đọc', noNotifications: 'Chưa có thông báo', notificationsDesc: 'Cập nhật hoạt động của bạn sẽ xuất hiện ở đây',
     userNotFound: 'Không tìm thấy người dùng.', cannotAddSelf: 'Bạn không thể tự thêm mình làm bạn bè.', alreadyFriends: 'Hai bạn đã là bạn bè.', yourProgress: 'Tiến Độ Của Bạn', hoursToNextBadge: 'Giờ Tình Nguyện', missionsToNextBadge: 'Nhiệm Vụ Hoàn Thành', orgsToNextBadge: 'Tổ Chức Được Giúp', centuryClubDesc: 'Đạt 100 giờ để nhận huy hiệu Century Club', missionMasterDesc: 'Hoàn thành 10 nhiệm vụ để nhận huy hiệu Mission Master', communityBuilderDesc: 'Giúp 5 tổ chức để nhận huy hiệu Community Builder',
@@ -7695,7 +7761,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: '선호 언어',
     continueSetup: '계속',
     skipForNow: '나중에 하기',
-    settings: '설정', settingsTitle: '설정', settingsAppearance: '외관', settingsAppearanceDesc: 'KindWorld 외관을 맞춤 설정하세요', settingsLanguage: '언어 및 지역', settingsLanguageDesc: '선호하는 언어를 선택하세요', settingsManageDesc: '계정 환경설정을 관리합니다', settingsNotifications: '알림', settingsNotifDesc: '알림받고 싶은 항목을 선택하세요', settingsMissionUpdates: '미션 업데이트', settingsMissionUpdatesDesc: '참여한 미션이 업데이트되거나 취소될 때 알림을 받습니다', settingsAnnouncements: '단체 공지', settingsAnnouncementsDesc: '참여한 미션의 단체로부터 공지사항을 받습니다', settingsFriendReqNotif: '친구 요청', settingsFriendReqNotifDesc: '누군가 친구 요청을 보낼 때 알림을 받습니다', settingsHourAlert: '시간 확인', settingsHourAlertDesc: '제출한 봉사 시간이 승인 또는 거절될 때 알림을 받습니다', settingsWeeklyDigest: '주간 임팩트 다이제스트', settingsWeeklyDigestDesc: '봉사 활동과 플랫폼 하이라이트의 주간 요약', settingsPrivacy: '개인정보', settingsPrivacyDesc: '내 정보를 볼 수 있는 사람을 관리합니다', settingsPublicProfile: '공개 프로필', settingsPublicProfileDesc: 'KindWorld의 누구든 내 프로필과 봉사 통계를 볼 수 있습니다', settingsShowLeaderboard: '리더보드 표시', settingsShowLeaderboardDesc: '커뮤니티 리더보드 순위에 표시됩니다', settingsShareActivity: '활동 공유', settingsShareActivityDesc: '미션 참여나 뱃지 획득 시 친구들의 피드에 표시됩니다', settingsAllowContact: '단체의 연락 허용', settingsAllowContactDesc: '관련 봉사 기회에 대해 단체가 직접 연락할 수 있습니다', settingsAccount: '계정', settingsAccountDesc: '계정 데이터를 관리합니다', settingsExportData: '내 데이터 내보내기', settingsExportDesc: '봉사 활동 사본을 PDF로 다운로드합니다', exportMyDataTitle: '내 봉사활동 데이터', exportProfileSection: '프로필', exportActivitySection: '활동', exportGeneratedBy: 'KindWorld 생성', settingsSignOut: '로그아웃', settingsSignOutDesc: '랜딩 페이지로 돌아갑니다',
+    settings: '설정', settingsTitle: '설정', settingsAppearance: '외관', settingsAppearanceDesc: 'KindWorld 외관을 맞춤 설정하세요', settingsFontSize: '텍스트 크기', settingsFontSizeDesc: '앱 전체의 텍스트 크기를 조정합니다', fontSizeSm: '작게', fontSizeMd: '보통', fontSizeLg: '크게', fontSizeXl: '매우 크게', settingsLanguage: '언어 및 지역', settingsLanguageDesc: '선호하는 언어를 선택하세요', settingsManageDesc: '계정 환경설정을 관리합니다', settingsNotifications: '알림', settingsNotifDesc: '알림받고 싶은 항목을 선택하세요', settingsMissionUpdates: '미션 업데이트', settingsMissionUpdatesDesc: '참여한 미션이 업데이트되거나 취소될 때 알림을 받습니다', settingsAnnouncements: '단체 공지', settingsAnnouncementsDesc: '참여한 미션의 단체로부터 공지사항을 받습니다', settingsFriendReqNotif: '친구 요청', settingsFriendReqNotifDesc: '누군가 친구 요청을 보낼 때 알림을 받습니다', settingsHourAlert: '시간 확인', settingsHourAlertDesc: '제출한 봉사 시간이 승인 또는 거절될 때 알림을 받습니다', settingsWeeklyDigest: '주간 임팩트 다이제스트', settingsWeeklyDigestDesc: '봉사 활동과 플랫폼 하이라이트의 주간 요약', settingsPrivacy: '개인정보', settingsPrivacyDesc: '내 정보를 볼 수 있는 사람을 관리합니다', settingsPublicProfile: '공개 프로필', settingsPublicProfileDesc: 'KindWorld의 누구든 내 프로필과 봉사 통계를 볼 수 있습니다', settingsShowLeaderboard: '리더보드 표시', settingsShowLeaderboardDesc: '커뮤니티 리더보드 순위에 표시됩니다', settingsShareActivity: '활동 공유', settingsShareActivityDesc: '미션 참여나 뱃지 획득 시 친구들의 피드에 표시됩니다', settingsAllowContact: '단체의 연락 허용', settingsAllowContactDesc: '관련 봉사 기회에 대해 단체가 직접 연락할 수 있습니다', settingsAccount: '계정', settingsAccountDesc: '계정 데이터를 관리합니다', settingsExportData: '내 데이터 내보내기', settingsExportDesc: '봉사 활동 사본을 PDF로 다운로드합니다', exportMyDataTitle: '내 봉사활동 데이터', exportProfileSection: '프로필', exportActivitySection: '활동', exportGeneratedBy: 'KindWorld 생성', settingsSignOut: '로그아웃', settingsSignOutDesc: '랜딩 페이지로 돌아갑니다',
     leaderboard: '리더보드', leaderboardTitle: '최고의 자원봉사자', leaderboardDesc: '가장 영향력 있는 커뮤니티 회원을 기립니다', topByHours: '시간순', topByBadges: '배지순', yourRank: '내 순위', rankLabel: '순위', notRankedYet: '미션을 완료하여 리더보드에 등장하세요!',
     notifications: '알림', markAllRead: '모두 읽음으로 표시', noNotifications: '알림 없음', notificationsDesc: '활동 업데이트가 여기에 표시됩니다',
     userNotFound: '사용자를 찾을 수 없습니다.', cannotAddSelf: '자신을 친구로 추가할 수 없습니다.', alreadyFriends: '이미 친구입니다.', yourProgress: '내 진행 상황', hoursToNextBadge: '자원봉사 시간', missionsToNextBadge: '완료한 미션', orgsToNextBadge: '도움 준 단체', centuryClubDesc: '100시간 달성으로 Century Club 배지 획득', missionMasterDesc: '미션 10개 완료로 Mission Master 배지 획득', communityBuilderDesc: '5개 단체 지원으로 Community Builder 배지 획득',
@@ -8350,7 +8416,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     preferredLanguage: 'Bevorzugte Sprache',
     continueSetup: 'Weiter',
     skipForNow: 'Vorerst überspringen',
-    settings: 'Einstellungen', settingsTitle: 'Einstellungen', settingsAppearance: 'Erscheinungsbild', settingsAppearanceDesc: 'Passen Sie das Aussehen von KindWorld an', settingsLanguage: 'Sprache & Region', settingsLanguageDesc: 'Wählen Sie Ihre bevorzugte Sprache', settingsManageDesc: 'Verwalten Sie Ihre Kontoeinstellungen', settingsNotifications: 'Benachrichtigungen', settingsNotifDesc: 'Wählen Sie, worüber Sie benachrichtigt werden möchten', settingsMissionUpdates: 'Missionsaktualisierungen', settingsMissionUpdatesDesc: 'Benachrichtigung wenn eine Mission aktualisiert oder abgebrochen wird', settingsAnnouncements: 'Ankündigungen von Organisationen', settingsAnnouncementsDesc: 'Erhalten Sie Ankündigungen von Organisationen deren Missionen Sie beigetreten sind', settingsFriendReqNotif: 'Freundschaftsanfragen', settingsFriendReqNotifDesc: 'Benachrichtige mich wenn jemand eine Freundschaftsanfrage sendet', settingsHourAlert: 'Stundenbestätigungen', settingsHourAlertDesc: 'Warnung wenn meine eingereichten Freiwilligenstunden genehmigt oder abgelehnt werden', settingsWeeklyDigest: 'Wöchentlicher Impact-Bericht', settingsWeeklyDigestDesc: 'Eine wöchentliche Zusammenfassung Ihrer Freiwilligenaktivitäten und Plattform-Highlights', settingsPrivacy: 'Datenschutz', settingsPrivacyDesc: 'Steuern Sie wer Ihre Informationen sehen kann', settingsPublicProfile: 'Öffentliches Profil', settingsPublicProfileDesc: 'Jeder auf KindWorld kann Ihr Profil und Ihre Freiwilligenstatistiken sehen', settingsShowLeaderboard: 'Im Leaderboard anzeigen', settingsShowLeaderboardDesc: 'Im Community-Leaderboard erscheinen', settingsShareActivity: 'Aktivitäten teilen', settingsShareActivityDesc: 'Freunde sehen wenn Sie Missionen beitreten oder Abzeichen verdienen', settingsAllowContact: 'Organisationen dürfen mich kontaktieren', settingsAllowContactDesc: 'Organisationen können Sie direkt für relevante Freiwilligenmöglichkeiten kontaktieren', settingsAccount: 'Konto', settingsAccountDesc: 'Verwalten Sie Ihre Kontodaten', settingsExportData: 'Meine Daten exportieren', settingsExportDesc: 'Laden Sie eine Kopie Ihrer Freiwilligenaktivität als PDF herunter', exportMyDataTitle: 'Meine Freiwilligendaten', exportProfileSection: 'Profil', exportActivitySection: 'Aktivität', exportGeneratedBy: 'Erstellt von KindWorld', settingsSignOut: 'Abmelden', settingsSignOutDesc: 'Sie werden zur Startseite weitergeleitet',
+    settings: 'Einstellungen', settingsTitle: 'Einstellungen', settingsAppearance: 'Erscheinungsbild', settingsAppearanceDesc: 'Passen Sie das Aussehen von KindWorld an', settingsFontSize: 'Textgröße', settingsFontSizeDesc: 'Passen Sie die Textgröße in der App an', fontSizeSm: 'Klein', fontSizeMd: 'Mittel', fontSizeLg: 'Groß', fontSizeXl: 'Sehr Groß', settingsLanguage: 'Sprache & Region', settingsLanguageDesc: 'Wählen Sie Ihre bevorzugte Sprache', settingsManageDesc: 'Verwalten Sie Ihre Kontoeinstellungen', settingsNotifications: 'Benachrichtigungen', settingsNotifDesc: 'Wählen Sie, worüber Sie benachrichtigt werden möchten', settingsMissionUpdates: 'Missionsaktualisierungen', settingsMissionUpdatesDesc: 'Benachrichtigung wenn eine Mission aktualisiert oder abgebrochen wird', settingsAnnouncements: 'Ankündigungen von Organisationen', settingsAnnouncementsDesc: 'Erhalten Sie Ankündigungen von Organisationen deren Missionen Sie beigetreten sind', settingsFriendReqNotif: 'Freundschaftsanfragen', settingsFriendReqNotifDesc: 'Benachrichtige mich wenn jemand eine Freundschaftsanfrage sendet', settingsHourAlert: 'Stundenbestätigungen', settingsHourAlertDesc: 'Warnung wenn meine eingereichten Freiwilligenstunden genehmigt oder abgelehnt werden', settingsWeeklyDigest: 'Wöchentlicher Impact-Bericht', settingsWeeklyDigestDesc: 'Eine wöchentliche Zusammenfassung Ihrer Freiwilligenaktivitäten und Plattform-Highlights', settingsPrivacy: 'Datenschutz', settingsPrivacyDesc: 'Steuern Sie wer Ihre Informationen sehen kann', settingsPublicProfile: 'Öffentliches Profil', settingsPublicProfileDesc: 'Jeder auf KindWorld kann Ihr Profil und Ihre Freiwilligenstatistiken sehen', settingsShowLeaderboard: 'Im Leaderboard anzeigen', settingsShowLeaderboardDesc: 'Im Community-Leaderboard erscheinen', settingsShareActivity: 'Aktivitäten teilen', settingsShareActivityDesc: 'Freunde sehen wenn Sie Missionen beitreten oder Abzeichen verdienen', settingsAllowContact: 'Organisationen dürfen mich kontaktieren', settingsAllowContactDesc: 'Organisationen können Sie direkt für relevante Freiwilligenmöglichkeiten kontaktieren', settingsAccount: 'Konto', settingsAccountDesc: 'Verwalten Sie Ihre Kontodaten', settingsExportData: 'Meine Daten exportieren', settingsExportDesc: 'Laden Sie eine Kopie Ihrer Freiwilligenaktivität als PDF herunter', exportMyDataTitle: 'Meine Freiwilligendaten', exportProfileSection: 'Profil', exportActivitySection: 'Aktivität', exportGeneratedBy: 'Erstellt von KindWorld', settingsSignOut: 'Abmelden', settingsSignOutDesc: 'Sie werden zur Startseite weitergeleitet',
     leaderboard: 'Bestenliste', leaderboardTitle: 'Top-Freiwillige', leaderboardDesc: 'Wir feiern unsere wirkungsvollsten Community-Mitglieder', topByHours: 'Nach Stunden', topByBadges: 'Nach Abzeichen', yourRank: 'Dein Rang', rankLabel: 'Rang', notRankedYet: 'Schließe Missionen ab, um in der Bestenliste zu erscheinen!',
     notifications: 'Benachrichtigungen', markAllRead: 'Alle als gelesen markieren', noNotifications: 'Keine Benachrichtigungen', notificationsDesc: 'Deine Aktivitätsupdates erscheinen hier',
     userNotFound: 'Benutzer nicht gefunden.', cannotAddSelf: 'Du kannst dich nicht selbst als Freund hinzufügen.', alreadyFriends: 'Ihr seid bereits befreundet.', yourProgress: 'Dein Fortschritt', hoursToNextBadge: 'Freiwilligenstunden', missionsToNextBadge: 'Abgeschlossene Missionen', orgsToNextBadge: 'Unterstützte Organisationen', centuryClubDesc: '100 Stunden für das Century Club Abzeichen', missionMasterDesc: '10 Missionen für das Mission Master Abzeichen', communityBuilderDesc: '5 Organisationen für das Community Builder Abzeichen',
@@ -8405,13 +8471,43 @@ function ProgressRing({ value, goal = 100, color }: { value: number; goal?: numb
   )
 }
 
+const FONT_SIZE_MAP: Record<string, string> = { sm: '13px', md: '15px', lg: '17px', xl: '19px' }
+
+/** Generate a deterministic 6-char alphanumeric check-in code from a mission ID */
+function generateCheckInCode(missionId: number): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  let n = Math.abs(missionId) * 2654435761
+  let code = ''
+  for (let i = 0; i < 6; i++) { code += chars[n % chars.length]; n = Math.floor(n / chars.length) + (i + 1) * 17 }
+  return code
+}
+
+/**
+ * PDPA-compliant name masking.
+ * CJK single string: 李明豪 → 李＊豪
+ * Western names: John Smith → J*** S***
+ */
+function maskName(name: string): string {
+  if (!name) return ''
+  const trimmed = name.trim()
+  // Detect CJK characters (no spaces, unicode range)
+  const isCjk = /[\u3000-\u9fff\uac00-\ud7af\uf900-\ufaff]/.test(trimmed) && !trimmed.includes(' ')
+  if (isCjk) {
+    if (trimmed.length <= 1) return trimmed
+    if (trimmed.length === 2) return trimmed[0] + '＊'
+    return trimmed[0] + '＊'.repeat(trimmed.length - 2) + trimmed[trimmed.length - 1]
+  }
+  // Western: split on spaces, mask each word as First-char + ***
+  return trimmed.split(/\s+/).map(w => w.length > 0 ? w[0] + '***' : '').join(' ')
+}
+
 export default function KindWorldApp() {
+  // Resolve font size (direct read — state not available yet at this point)
+  const _storedFontSize = (() => { try { return localStorage.getItem('kindworld_font_size') || 'md' } catch { return 'md' } })()
   // Add CSS animations and global styles
   const styles = `
-    html { font-size: clamp(15px, 1.1vw, 19px); }
+    html { font-size: ${FONT_SIZE_MAP[_storedFontSize] || '15px'}; }
     body { font-size: 1rem; }
-    @media (min-width: 1600px) { html { font-size: 18px; } }
-    @media (min-width: 2000px) { html { font-size: 20px; } }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -8580,6 +8676,15 @@ export default function KindWorldApp() {
   const [userTheme, setUserTheme] = useState<string>(() => {
     try { return localStorage.getItem('kindworld_user_theme') || 'violet' } catch { return 'violet' }
   })
+  const [fontSize, setFontSize] = useState<'sm' | 'md' | 'lg' | 'xl'>(() => {
+    try { return (localStorage.getItem('kindworld_font_size') as 'sm' | 'md' | 'lg' | 'xl') || 'md' } catch { return 'md' }
+  })
+  const setFontSizeAndSave = (size: 'sm' | 'md' | 'lg' | 'xl') => {
+    setFontSize(size)
+    try { localStorage.setItem('kindworld_font_size', size) } catch {}
+    // Update HTML font-size immediately without waiting for re-render
+    document.documentElement.style.fontSize = FONT_SIZE_MAP[size] || '15px'
+  }
   const [notifSettings, setNotifSettings] = useState<Record<string,boolean>>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_notif') || '{}') } catch { return {} }
   })
@@ -8768,6 +8873,8 @@ export default function KindWorldApp() {
   const [isLoading, setIsLoading] = useState(false)
   const [notifications, setNotifications] = useState<string[]>([])
   const [showCreateActivity, setShowCreateActivity] = useState(false)
+  const [showCreateCampaign, setShowCreateCampaign] = useState(false)
+  const [newCampaign, setNewCampaign] = useState({ title: '', ngoEmail: '', ngoName: '', missionId: '', amount: '', currency: 'USD' as 'USD'|'THB'|'SGD'|'MYR', paymentNote: '' })
   const [showCertificateManager, setShowCertificateManager] = useState(false)
   const [selectedSdgNum, setSelectedSdgNum] = useState<number | null>(null)
   const [certPrograms, setCertPrograms] = useState<CertProgram[]>(() => {
@@ -8778,6 +8885,9 @@ export default function KindWorldApp() {
   })
   const [sponsorProfile, setSponsorProfile] = useState<{companyName:string,companyLogo:string,industry:string,website:string,tier:'bronze'|'silver'|'gold',sponsoredMissionIds:number[],contactName:string,contactEmail:string}>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_sponsor_profile') || 'null') || { companyName:'',companyLogo:'',industry:'',website:'',tier:'bronze',sponsoredMissionIds:[],contactName:'',contactEmail:'' } } catch { return { companyName:'',companyLogo:'',industry:'',website:'',tier:'bronze',sponsoredMissionIds:[],contactName:'',contactEmail:'' } }
+  })
+  const [sponsorCampaigns, setSponsorCampaigns] = useState<SponsorCampaign[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_campaigns') || '[]') } catch { return [] }
   })
   const [noShowRecords, setNoShowRecords] = useState<NoShowRecord[]>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_noshow') || '[]') } catch { return [] }
@@ -8824,6 +8934,7 @@ export default function KindWorldApp() {
     endTime: '',
     hours: 1,
     maxParticipants: 10,
+    minParticipants: 0,
     category: 'Community',
     difficulty: 'Easy',
     region: 'SEA',
@@ -10340,6 +10451,9 @@ export default function KindWorldApp() {
   useEffect(() => {
     localStorage.setItem('kindworld_sponsor_profile', JSON.stringify(sponsorProfile))
   }, [sponsorProfile])
+  useEffect(() => {
+    try { localStorage.setItem('kindworld_campaigns', JSON.stringify(sponsorCampaigns)) } catch {}
+  }, [sponsorCampaigns])
 
   // Reload cert programs and requests from localStorage whenever the logged-in user changes
   // or whenever the user navigates to the certificates page — so approved status is always fresh
@@ -14897,6 +15011,66 @@ export default function KindWorldApp() {
                     </div>
                   </div>
 
+                  {/* Incoming Sponsorship Campaigns for this NGO */}
+                  {(() => {
+                    const ngoEmail = user?.email || ''
+                    const incomingCampaigns = sponsorCampaigns.filter(c => c.ngoEmail === ngoEmail && (c.status === 'pendingVerification' || c.status === 'active'))
+                    if (incomingCampaigns.length === 0) return null
+                    const statusColor: Record<string,string> = { pendingVerification: '#7c3aed', active: '#059669' }
+                    const statusBg: Record<string,string> = { pendingVerification: '#f5f3ff', active: '#ecfdf5' }
+                    return (
+                      <div style={{ background: 'white', borderRadius: '20px', padding: '28px 32px', marginBottom: '24px', border: '2px solid #7c3aed40', boxShadow: '0 4px 20px rgba(124,58,237,0.08)' }}>
+                        <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1e293b', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          💼 {t('incomingCampaigns')}
+                          <span style={{ background: '#7c3aed', color: 'white', borderRadius: '20px', fontSize: '12px', padding: '2px 8px', fontWeight: '700' }}>{incomingCampaigns.length}</span>
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {incomingCampaigns.map(c => (
+                            <div key={c.id} style={{ padding: '16px', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '10px' }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '15px' }}>{c.title}</div>
+                                  <div style={{ fontSize: '13px', color: '#6b7280' }}>{c.companyName} · {c.currency} {Number(c.amount).toLocaleString()}</div>
+                                  {c.missionTitle && <div style={{ fontSize: '12px', color: '#3b82f6', marginTop: '2px' }}>🔗 {c.missionTitle}</div>}
+                                </div>
+                                <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '20px', background: statusBg[c.status] || '#f9fafb', color: statusColor[c.status] || '#6b7280', fontWeight: '700', flexShrink: 0 }}>
+                                  {t(`campaignStatus_${c.status}`)}
+                                </span>
+                              </div>
+                              {c.status === 'pendingVerification' && c.paymentProofUrl && (
+                                <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px', padding: '12px', marginBottom: '10px' }}>
+                                  <p style={{ margin: '0 0 8px', fontSize: '13px', color: '#92400e', fontWeight: '600' }}>📎 {t('paymentProofReceived')}</p>
+                                  <a href={c.paymentProofUrl} target="_blank" rel="noreferrer" style={{ fontSize: '12px', color: '#1e40af', textDecoration: 'underline' }}>{t('viewProof')}</a>
+                                </div>
+                              )}
+                              {c.status === 'pendingVerification' && (
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <button onClick={() => {
+                                    setSponsorCampaigns(prev => prev.map(x => x.id === c.id ? {
+                                      ...x, status: 'active', ngoConfirmedAt: new Date().toISOString(), ngoConfirmedBy: ngoEmail,
+                                      updatedAt: new Date().toISOString(),
+                                      auditLog: [...x.auditLog, { at: new Date().toISOString(), by: ngoEmail, action: 'Payment confirmed by NGO — campaign activated' }]
+                                    } : x))
+                                  }} style={{ flex: 1, padding: '8px', background: 'linear-gradient(135deg, #059669, #10b981)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>
+                                    ✅ {t('confirmPayment')}
+                                  </button>
+                                  <button onClick={() => {
+                                    setSponsorCampaigns(prev => prev.map(x => x.id === c.id ? {
+                                      ...x, status: 'rejected', updatedAt: new Date().toISOString(),
+                                      auditLog: [...x.auditLog, { at: new Date().toISOString(), by: ngoEmail, action: 'Campaign rejected by NGO' }]
+                                    } : x))
+                                  }} style={{ padding: '8px 14px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>
+                                    ✕ {t('reject')}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })()}
+
                   {/* Hours Verification Section */}
                   <div style={{
                     background: 'rgba(255, 255, 255, 0.9)',
@@ -15214,6 +15388,25 @@ export default function KindWorldApp() {
                             </span>
                           </div>
 
+                          {/* Min participant warning + check-in code */}
+                          {(() => {
+                            const regCount = missionRegistrations.filter((r: any) => r.missionId === activity.id).length
+                            const min = activity.minParticipants || 0
+                            const belowMin = min > 0 && regCount < min && new Date(activity.date) > new Date()
+                            const code = activity.checkInCode || generateCheckInCode(activity.id)
+                            return (
+                              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '6px' }}>
+                                {belowMin && (
+                                  <span style={{ fontSize: '11px', background: '#fef3c7', color: '#d97706', border: '1px solid #fde68a', borderRadius: '8px', padding: '3px 8px', fontWeight: '600' }}>
+                                    ⚠️ {regCount}/{min} min
+                                  </span>
+                                )}
+                                <span style={{ fontSize: '11px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '3px 8px', fontWeight: '700', fontFamily: 'monospace', letterSpacing: '2px' }}>
+                                  🔑 {code}
+                                </span>
+                              </div>
+                            )
+                          })()}
                           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                             <button
                               onClick={() => {
@@ -15245,6 +15438,7 @@ export default function KindWorldApp() {
                                   endTime: activity.endTime || '',
                                   hours: activity.hours,
                                   maxParticipants: activity.maxParticipants,
+                                  minParticipants: activity.minParticipants || 0,
                                   category: activity.category,
                                   difficulty: activity.difficulty,
                                   region: activity.region || 'SEA',
@@ -15512,7 +15706,7 @@ export default function KindWorldApp() {
                           <button
                             onClick={() => {
                               setEditingMission(null)
-                              setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
+                              setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, minParticipants: 0, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
                             }}
                             style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#718096' }}
                           >
@@ -15593,6 +15787,14 @@ export default function KindWorldApp() {
                                 style={{ width: '100%', padding: '10px 12px', border: '2px solid #bae6fd', borderRadius: '10px', fontSize: '13px', outline: 'none', background: 'white', boxSizing: 'border-box' }}
                               />
                             </div>
+                            <div style={{ marginTop: '10px' }}>
+                              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', color: '#374151', fontSize: '13px' }}>{t('minParticipantsLabel')}</label>
+                              <input type="number" min="0" value={newActivity.minParticipants || ''}
+                                onChange={(e) => setNewActivity({...newActivity, minParticipants: Number(e.target.value) || 0})}
+                                placeholder="0"
+                                style={{ width: '100px', padding: '8px 10px', border: '2px solid #bae6fd', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+                              />
+                            </div>
                           </div>
 
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -15638,6 +15840,7 @@ export default function KindWorldApp() {
                                           date: newActivity.date,
                                           hours: newActivity.hours,
                                           maxParticipants: newActivity.maxParticipants,
+                                          minParticipants: newActivity.minParticipants,
                                           category: newActivity.category,
                                           difficulty: newActivity.difficulty as 'Easy' | 'Medium' | 'Hard',
                                           imageUrl: newActivity.imageUrl || '',
@@ -15651,7 +15854,7 @@ export default function KindWorldApp() {
                                 })
                                 setNotifications(prev => [...prev, `✅ Mission "${newActivity.title}" updated successfully!`])
                                 setEditingMission(null)
-                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
+                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, minParticipants: 0, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
                               }}
                               style={{
                                 flex: 1,
@@ -15670,7 +15873,7 @@ export default function KindWorldApp() {
                             <button
                               onClick={() => {
                                 setEditingMission(null)
-                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
+                                setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, minParticipants: 0, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
                               }}
                               style={{
                                 flex: 1,
@@ -15939,9 +16142,18 @@ export default function KindWorldApp() {
                               <h2 style={{ margin: '0 0 8px 0', fontSize: '22px', fontWeight: '700', color: '#166534' }}>
                                 👥 {t('registeredParticipants')}
                               </h2>
-                              <p style={{ margin: 0, color: '#16a34a', fontSize: '14px' }}>
+                              <p style={{ margin: '0 0 8px', color: '#16a34a', fontSize: '14px' }}>
                                 {selectedMissionParticipants.title}
                               </p>
+                              {(() => {
+                                const code = selectedMissionParticipants.checkInCode || generateCheckInCode(selectedMissionParticipants.id)
+                                return (
+                                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'white', border: '2px solid #bbf7d0', borderRadius: '10px', padding: '6px 14px' }}>
+                                    <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>{t('checkInCodeLabel')}:</span>
+                                    <span style={{ fontSize: '18px', fontWeight: '800', color: '#166534', letterSpacing: '3px', fontFamily: 'monospace' }}>{code}</span>
+                                  </div>
+                                )
+                              })()}
                             </div>
                             <button
                               onClick={() => {
@@ -16872,6 +17084,70 @@ export default function KindWorldApp() {
                           })}
                         </div>
                       )}
+                    </div>
+
+                    {/* Campaigns */}
+                    <div style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '28px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>📣 {t('campaigns')}</h3>
+                        <button onClick={() => setShowCreateCampaign(true)} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>
+                          + {t('newCampaign')}
+                        </button>
+                      </div>
+                      {(() => {
+                        const myCampaigns = sponsorCampaigns.filter(c => c.sponsorEmail === user.email)
+                        if (myCampaigns.length === 0) return (
+                          <div style={{ textAlign: 'center', padding: '24px', color: '#9ca3af' }}>
+                            <div style={{ fontSize: '40px', marginBottom: '8px' }}>📋</div>
+                            <p style={{ margin: 0, fontSize: '14px' }}>{t('noCampaignsYet')}</p>
+                          </div>
+                        )
+                        const statusColor: Record<string,string> = { draft: '#6b7280', pendingPayment: '#d97706', pendingVerification: '#7c3aed', active: '#059669', completed: '#1e40af', rejected: '#dc2626' }
+                        const statusBg: Record<string,string> = { draft: '#f9fafb', pendingPayment: '#fffbeb', pendingVerification: '#f5f3ff', active: '#ecfdf5', completed: '#eff6ff', rejected: '#fef2f2' }
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {myCampaigns.map(c => (
+                              <div key={c.id} style={{ padding: '16px', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '15px' }}>{c.title}</div>
+                                    <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>{c.ngoName} · {c.currency} {Number(c.amount).toLocaleString()}</div>
+                                  </div>
+                                  <span style={{ fontSize: '11px', padding: '3px 10px', borderRadius: '20px', background: statusBg[c.status], color: statusColor[c.status], fontWeight: '700', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                    {t(`campaignStatus_${c.status}`)}
+                                  </span>
+                                </div>
+                                {c.status === 'pendingPayment' && (
+                                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e5e7eb' }}>
+                                    <p style={{ fontSize: '12px', color: '#d97706', margin: '0 0 8px', fontWeight: '600' }}>⚠️ {t('uploadPaymentProofHint')}</p>
+                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', background: '#fef3c7', border: '1px solid #fde68a', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#d97706' }}>
+                                      📎 {t('uploadProof')}
+                                      <input type="file" accept="image/*,.pdf" style={{ display: 'none' }} onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        if (!file) return
+                                        const reader = new FileReader()
+                                        reader.onload = (ev) => {
+                                          setSponsorCampaigns(prev => prev.map(x => x.id === c.id ? {
+                                            ...x, status: 'pendingVerification', paymentProofUrl: ev.target?.result as string,
+                                            updatedAt: new Date().toISOString(),
+                                            auditLog: [...x.auditLog, { at: new Date().toISOString(), by: user.email, action: 'Payment proof uploaded' }]
+                                          } : x))
+                                        }
+                                        reader.readAsDataURL(file)
+                                      }} />
+                                    </label>
+                                  </div>
+                                )}
+                                {c.status === 'active' && (
+                                  <div style={{ marginTop: '8px' }}>
+                                    <span style={{ fontSize: '11px', color: '#059669', fontWeight: '600' }}>✅ {t('campaignActiveNote')}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })()}
                     </div>
 
                     {/* Impact Summary */}
@@ -22572,6 +22848,20 @@ export default function KindWorldApp() {
                         />
                       </div>
                     </div>
+                    {/* Min Participants */}
+                    <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px dashed #bae6fd' }}>
+                      <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', color: '#374151', fontSize: '13px' }}>{t('minParticipantsLabel')} <span style={{ color: '#9ca3af', fontWeight: '400' }}>({t('optional')})</span></label>
+                      <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#6b7280' }}>{t('minParticipantsHint')}</p>
+                      <input
+                        type="number" min="0" max={newActivity.maxParticipants}
+                        value={newActivity.minParticipants || ''}
+                        onChange={(e) => setNewActivity({...newActivity, minParticipants: Number(e.target.value) || 0})}
+                        placeholder="0"
+                        style={{ width: '120px', padding: '8px 12px', border: '2px solid #bae6fd', borderRadius: '10px', fontSize: '13px', outline: 'none' }}
+                        onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                        onBlur={(e) => e.target.style.borderColor = '#bae6fd'}
+                      />
+                    </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -22785,7 +23075,9 @@ export default function KindWorldApp() {
                             hours: newActivity.hours,
                             participants: `0/${newActivity.maxParticipants}`,
                             maxParticipants: newActivity.maxParticipants,
+                            minParticipants: newActivity.minParticipants,
                             currentParticipants: 0,
+                            checkInCode: generateCheckInCode(maxId + 1),
                             category: newActivity.category,
                             difficulty: newActivity.difficulty as 'Easy' | 'Medium' | 'Hard',
                             organizer: user?.name || 'NGO',
@@ -22806,7 +23098,7 @@ export default function KindWorldApp() {
                             return updated
                           })
                           setNotifications(prev => [...prev, `✅ Activity "${newActivity.title}" created successfully! Students can now see and join it on the Missions page.`])
-                          setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
+                          setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, minParticipants: 0, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
                           setShowCreateActivity(false)
                         }
                       }}
@@ -22944,8 +23236,9 @@ export default function KindWorldApp() {
                                   {p.volunteer.name.charAt(0)}
                                 </div>
                                 <div>
-                                  <div style={{ fontWeight: '600', color: '#2d3748', fontSize: '14px' }}>
-                                    {p.volunteer.name}
+                                  <div style={{ fontWeight: '600', color: '#2d3748', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    {maskName(p.volunteer.name)}
+                                    <span style={{ fontSize: '10px', background: '#f3f4f6', color: '#9ca3af', borderRadius: '4px', padding: '1px 5px', fontWeight: '500' }}>PDPA</span>
                                   </div>
                                   <div style={{ fontSize: '12px', color: '#6b7280' }}>
                                     {p.volunteer.email}
@@ -22959,7 +23252,7 @@ export default function KindWorldApp() {
                             {p.registrationData?.emergencyContact && (
                               <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e5e7eb', fontSize: '12px', color: '#6b7280' }}>
                                 <strong>{t('emergencyContact')}: </strong>
-                                {p.registrationData.emergencyContact} ({p.registrationData.emergencyPhone})
+                                {maskName(p.registrationData.emergencyContact)} ({p.registrationData.emergencyPhone?.replace(/\d(?=\d{4})/g, '•')})
                               </div>
                             )}
                             {/* NGO / Admin action buttons */}
@@ -23020,6 +23313,114 @@ export default function KindWorldApp() {
                     }}
                   >
                     {t('closeLabel')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Create Campaign Modal (Sponsor) */}
+          {showCreateCampaign && (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '20px' }}>
+              <div style={{ background: 'white', borderRadius: '24px', width: '100%', maxWidth: '540px', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 25px 80px rgba(0,0,0,0.3)' }}>
+                <div style={{ padding: '28px 32px', borderBottom: '1px solid #e5e7eb', background: 'linear-gradient(135deg, #eff6ff, #dbeafe)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: '#1e40af' }}>📣 {t('newCampaign')}</h2>
+                      <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#3b82f6' }}>{t('createCampaignSubtitle')}</p>
+                    </div>
+                    <button onClick={() => setShowCreateCampaign(false)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#6b7280' }}>✕</button>
+                  </div>
+                </div>
+                <div style={{ padding: '28px 32px', display: 'grid', gap: '18px' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>{t('campaignTitle')}</label>
+                    <input type="text" value={newCampaign.title} onChange={e => setNewCampaign(p => ({ ...p, title: e.target.value }))}
+                      placeholder={t('campaignTitlePlaceholder')}
+                      style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>{t('selectNgo')}</label>
+                    <select value={newCampaign.ngoEmail} onChange={e => {
+                      const selected = e.target.options[e.target.selectedIndex]
+                      setNewCampaign(p => ({ ...p, ngoEmail: e.target.value, ngoName: selected.dataset.name || '' }))
+                    }} style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: 'white' }}>
+                      <option value="">{t('selectNgoPlaceholder')}</option>
+                      {Array.from(new Map(missions.filter((m: any) => m.organizerId).map((m: any) => [m.organizerId, m])).values()).map((m: any) => (
+                        <option key={m.organizerId} value={m.organizerId} data-name={m.organizer}>{m.organizer}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>{t('linkMission')} ({t('optional')})</label>
+                    <select value={newCampaign.missionId} onChange={e => setNewCampaign(p => ({ ...p, missionId: e.target.value }))}
+                      style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: 'white' }}>
+                      <option value="">{t('noLinkedMission')}</option>
+                      {missions.filter((m: any) => !newCampaign.ngoEmail || m.organizerId === newCampaign.ngoEmail).map((m: any) => (
+                        <option key={m.id} value={m.id}>{m.title}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>{t('pledgeAmount')}</label>
+                      <input type="number" min="1" value={newCampaign.amount} onChange={e => setNewCampaign(p => ({ ...p, amount: e.target.value }))}
+                        placeholder="1000"
+                        style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>{t('currency')}</label>
+                      <select value={newCampaign.currency} onChange={e => setNewCampaign(p => ({ ...p, currency: e.target.value as any }))}
+                        style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: 'white' }}>
+                        <option>USD</option><option>THB</option><option>SGD</option><option>MYR</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>{t('paymentNote')} ({t('optional')})</label>
+                    <textarea value={newCampaign.paymentNote} onChange={e => setNewCampaign(p => ({ ...p, paymentNote: e.target.value }))}
+                      placeholder={t('paymentNotePlaceholder')} rows={3}
+                      style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+                  </div>
+                  <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', padding: '14px' }}>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#92400e' }}>
+                      ⚡ {t('campaignWorkflow')}
+                    </p>
+                  </div>
+                </div>
+                <div style={{ padding: '20px 32px', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                  <button onClick={() => setShowCreateCampaign(false)}
+                    style={{ padding: '10px 20px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '14px', color: '#6b7280' }}>
+                    {t('cancel')}
+                  </button>
+                  <button onClick={() => {
+                    if (!newCampaign.title.trim() || !newCampaign.ngoEmail || !newCampaign.amount) {
+                      alert(t('pleaseFillAllFields')); return
+                    }
+                    const linkedMission = newCampaign.missionId ? missions.find((m: any) => m.id === Number(newCampaign.missionId)) : null
+                    const campaign: SponsorCampaign = {
+                      id: `camp_${Date.now()}`,
+                      sponsorEmail: user?.email || '',
+                      sponsorName: user?.name || '',
+                      companyName: sponsorProfile.companyName || user?.name || '',
+                      ngoEmail: newCampaign.ngoEmail,
+                      ngoName: newCampaign.ngoName,
+                      missionId: linkedMission?.id,
+                      missionTitle: linkedMission?.title,
+                      title: newCampaign.title.trim(),
+                      amount: Number(newCampaign.amount),
+                      currency: newCampaign.currency,
+                      status: 'pendingPayment',
+                      paymentProofNote: newCampaign.paymentNote,
+                      auditLog: [{ at: new Date().toISOString(), by: user?.email || '', action: 'Campaign created' }],
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                    }
+                    setSponsorCampaigns(prev => [campaign, ...prev])
+                    setShowCreateCampaign(false)
+                    setNewCampaign({ title: '', ngoEmail: '', ngoName: '', missionId: '', amount: '', currency: 'USD', paymentNote: '' })
+                  }} style={{ padding: '10px 24px', background: 'linear-gradient(135deg, #1e40af, #3b82f6)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '700', fontSize: '14px' }}>
+                    {t('submitCampaign')}
                   </button>
                 </div>
               </div>
@@ -23473,6 +23874,32 @@ export default function KindWorldApp() {
                         </span>
                       </button>
                     ))}
+                  </div>
+                  {/* Font Size */}
+                  <div style={{ marginTop: '22px', borderTop: '1px solid #f1f5f9', paddingTop: '20px' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '2px' }}>{t('settingsFontSize')}</div>
+                      <div style={{ fontSize: '12px', color: '#94a3b8' }}>{t('settingsFontSizeDesc')}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {(['sm', 'md', 'lg', 'xl'] as const).map((sz) => {
+                        const labelMap = { sm: t('fontSizeSm'), md: t('fontSizeMd'), lg: t('fontSizeLg'), xl: t('fontSizeXl') }
+                        const previewMap = FONT_SIZE_MAP
+                        const active = fontSize === sz
+                        return (
+                          <button key={sz} onClick={() => setFontSizeAndSave(sz)} style={{
+                            flex: 1, padding: '10px 8px', borderRadius: '12px', cursor: 'pointer',
+                            border: active ? '2px solid var(--tp)' : '2px solid #f1f5f9',
+                            background: active ? 'var(--tpbg)' : '#fafafa',
+                            boxShadow: active ? '0 0 0 3px rgba(var(--tp-rgb),0.12)' : 'none',
+                            transition: 'all 0.18s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                          }}>
+                            <span style={{ fontSize: previewMap[sz], fontWeight: active ? '700' : '500', color: active ? 'var(--tp)' : '#64748b', lineHeight: 1 }}>Aa</span>
+                            <span style={{ fontSize: '11px', fontWeight: active ? '700' : '500', color: active ? 'var(--tp)' : '#94a3b8', whiteSpace: 'nowrap' }}>{labelMap[sz]}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
 
