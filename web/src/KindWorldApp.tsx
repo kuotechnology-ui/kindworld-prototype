@@ -8560,12 +8560,9 @@ function maskName(name: string): string {
 }
 
 export default function KindWorldApp() {
-  // Resolve font size (direct read — state not available yet at this point)
-  const _storedFontSize = (() => { try { return localStorage.getItem('kindworld_font_size') || 'md' } catch { return 'md' } })()
   // Add CSS animations and global styles
   const styles = `
-    html { font-size: ${FONT_SIZE_MAP[_storedFontSize] || '15px'}; }
-    body { font-size: 1rem; }
+    body { font-size: 14px; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -8740,8 +8737,6 @@ export default function KindWorldApp() {
   const setFontSizeAndSave = (size: 'sm' | 'md' | 'lg' | 'xl') => {
     setFontSize(size)
     try { localStorage.setItem('kindworld_font_size', size) } catch {}
-    // Update HTML font-size immediately without waiting for re-render
-    document.documentElement.style.fontSize = FONT_SIZE_MAP[size] || '15px'
   }
   const [notifSettings, setNotifSettings] = useState<Record<string,boolean>>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_notif') || '{}') } catch { return {} }
@@ -8883,6 +8878,35 @@ export default function KindWorldApp() {
     localStorage.setItem('kindworld_user_theme', userTheme)
   }, [userTheme])
 
+  // Scale only font-size properties — never layout dimensions.
+  // We inject CSS attribute-selector rules that override the inline px font-size
+  // values React writes to the DOM (e.g. style="font-size: 14px;").
+  // !important in a stylesheet overrides inline styles, so this works without
+  // touching zoom, transform, or any layout property.
+  useEffect(() => {
+    let styleEl = document.getElementById('kw-fontsize') as HTMLStyleElement | null
+    if (!styleEl) {
+      styleEl = document.createElement('style')
+      styleEl.id = 'kw-fontsize'
+      document.head.appendChild(styleEl)
+    }
+    // Clear any stale zoom set by earlier versions
+    ;(document.body.style as any).zoom = ''
+    ;(document.documentElement.style as any).zoom = ''
+    document.documentElement.style.fontSize = ''
+
+    if (fontSize === 'md') { styleEl.textContent = ''; return }
+
+    const scaleMap: Record<string, number> = { sm: 0.85, lg: 1.15, xl: 1.3 }
+    const scale = scaleMap[fontSize]
+    const rules: string[] = []
+    for (let px = 9; px <= 48; px++) {
+      const scaled = Math.round(px * scale)
+      rules.push(`[style*="font-size: ${px}px"] { font-size: ${scaled}px !important; }`)
+    }
+    styleEl.textContent = rules.join('\n')
+  }, [fontSize])
+
   // Sync hourSubmissions from localStorage on page change and cross-tab updates
   useEffect(() => {
     const sync = () => {
@@ -8926,7 +8950,13 @@ export default function KindWorldApp() {
     confirmPassword: '',
     phone: '',
     residency: '',
-    country: ''
+    country: '',
+    // Sponsor/Company-specific
+    companyName: '',
+    companyIndustry: '',
+    companyWebsite: '',
+    companySize: '',
+    jobTitle: ''
   })
   const [isLoading, setIsLoading] = useState(false)
   const [notifications, setNotifications] = useState<string[]>([])
@@ -9942,14 +9972,13 @@ export default function KindWorldApp() {
       setCurrentPage('dashboard')
       setNotifications(['Welcome to KindWorld! 🎉', 'Your profile has been created successfully.'])
 
-      // Show region setup for first-time volunteers (students)
-      if (signInRole === 'student') {
+      // Show region+language setup for all first-time users
+      const savedLanguage = localStorage.getItem('kindworld_language')
+      if (!savedLanguage) {
+        setShowRegionSetup(true)
+      } else {
         const savedRegion = localStorage.getItem('kindworld_user_region')
-        if (!savedRegion) {
-          setShowRegionSetup(true)
-        } else {
-          setUserRegion(savedRegion)
-        }
+        if (savedRegion) setUserRegion(savedRegion)
       }
     }, 1500)
   }
@@ -10020,7 +10049,7 @@ export default function KindWorldApp() {
         const userData: User = {
           id: registeredUser.id || `user_${Date.now()}`,
           name: registeredUser.name,
-          role: registeredUser.role as 'student' | 'ngo' | 'admin',
+          role: registeredUser.role as 'student' | 'ngo' | 'admin' | 'sponsor',
           hours: registeredUser.hours || 0,
           email: registeredUser.email,
           avatar: registeredUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(registeredUser.name)}&background=4f46e5&color=fff`,
@@ -10029,10 +10058,28 @@ export default function KindWorldApp() {
           userBadges: registeredUser.userBadges || [],
           completedMissions: registeredUser.completedMissions || 0,
           organizationsHelped: registeredUser.organizationsHelped || 0,
-          rating: registeredUser.rating || 0
+          rating: registeredUser.rating || 0,
+          companyName: registeredUser.companyName,
+          companyIndustry: registeredUser.companyIndustry,
+          companyWebsite: registeredUser.companyWebsite,
+          sponsorTier: registeredUser.sponsorTier,
+          sponsoredMissionIds: registeredUser.sponsoredMissionIds || []
         }
         setUser(userData)
         setSelectedRole(userData.role)
+        // Restore sponsorProfile for registered sponsors signing back in
+        if (userData.role === 'sponsor') {
+          setSponsorProfile(prev => ({
+            ...prev,
+            companyName: registeredUser.companyName || userData.name,
+            industry: registeredUser.companyIndustry || '',
+            website: registeredUser.companyWebsite || '',
+            tier: (registeredUser.sponsorTier as any) || 'bronze',
+            sponsoredMissionIds: registeredUser.sponsoredMissionIds || [],
+            contactName: registeredUser.name,
+            contactEmail: registeredUser.email
+          }))
+        }
         // Migrate old missions: fix any missions created by this NGO with a stale organizerId
         if (userData.role === 'ngo') {
           setMissions((prev: Mission[]) => {
@@ -10049,10 +10096,12 @@ export default function KindWorldApp() {
         setIsLoading(false)
         setCurrentPage('dashboard')
         setNotifications([`Welcome back, ${userData.name}! 👋`])
-        if (userData.role === 'student') {
+        const savedLanguage = localStorage.getItem('kindworld_language')
+        if (!savedLanguage) {
+          setShowRegionSetup(true)
+        } else {
           const savedRegion = localStorage.getItem('kindworld_user_region')
-          if (!savedRegion) setShowRegionSetup(true)
-          else setUserRegion(savedRegion)
+          if (savedRegion) setUserRegion(savedRegion)
         }
       }, 1000)
       return
@@ -12140,7 +12189,11 @@ export default function KindWorldApp() {
 
     const handleRegister = () => {
       setRegisterError('')
-      const nameValid = selectedRole === 'ngo' ? !!registerForm.orgName : (!!registerForm.firstName && !!registerForm.lastName)
+      const nameValid = selectedRole === 'ngo'
+        ? !!registerForm.orgName
+        : selectedRole === 'sponsor'
+          ? (!!registerForm.firstName && !!registerForm.lastName && !!registerForm.companyName)
+          : (!!registerForm.firstName && !!registerForm.lastName)
       if (!nameValid || !registerForm.email || !registerForm.password) {
         setRegisterError('Please fill in all required fields.')
         return
@@ -12164,23 +12217,49 @@ export default function KindWorldApp() {
       setTimeout(() => {
         setIsLoading(false)
         const newUserId = `user_${Date.now()}`
+        const displayName = selectedRole === 'ngo'
+          ? registerForm.orgName
+          : selectedRole === 'sponsor'
+            ? registerForm.companyName
+            : `${registerForm.firstName} ${registerForm.lastName}`
+        const avatarBg = selectedRole === 'sponsor' ? '0f766e' : '4f46e5'
         const newUserData: User = {
           id: newUserId,
-          name: selectedRole === 'ngo' ? registerForm.orgName : `${registerForm.firstName} ${registerForm.lastName}`,
+          name: displayName,
           role: selectedRole,
           hours: 0,
           email: registerForm.email.toLowerCase().trim(),
-          avatar: `https://ui-avatars.com/api/?name=${selectedRole === 'ngo' ? encodeURIComponent(registerForm.orgName) : `${registerForm.firstName}+${registerForm.lastName}`}&background=4f46e5&color=fff`,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=${avatarBg}&color=fff`,
           joinDate: new Date().toISOString().split('T')[0],
           badges: [],
           userBadges: [],
           completedMissions: 0,
           organizationsHelped: 0,
-          rating: 0
+          rating: 0,
+          // Sponsor-specific
+          ...(selectedRole === 'sponsor' ? {
+            companyName: registerForm.companyName,
+            companyIndustry: registerForm.companyIndustry || undefined,
+            companyWebsite: registerForm.companyWebsite || undefined,
+            sponsorTier: 'bronze' as const,
+            sponsoredMissionIds: []
+          } : {})
         }
         const actualRole = selectedRole
-        const finalUserData = { ...newUserData, role: actualRole as 'student' | 'ngo' | 'admin' }
-        setUser(finalUserData)
+        setUser(newUserData)
+        // For sponsor registrations: initialise sponsorProfile from the form data
+        if (actualRole === 'sponsor') {
+          setSponsorProfile({
+            companyName: registerForm.companyName,
+            companyLogo: '',
+            industry: registerForm.companyIndustry,
+            website: registerForm.companyWebsite,
+            tier: 'bronze',
+            sponsoredMissionIds: [],
+            contactName: `${registerForm.firstName} ${registerForm.lastName}`.trim(),
+            contactEmail: registerForm.email.toLowerCase().trim()
+          })
+        }
         // Add the new user to allUsers so admin dashboard can see them
         setAllUsers((prev: any[]) => {
           const updated = [...prev, {
@@ -12197,7 +12276,13 @@ export default function KindWorldApp() {
             avatar: newUserData.avatar,
             phone: registerForm.phone,
             residency: registerForm.residency,
-            country: registerForm.country
+            country: registerForm.country,
+            companyName: newUserData.companyName,
+            companyIndustry: newUserData.companyIndustry,
+            companyWebsite: newUserData.companyWebsite,
+            companySize: registerForm.companySize,
+            jobTitle: registerForm.jobTitle,
+            sponsorTier: newUserData.sponsorTier
           }]
           localStorage.setItem('kindworld_allusers', JSON.stringify(updated))
           return updated
@@ -12223,7 +12308,9 @@ export default function KindWorldApp() {
         setCurrentPage('dashboard')
         const welcomeMsg = selectedRole === 'ngo'
           ? 'Welcome! Please complete your NGO profile to submit for admin verification. 🏢'
-          : 'Welcome to KindWorld! 🎉'
+          : selectedRole === 'sponsor'
+            ? 'Welcome to KindWorld! Your company account is ready. Start creating sponsorship campaigns! 💼'
+            : 'Welcome to KindWorld! 🎉'
         setNotifications([welcomeMsg, 'Your account has been created successfully.'])
         setRegisterForm({
           firstName: '',
@@ -12234,7 +12321,12 @@ export default function KindWorldApp() {
           confirmPassword: '',
           phone: '',
           residency: '',
-          country: ''
+          country: '',
+          companyName: '',
+          companyIndustry: '',
+          companyWebsite: '',
+          companySize: '',
+          jobTitle: ''
         })
       }, 1500)
     }
@@ -12343,7 +12435,7 @@ export default function KindWorldApp() {
         </div>
 
         <div style={{
-          maxWidth: authMode === 'register' ? '520px' : '440px',
+          maxWidth: authMode === 'register' ? (selectedRole === 'sponsor' ? '560px' : '520px') : '440px',
           width: '100%',
           background: 'white',
           padding: '48px 40px',
@@ -12369,7 +12461,13 @@ export default function KindWorldApp() {
               {authMode === 'signin' ? t('welcomeBackTitle') : t('createAccount')}
             </h1>
             <p style={{ color: '#6b7280', fontSize: '15px' }}>
-              {authMode === 'signin' ? t('signInToContinue') : selectedRole === 'ngo' ? t('ngoRegisterSubtitle') : t('joinKindWorld')}
+              {authMode === 'signin'
+                ? t('signInToContinue')
+                : selectedRole === 'ngo'
+                  ? t('ngoRegisterSubtitle')
+                  : selectedRole === 'sponsor'
+                    ? 'Create your company account to sponsor missions and track impact'
+                    : t('joinKindWorld')}
             </p>
           </div>
 
@@ -12604,35 +12702,123 @@ export default function KindWorldApp() {
                     placeholder=""
                     value={registerForm.orgName}
                     onChange={(e) => setRegisterForm({ ...registerForm, orgName: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 14px',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '12px',
-                      fontSize: '15px',
-                      outline: 'none',
-                      transition: 'all 0.2s ease',
-                      boxSizing: 'border-box',
-                      background: '#f9fafb',
-                      color: '#1f2937'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = 'var(--tp)'
-                      e.target.style.background = 'white'
-                      e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb), 0.1)'
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'var(--tbrd)'
-                      e.target.style.background = '#f9fafb'
-                      e.target.style.boxShadow = 'none'
-                    }}
+                    style={{ width: '100%', padding: '12px 14px', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', outline: 'none', transition: 'all 0.2s ease', boxSizing: 'border-box', background: '#f9fafb', color: '#1f2937' }}
+                    onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb), 0.1)' }}
+                    onBlur={(e) => { e.target.style.borderColor = 'var(--tbrd)'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
                   />
-                  {/* Info note */}
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginTop: '12px', padding: '10px 14px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '10px' }}>
                     <span style={{ fontSize: '14px', flexShrink: 0 }}>ℹ️</span>
                     <p style={{ margin: 0, fontSize: '12px', color: '#1d4ed8', lineHeight: '1.5' }}>{t('ngoRegisterInfoNote')}</p>
                   </div>
                 </div>
+              ) : selectedRole === 'sponsor' ? (
+                /* Company / Sponsor registration */
+                <>
+                  {/* Contact Person */}
+                  <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--td)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px' }}>👤 Contact Person</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>{t('firstName')} <span style={{ color: '#ef4444' }}>*</span></label>
+                      <input type="text" value={registerForm.firstName} onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
+                        style={{ width: '100%', padding: '11px 13px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: '#1f2937' }}
+                        onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 3px rgba(var(--tp-rgb), 0.1)' }}
+                        onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>{t('lastName')} <span style={{ color: '#ef4444' }}>*</span></label>
+                      <input type="text" value={registerForm.lastName} onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })}
+                        style={{ width: '100%', padding: '11px 13px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: '#1f2937' }}
+                        onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 3px rgba(var(--tp-rgb), 0.1)' }}
+                        onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
+                      />
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>Job Title</label>
+                    <input type="text" placeholder="e.g. Head of CSR" value={registerForm.jobTitle} onChange={(e) => setRegisterForm({ ...registerForm, jobTitle: e.target.value })}
+                      style={{ width: '100%', padding: '11px 13px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: '#1f2937' }}
+                      onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 3px rgba(var(--tp-rgb), 0.1)' }}
+                      onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
+                    />
+                  </div>
+
+                  {/* Company Information */}
+                  <div style={{ paddingTop: '16px', borderTop: '1px solid #f3f4f6', marginBottom: '12px' }}>
+                    <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--td)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>🏢 Company Information</p>
+                  </div>
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>Company Name <span style={{ color: '#ef4444' }}>*</span></label>
+                    <input type="text" placeholder="e.g. Acme Corporation" value={registerForm.companyName} onChange={(e) => setRegisterForm({ ...registerForm, companyName: e.target.value })}
+                      style={{ width: '100%', padding: '11px 13px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: '#1f2937' }}
+                      onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 3px rgba(var(--tp-rgb), 0.1)' }}
+                      onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>Industry</label>
+                      <select value={registerForm.companyIndustry} onChange={(e) => setRegisterForm({ ...registerForm, companyIndustry: e.target.value })}
+                        style={{ width: '100%', padding: '11px 13px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: registerForm.companyIndustry ? '#1f2937' : '#9ca3af', cursor: 'pointer' }}
+                        onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.boxShadow = '0 0 0 3px rgba(var(--tp-rgb), 0.1)' }}
+                        onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none' }}
+                      >
+                        <option value="">Select industry</option>
+                        {['Technology', 'Finance & Banking', 'Healthcare', 'Education', 'Retail & E-commerce', 'Manufacturing', 'Media & Entertainment', 'Food & Beverage', 'Real Estate', 'Transportation & Logistics', 'Energy & Utilities', 'Consulting', 'Non-profit / Foundation', 'Other'].map(i => (
+                          <option key={i} value={i}>{i}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>Company Size</label>
+                      <select value={registerForm.companySize} onChange={(e) => setRegisterForm({ ...registerForm, companySize: e.target.value })}
+                        style={{ width: '100%', padding: '11px 13px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: registerForm.companySize ? '#1f2937' : '#9ca3af', cursor: 'pointer' }}
+                        onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.boxShadow = '0 0 0 3px rgba(var(--tp-rgb), 0.1)' }}
+                        onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none' }}
+                      >
+                        <option value="">Select size</option>
+                        {['1–10 employees', '11–50 employees', '51–200 employees', '201–500 employees', '501–1,000 employees', '1,000+ employees'].map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>Website</label>
+                      <input type="url" placeholder="https://yourcompany.com" value={registerForm.companyWebsite} onChange={(e) => setRegisterForm({ ...registerForm, companyWebsite: e.target.value })}
+                        style={{ width: '100%', padding: '11px 13px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: '#1f2937' }}
+                        onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 3px rgba(var(--tp-rgb), 0.1)' }}
+                        onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>{t('country')}</label>
+                      <select value={registerForm.country} onChange={(e) => setRegisterForm({ ...registerForm, country: e.target.value })}
+                        style={{ width: '100%', padding: '11px 13px', border: '1px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: '#f9fafb', color: registerForm.country ? '#1f2937' : '#9ca3af', cursor: 'pointer' }}
+                        onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.boxShadow = '0 0 0 3px rgba(var(--tp-rgb), 0.1)' }}
+                        onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none' }}
+                      >
+                        <option value="">{t('selectCountry')}</option>
+                        {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Benefits info box */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '12px 14px', background: 'linear-gradient(135deg, rgba(var(--tp-rgb),0.05), rgba(var(--ts-rgb),0.05))', border: '1px solid rgba(var(--tp-rgb),0.15)', borderRadius: '12px', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '18px', flexShrink: 0 }}>💼</span>
+                    <div>
+                      <p style={{ margin: '0 0 4px', fontSize: '12px', fontWeight: '700', color: 'var(--td)' }}>What you get as a Company Partner</p>
+                      <ul style={{ margin: 0, padding: '0 0 0 16px', fontSize: '12px', color: '#6b7280', lineHeight: '1.8' }}>
+                        <li>Create & fund sponsorship campaigns for NGO missions</li>
+                        <li>Detailed impact reports & CSR metrics</li>
+                        <li>Company branding on sponsored missions</li>
+                        <li>Direct connection with vetted NGO partners</li>
+                      </ul>
+                    </div>
+                  </div>
+                </>
               ) : (
                 /* Volunteer: first name + last name grid */
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
@@ -12645,28 +12831,9 @@ export default function KindWorldApp() {
                       placeholder=""
                       value={registerForm.firstName}
                       onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '12px 14px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '12px',
-                        fontSize: '15px',
-                        outline: 'none',
-                        transition: 'all 0.2s ease',
-                        boxSizing: 'border-box',
-                        background: '#f9fafb',
-                        color: '#1f2937'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--tp)'
-                        e.target.style.background = 'white'
-                        e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb), 0.1)'
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = 'var(--tbrd)'
-                        e.target.style.background = '#f9fafb'
-                        e.target.style.boxShadow = 'none'
-                      }}
+                      style={{ width: '100%', padding: '12px 14px', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', outline: 'none', transition: 'all 0.2s ease', boxSizing: 'border-box', background: '#f9fafb', color: '#1f2937' }}
+                      onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb), 0.1)' }}
+                      onBlur={(e) => { e.target.style.borderColor = 'var(--tbrd)'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
                     />
                   </div>
                   <div>
@@ -12678,28 +12845,9 @@ export default function KindWorldApp() {
                       placeholder=""
                       value={registerForm.lastName}
                       onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '12px 14px',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '12px',
-                        fontSize: '15px',
-                        outline: 'none',
-                        transition: 'all 0.2s ease',
-                        boxSizing: 'border-box',
-                        background: '#f9fafb',
-                        color: '#1f2937'
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = 'var(--tp)'
-                        e.target.style.background = 'white'
-                        e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb), 0.1)'
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = 'var(--tbrd)'
-                        e.target.style.background = '#f9fafb'
-                        e.target.style.boxShadow = 'none'
-                      }}
+                      style={{ width: '100%', padding: '12px 14px', border: '1px solid #e5e7eb', borderRadius: '12px', fontSize: '15px', outline: 'none', transition: 'all 0.2s ease', boxSizing: 'border-box', background: '#f9fafb', color: '#1f2937' }}
+                      onFocus={(e) => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb), 0.1)' }}
+                      onBlur={(e) => { e.target.style.borderColor = 'var(--tbrd)'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
                     />
                   </div>
                 </div>
@@ -12775,8 +12923,8 @@ export default function KindWorldApp() {
                 />
               </div>
 
-              {/* Country & Residency */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              {/* Country & Residency — volunteer/NGO only; sponsors collect this in their company section */}
+              {selectedRole !== 'sponsor' && <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
                     {t('country')}
@@ -12838,7 +12986,7 @@ export default function KindWorldApp() {
                     }}
                   />
                 </div>
-              </div>
+              </div>}
 
               {/* Password */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
@@ -18375,9 +18523,9 @@ export default function KindWorldApp() {
                       backdropFilter: 'blur(10px)',
                       padding: '32px', 
                       borderRadius: '20px', 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
                       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                       transition: 'all 0.3s ease',
@@ -18504,18 +18652,16 @@ export default function KindWorldApp() {
                           )}
                         </div>
                       )}
-                    </div>
-                    {/* Registration status bar */}
-                    {(() => {
-                      const regCount = missionRegistrations.filter((r: any) => r.missionId === mission.id).length
-                      const isFull = mission.maxParticipants > 0 && regCount >= mission.maxParticipants
-                      const isPastDeadline = !!(mission.registrationDeadline && new Date(mission.registrationDeadline) <= new Date())
-                      const spotsLeft = Math.max(0, mission.maxParticipants - regCount)
-                      const fillPct = Math.min(100, Math.round((regCount / mission.maxParticipants) * 100))
-                      return (
-                        <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      {/* Registration status bar */}
+                      {(() => {
+                        const regCount = missionRegistrations.filter((r: any) => r.missionId === mission.id).length
+                        const isFull = mission.maxParticipants > 0 && regCount >= mission.maxParticipants
+                        const isPastDeadline = !!(mission.registrationDeadline && new Date(mission.registrationDeadline) <= new Date())
+                        const spotsLeft = Math.max(0, mission.maxParticipants - regCount)
+                        const fillPct = Math.min(100, Math.round((regCount / mission.maxParticipants) * 100))
+                        return (
+                          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #f3f4f6' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' }}>
                               {isFull ? (
                                 <span style={{ fontSize: '12px', fontWeight: '700', color: '#dc2626', background: '#fef2f2', padding: '3px 10px', borderRadius: '8px', border: '1px solid #fecaca' }}>🔒 {t('registrationFull')}</span>
                               ) : isPastDeadline ? (
@@ -18529,13 +18675,13 @@ export default function KindWorldApp() {
                                 </span>
                               )}
                             </div>
+                            <div style={{ background: '#e5e7eb', borderRadius: '6px', height: '5px', overflow: 'hidden' }}>
+                              <div style={{ width: `${fillPct}%`, height: '100%', background: isFull ? '#dc2626' : fillPct >= 80 ? '#f59e0b' : '#22c55e', borderRadius: '6px', transition: 'width 0.4s ease' }} />
+                            </div>
                           </div>
-                          <div style={{ background: '#e5e7eb', borderRadius: '6px', height: '5px', overflow: 'hidden' }}>
-                            <div style={{ width: `${fillPct}%`, height: '100%', background: isFull ? '#dc2626' : fillPct >= 80 ? '#f59e0b' : '#22c55e', borderRadius: '6px', transition: 'width 0.4s ease' }} />
-                          </div>
-                        </div>
-                      )
-                    })()}
+                        )
+                      })()}
+                    </div>
                     {/* Show different buttons based on user role */}
                     {user?.role === 'ngo' || user?.role === 'admin' ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', flexShrink: 0 }}>
@@ -18843,6 +18989,8 @@ export default function KindWorldApp() {
                 <div style={{ display: 'flex', gap: '12px' }}>
                   <button
                     onClick={() => {
+                      // Save the language even when skipping region
+                      localStorage.setItem('kindworld_language', language)
                       setShowRegionSetup(false)
                     }}
                     style={{
@@ -18861,11 +19009,10 @@ export default function KindWorldApp() {
                   </button>
                   <button
                     onClick={() => {
+                      localStorage.setItem('kindworld_language', language)
                       if (userRegion) {
                         localStorage.setItem('kindworld_user_region', userRegion)
                         localStorage.setItem('kindworld_user_country', userCountry)
-                        localStorage.setItem('kindworld_language', language)
-                        // Do NOT auto-apply regionFilter — keep it as 'all' so all missions are visible
                       }
                       setShowRegionSetup(false)
                       setNotifications(prev => [...prev, '✅ Profile preferences saved!'])
