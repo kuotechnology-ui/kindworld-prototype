@@ -9343,6 +9343,9 @@ export default function KindWorldApp() {
   const [noShowRecords, setNoShowRecords] = useState<NoShowRecord[]>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_noshow') || '[]') } catch { return [] }
   })
+  const [tierPrices, setTierPrices] = useState<{ bronze: string; silver: string; gold: string }>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_tier_prices') || 'null') || { bronze: '500', silver: '1500', gold: '3000' } } catch { return { bronze: '500', silver: '1500', gold: '3000' } }
+  })
   const [volunteerReviews, setVolunteerReviews] = useState<VolunteerReview[]>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_vol_reviews') || '[]') } catch { return [] }
   })
@@ -10270,7 +10273,7 @@ export default function KindWorldApp() {
       const userData: User = {
         id: existingUser?.id || `user_${Date.now()}`,
         name: signInRole === 'student' ? 'Alex Chen' :
-              signInRole === 'ngo' ? 'Red Cross International' :
+              signInRole === 'ngo' ? 'Demo NGO Organization' :
               signInRole === 'sponsor' ? 'TechCorp Solutions' : 'System Administrator',
         role: signInRole,
         hours: signInRole === 'student' ? 610 : signInRole === 'ngo' ? 2100 : 0,
@@ -10287,13 +10290,9 @@ export default function KindWorldApp() {
         joinDate: '2025-08-15',
         badges: [
           { id: 'b1', name: 'Community Champion', icon: '🏆', earnedDate: '2025-12-01', company: 'KindWorld' },
-          { id: 'b2', name: 'Environmental Hero', icon: '🌱', earnedDate: '2025-11-15', company: 'Green Earth' },
-          { id: 'b3', name: 'Education Supporter', icon: '📚', earnedDate: '2025-10-20', company: 'UNICEF' }
         ],
         userBadges: existingUser?.userBadges || [
           { id: 'b1', name: 'Community Champion', icon: '🏆', earnedDate: '2025-12-01', company: 'KindWorld' },
-          { id: 'b2', name: 'Environmental Hero', icon: '🌱', earnedDate: '2025-11-15', company: 'Green Earth' },
-          { id: 'b3', name: 'Education Supporter', icon: '📚', earnedDate: '2025-10-20', company: 'UNICEF' }
         ],
         completedMissions: signInRole === 'student' ? 23 : signInRole === 'ngo' ? 67 : 0,
         organizationsHelped: signInRole === 'student' ? 12 : signInRole === 'ngo' ? 35 : 0,
@@ -10495,8 +10494,8 @@ export default function KindWorldApp() {
       badges: 8,
       userBadges: [
         { id: 'b1', name: 'Community Champion', icon: '🏆', earnedDate: '2025-12-01', company: 'KindWorld' },
-        { id: 'b2', name: 'Environmental Hero', icon: '🌱', earnedDate: '2025-11-15', company: 'Green Earth' },
-        { id: 'b3', name: 'Education Supporter', icon: '📚', earnedDate: '2025-10-20', company: 'UNICEF' }
+        { id: 'b9', name: 'Rising Star', icon: '🌟', earnedDate: '2025-11-15', company: 'KindWorld' },
+        { id: 'b10', name: 'Century Club', icon: '💯', earnedDate: '2025-10-20', company: 'KindWorld' }
       ]
     },
     {
@@ -10508,23 +10507,10 @@ export default function KindWorldApp() {
       joinDate: '2025-09-02',
       status: 'active',
       completedMissions: 15,
-      badges: 5,
+      badges: 2,
       userBadges: [
-        { id: 'b9', name: 'Rising Star', icon: '🌟', earnedDate: '2025-09-10', company: 'KindWorld' },
-        { id: 'b2', name: 'Environmental Hero', icon: '🌱', earnedDate: '2025-10-05', company: 'Green Earth' }
+        { id: 'b9', name: 'Rising Star', icon: '🌟', earnedDate: '2025-09-10', company: 'KindWorld' }
       ]
-    },
-    {
-      id: 'user_003',
-      name: 'Red Cross International',
-      role: 'ngo' as const,
-      email: 'admin@redcross.org',
-      hours: 2100,
-      joinDate: '2025-07-10',
-      status: 'verified',
-      completedMissions: 67,
-      badges: 12,
-      userBadges: []
     },
     {
       id: 'user_004',
@@ -10539,18 +10525,6 @@ export default function KindWorldApp() {
       userBadges: [
         { id: 'b9', name: 'Rising Star', icon: '🌟', earnedDate: '2025-10-25', company: 'KindWorld' }
       ]
-    },
-    {
-      id: 'user_005',
-      name: 'UNICEF Foundation',
-      role: 'ngo' as const,
-      email: 'contact@unicef.org',
-      hours: 1850,
-      joinDate: '2025-06-25',
-      status: 'verified',
-      completedMissions: 45,
-      badges: 10,
-      userBadges: []
     }
   ]
 
@@ -11095,82 +11069,41 @@ export default function KindWorldApp() {
   }, [friends])
 
   const certificates = [
-    { 
-      id: 1,
-      name: 'Red Cross Volunteer Excellence Certificate', 
-      hours: 100, 
-      earned: true, 
-      company: 'American Red Cross',
-      description: 'Recognizes outstanding dedication to humanitarian service',
-      icon: '🏥',
-      type: 'certificate',
-      earnedDate: '2025-10-25'
-    },
-    { 
-      id: 2,
-      name: 'UNICEF Community Impact Award', 
-      hours: 150, 
-      earned: true, 
-      company: 'UNICEF',
-      description: 'For exceptional commitment to children\'s welfare programs',
-      icon: '🌍',
-      type: 'certificate',
-      earnedDate: '2025-11-15'
-    },
-    { 
-      id: 3,
-      name: 'Habitat for Humanity Builder Badge', 
-      hours: 200, 
-      earned: true, 
-      company: 'Habitat for Humanity',
-      description: 'Awarded for significant contributions to housing initiatives',
-      icon: '🏠',
-      type: 'certificate',
-      earnedDate: '2025-11-25'
-    },
-    { 
+    {
       id: 4,
-      name: 'Bronze Service Medal', 
-      hours: 100, 
-      earned: true, 
+      name: 'Bronze Service Medal',
+      hours: 100,
       company: 'KindWorld Foundation',
       description: 'First milestone in volunteer service excellence',
       icon: '🥉',
       type: 'medal',
-      earnedDate: '2025-10-25'
     },
-    { 
+    {
       id: 5,
-      name: 'Silver Service Medal', 
-      hours: 250, 
-      earned: true, 
+      name: 'Silver Service Medal',
+      hours: 250,
       company: 'KindWorld Foundation',
       description: 'Recognizes sustained commitment to community service',
       icon: '🥈',
       type: 'medal',
-      earnedDate: '2025-11-30'
     },
-    { 
+    {
       id: 6,
-      name: 'Gold Service Medal', 
-      hours: 500, 
-      earned: true, 
+      name: 'Gold Service Medal',
+      hours: 500,
       company: 'KindWorld Foundation',
       description: 'Highest honor for exceptional volunteer leadership',
       icon: '🥇',
       type: 'medal',
-      earnedDate: '2025-12-10'
     },
-    { 
+    {
       id: 7,
-      name: 'Platinum Excellence Award', 
-      hours: 1000, 
-      earned: false, 
+      name: 'Platinum Excellence Award',
+      hours: 1000,
       company: 'KindWorld Foundation',
       description: 'Ultimate recognition for transformational community impact',
       icon: '💎',
       type: 'medal',
-      earnedDate: null
     }
   ]
 
@@ -14938,6 +14871,9 @@ export default function KindWorldApp() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
                           <div style={{ fontSize: '14px', fontWeight: '600', color: isPast ? '#6b7280' : '#1e293b', lineHeight: '1.3', flex: 1 }}>
                             {mission.title}
+                            <span style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: '700', background: 'rgba(251,191,36,0.15)', color: '#92400e', border: '1px dashed #f59e0b', whiteSpace: 'nowrap' }}>
+                              🧪 Fictional · Not Real
+                            </span>
                             {mission.language && mission.language !== language && (
                               <span title={t('missionInOriginalLang')} style={{ marginLeft: '6px', fontSize: '10px', background: 'rgba(0,0,0,0.07)', color: '#6b7280', borderRadius: '4px', padding: '2px 5px', fontWeight: '600' }}>
                                 🌐 {mission.language.toUpperCase()}
@@ -18970,11 +18906,14 @@ export default function KindWorldApp() {
                       style={{ width: '100px', height: '80px', objectFit: 'cover', borderRadius: '12px', marginRight: '20px', flexShrink: 0 }}
                     />
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
                         <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#2d3748' }}>
                           {mission.title}
                         </h3>
                         {(() => { const s = getMissionStatus(mission.date); return <span style={{ flexShrink: 0, padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', background: s.bg, color: s.color }}>{s.label}</span> })()}
+                        <span style={{ flexShrink: 0, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: 'rgba(251,191,36,0.15)', color: '#92400e', border: '1px dashed #f59e0b', letterSpacing: '0.3px' }}>
+                          🧪 Fictional · Not a Real Event
+                        </span>
                         {mission.language && mission.language !== language && (
                           <span title={t('missionInOriginalLang')} style={{ fontSize: '10px', background: 'rgba(0,0,0,0.07)', color: '#6b7280', borderRadius: '4px', padding: '2px 6px', fontWeight: '600', flexShrink: 0 }}>
                             🌐 {mission.language.toUpperCase()}
@@ -20377,17 +20316,19 @@ export default function KindWorldApp() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
-                {certificates.map((cert, index) => (
-                  <div 
-                    key={index} 
-                    style={{ 
-                      background: 'rgba(255, 255, 255, 0.9)', 
+                {certificates.map((cert, index) => {
+                  const isEarned = (user?.hours || 0) >= cert.hours
+                  return (
+                  <div
+                    key={index}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
                       backdropFilter: 'blur(10px)',
-                      padding: '32px', 
-                      borderRadius: '20px', 
-                      border: cert.earned ? '2px solid #28a745' : '1px solid rgba(255, 255, 255, 0.2)',
-                      boxShadow: cert.earned 
-                        ? '0 8px 32px rgba(40, 167, 69, 0.2)' 
+                      padding: '32px',
+                      borderRadius: '20px',
+                      border: isEarned ? '2px solid #28a745' : '1px solid rgba(255, 255, 255, 0.2)',
+                      boxShadow: isEarned
+                        ? '0 8px 32px rgba(40, 167, 69, 0.2)'
                         : '0 8px 32px rgba(0, 0, 0, 0.1)',
                       transition: 'all 0.3s ease',
                       position: 'relative',
@@ -20396,18 +20337,18 @@ export default function KindWorldApp() {
                     }}
                     onMouseOver={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)'
-                      e.currentTarget.style.boxShadow = cert.earned 
-                        ? '0 12px 40px rgba(40, 167, 69, 0.3)' 
+                      e.currentTarget.style.boxShadow = isEarned
+                        ? '0 12px 40px rgba(40, 167, 69, 0.3)'
                         : '0 12px 40px rgba(0, 0, 0, 0.15)'
                     }}
                     onMouseOut={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)'
-                      e.currentTarget.style.boxShadow = cert.earned 
-                        ? '0 8px 32px rgba(40, 167, 69, 0.2)' 
+                      e.currentTarget.style.boxShadow = isEarned
+                        ? '0 8px 32px rgba(40, 167, 69, 0.2)'
                         : '0 8px 32px rgba(0, 0, 0, 0.1)'
                     }}
                   >
-                    {cert.earned && (
+                    {isEarned && (
                       <div style={{
                         position: 'absolute',
                         top: '20px',
@@ -20426,7 +20367,7 @@ export default function KindWorldApp() {
                     <div style={{
                       width: '60px',
                       height: '60px',
-                      background: cert.earned 
+                      background: isEarned
                         ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)'
                         : 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%)',
                       borderRadius: '16px',
@@ -20436,12 +20377,12 @@ export default function KindWorldApp() {
                       marginBottom: '20px',
                       fontSize: '24px'
                     }}>
-                      {cert.earned ? '🏆' : '⏳'}
+                      {isEarned ? '🏆' : '⏳'}
                     </div>
 
-                    <h3 style={{ 
-                      margin: '0 0 12px 0', 
-                      color: cert.earned ? '#28a745' : '#718096',
+                    <h3 style={{
+                      margin: '0 0 12px 0',
+                      color: isEarned ? '#28a745' : '#718096',
                       fontSize: '18px',
                       fontWeight: '700'
                     }}>
@@ -20480,7 +20421,7 @@ export default function KindWorldApp() {
                           <div style={{
                             width: `${Math.min((user?.hours || 0) / cert.hours * 100, 100)}%`,
                             height: '100%',
-                            background: cert.earned 
+                            background: isEarned
                               ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)'
                               : 'linear-gradient(135deg, var(--ta) 0%, var(--tb) 100%)',
                             transition: 'width 0.3s ease'
@@ -20489,7 +20430,7 @@ export default function KindWorldApp() {
                       </div>
                     </div>
 
-                    {cert.earned ? (
+                    {isEarned ? (
                       <button
                         onClick={() => {
                           const _cid = `KW-${cert.id}-${Date.now()}`
@@ -20618,7 +20559,8 @@ export default function KindWorldApp() {
                       </div>
                     )}
                   </div>
-                ))}
+                  )
+                })}
               </div>
 
               {/* Available Certificates from NGOs */}
@@ -21125,17 +21067,17 @@ export default function KindWorldApp() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '16px' }}>
                   {[
                     { id: 'b1', icon: '🏆', name: 'Community Champion', company: 'KindWorld', color: '#fbbf24', description: 'Top contributor in community service' },
-                    { id: 'b2', icon: '🌱', name: 'Environmental Hero', company: 'Green Earth', color: '#22c55e', description: 'Champion of environmental causes' },
-                    { id: 'b3', icon: '📚', name: 'Education Supporter', company: 'UNICEF', color: '#3b82f6', description: 'Dedicated to educational initiatives' },
-                    { id: 'b4', icon: '❤️', name: 'Healthcare Helper', company: 'Red Cross', color: '#ef4444', description: 'Committed to health and wellness' },
-                    { id: 'b5', icon: '🍲', name: 'Hunger Fighter', company: 'Food Bank', color: '#f97316', description: 'Fighting hunger in communities' },
-                    { id: 'b6', icon: '🏠', name: 'Shelter Builder', company: 'Habitat', color: 'var(--ts)', description: 'Building homes for those in need' },
-                    { id: 'b7', icon: '🐾', name: 'Animal Guardian', company: 'WWF', color: '#ec4899', description: 'Protecting animal welfare' },
-                    { id: 'b8', icon: '👴', name: 'Elder Care Champion', company: 'Senior Care', color: '#14b8a6', description: 'Caring for elderly community' },
+                    { id: 'b2', icon: '🌱', name: 'Environmental Hero', company: 'KindWorld', color: '#22c55e', description: 'Champion of environmental causes' },
+                    { id: 'b3', icon: '📚', name: 'Education Supporter', company: 'KindWorld', color: '#3b82f6', description: 'Dedicated to educational initiatives' },
+                    { id: 'b4', icon: '❤️', name: 'Healthcare Helper', company: 'KindWorld', color: '#ef4444', description: 'Committed to health and wellness' },
+                    { id: 'b5', icon: '🍲', name: 'Hunger Fighter', company: 'KindWorld', color: '#f97316', description: 'Fighting hunger in communities' },
+                    { id: 'b6', icon: '🏠', name: 'Shelter Builder', company: 'KindWorld', color: 'var(--ts)', description: 'Building homes for those in need' },
+                    { id: 'b7', icon: '🐾', name: 'Animal Guardian', company: 'KindWorld', color: '#ec4899', description: 'Protecting animal welfare' },
+                    { id: 'b8', icon: '👴', name: 'Elder Care Champion', company: 'KindWorld', color: '#14b8a6', description: 'Caring for elderly community' },
                     { id: 'b9', icon: '🌟', name: 'Rising Star', company: 'KindWorld', color: 'var(--tp)', description: 'First 10 volunteer hours' },
                     { id: 'b10', icon: '💯', name: 'Century Club', company: 'KindWorld', color: '#a855f7', description: '100+ volunteer hours' },
                     { id: 'b11', icon: '🎓', name: 'Mentor', company: 'KindWorld', color: '#0ea5e9', description: 'Helped 5+ new volunteers' },
-                    { id: 'b12', icon: '🌍', name: 'Global Citizen', company: 'UN Volunteers', color: '#059669', description: 'International volunteering' }
+                    { id: 'b12', icon: '🌍', name: 'Global Citizen', company: 'KindWorld', color: '#059669', description: 'International volunteering' }
                   ].map((badge) => {
                     const isUnlocked = user?.userBadges?.some((ub: any) => ub.id === badge.id)
                     return (
@@ -21234,15 +21176,17 @@ export default function KindWorldApp() {
                     ⏱️ {t('topByHours')}
                   </h3>
                   {(() => {
+                    const verifiedEmails = new Set(hourSubmissions.filter((s: any) => s.status === 'approved').map((s: any) => s.volunteerEmail))
                     const ranked = [...allUsers]
-                      .filter((u: any) => (u.role === 'student' || u.role === 'volunteer') && u.showOnLeaderboard !== false)
+                      .filter((u: any) => (u.role === 'student' || u.role === 'volunteer') && u.showOnLeaderboard !== false && verifiedEmails.has(u.email))
                       .sort((a: any, b: any) => (b.hours || 0) - (a.hours || 0))
                       .slice(0, 10)
                     const medals = ['🥇', '🥈', '🥉']
                     if (ranked.length === 0) return (
-                      <div style={{ textAlign: 'center', padding: '32px 16px', color: '#9ca3af' }}>
-                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>⏱️</div>
-                        <p style={{ fontSize: '14px', margin: 0 }}>{t('leaderboardEmptyHours')}</p>
+                      <div style={{ textAlign: 'center', padding: '40px 24px' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌱</div>
+                        <p style={{ fontSize: '15px', fontWeight: '700', color: '#1e293b', margin: '0 0 8px' }}>Waiting for heroes to rise</p>
+                        <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0, lineHeight: '1.6' }}>No verified hours yet — the first volunteer to complete a mission will claim the top spot.</p>
                       </div>
                     )
                     return ranked.map((u: any, i) => (
@@ -21269,15 +21213,17 @@ export default function KindWorldApp() {
                     🏅 {t('topByBadges')}
                   </h3>
                   {(() => {
+                    const verifiedEmails = new Set(hourSubmissions.filter((s: any) => s.status === 'approved').map((s: any) => s.volunteerEmail))
                     const ranked = [...allUsers]
-                      .filter((u: any) => (u.role === 'student' || u.role === 'volunteer') && u.showOnLeaderboard !== false)
+                      .filter((u: any) => (u.role === 'student' || u.role === 'volunteer') && u.showOnLeaderboard !== false && verifiedEmails.has(u.email))
                       .sort((a: any, b: any) => (b.userBadges?.length || 0) - (a.userBadges?.length || 0))
                       .slice(0, 10)
                     const medals = ['🥇', '🥈', '🥉']
                     if (ranked.length === 0) return (
-                      <div style={{ textAlign: 'center', padding: '32px 16px', color: '#9ca3af' }}>
-                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>🏅</div>
-                        <p style={{ fontSize: '14px', margin: 0 }}>{t('leaderboardEmptyBadges')}</p>
+                      <div style={{ textAlign: 'center', padding: '40px 24px' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>✨</div>
+                        <p style={{ fontSize: '15px', fontWeight: '700', color: '#1e293b', margin: '0 0 8px' }}>Your badge could be first</p>
+                        <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0, lineHeight: '1.6' }}>Complete missions and earn badges to be the pioneer on this board.</p>
                       </div>
                     )
                     return ranked.map((u: any, i) => (
@@ -22591,17 +22537,17 @@ export default function KindWorldApp() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '16px' }}>
                           {[
                             { id: 'b1', icon: '🏆', name: 'Community Champion', company: 'KindWorld', color: '#fbbf24' },
-                            { id: 'b2', icon: '🌱', name: 'Environmental Hero', company: 'Green Earth', color: '#22c55e' },
-                            { id: 'b3', icon: '📚', name: 'Education Supporter', company: 'UNICEF', color: '#3b82f6' },
-                            { id: 'b4', icon: '❤️', name: 'Healthcare Helper', company: 'Red Cross', color: '#ef4444' },
-                            { id: 'b5', icon: '🍲', name: 'Hunger Fighter', company: 'Food Bank', color: '#f97316' },
-                            { id: 'b6', icon: '🏠', name: 'Shelter Builder', company: 'Habitat', color: 'var(--ts)' },
-                            { id: 'b7', icon: '🐾', name: 'Animal Guardian', company: 'WWF', color: '#ec4899' },
-                            { id: 'b8', icon: '👴', name: 'Elder Care Champion', company: 'Senior Care', color: '#14b8a6' },
+                            { id: 'b2', icon: '🌱', name: 'Environmental Hero', company: 'KindWorld', color: '#22c55e' },
+                            { id: 'b3', icon: '📚', name: 'Education Supporter', company: 'KindWorld', color: '#3b82f6' },
+                            { id: 'b4', icon: '❤️', name: 'Healthcare Helper', company: 'KindWorld', color: '#ef4444' },
+                            { id: 'b5', icon: '🍲', name: 'Hunger Fighter', company: 'KindWorld', color: '#f97316' },
+                            { id: 'b6', icon: '🏠', name: 'Shelter Builder', company: 'KindWorld', color: 'var(--ts)' },
+                            { id: 'b7', icon: '🐾', name: 'Animal Guardian', company: 'KindWorld', color: '#ec4899' },
+                            { id: 'b8', icon: '👴', name: 'Elder Care Champion', company: 'KindWorld', color: '#14b8a6' },
                             { id: 'b9', icon: '🌟', name: 'Rising Star', company: 'KindWorld', color: 'var(--tp)' },
                             { id: 'b10', icon: '💯', name: 'Century Club', company: 'KindWorld', color: '#a855f7' },
                             { id: 'b11', icon: '🎓', name: 'Mentor', company: 'KindWorld', color: '#0ea5e9' },
-                            { id: 'b12', icon: '🌍', name: 'Global Citizen', company: 'UN Volunteers', color: '#059669' }
+                            { id: 'b12', icon: '🌍', name: 'Global Citizen', company: 'KindWorld', color: '#059669' }
                           ].map((badge) => {
                             const isUnlocked = badgeManagementUser.userBadges?.some((ub: any) => ub.id === badge.id)
                             return (
@@ -24713,6 +24659,43 @@ export default function KindWorldApp() {
                       <div style={{ fontSize: '12px', color: '#94a3b8' }}>{t('settingsExportDesc')}</div>
                     </div>
                   </button>
+                  {/* Admin: Sponsorship Tier Pricing */}
+                  {user?.role === 'admin' && (() => {
+                    const tierConfig = [
+                      { key: 'bronze' as const, emoji: '🥉', name: 'Bronze', color: '#b45309', bg: '#fef3c7' },
+                      { key: 'silver' as const, emoji: '🥈', name: 'Silver', color: '#4b5563', bg: '#f3f4f6' },
+                      { key: 'gold'   as const, emoji: '⭐', name: 'Gold',   color: '#d97706', bg: '#fffbeb' },
+                    ]
+                    return (
+                      <div style={{ background: 'white', borderRadius: '20px', padding: '28px 32px', marginBottom: '16px', boxShadow: '0 2px 16px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
+                        <h2 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: '700', color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>💰 Sponsorship Tier Pricing</h2>
+                        <p style={{ margin: '0 0 22px', fontSize: '13px', color: '#94a3b8' }}>Set the monthly price shown to sponsors for each tier.</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+                          {tierConfig.map(({ key, emoji, name, color, bg }) => (
+                            <div key={key} style={{ background: bg, borderRadius: '14px', padding: '16px', border: `1px solid ${color}30` }}>
+                              <div style={{ fontSize: '20px', marginBottom: '6px' }}>{emoji}</div>
+                              <div style={{ fontSize: '13px', fontWeight: '700', color, marginBottom: '10px' }}>{name} Tier</div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '16px', fontWeight: '700', color: '#374151' }}>$</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={tierPrices[key]}
+                                  onChange={(e) => {
+                                    const updated = { ...tierPrices, [key]: e.target.value }
+                                    setTierPrices(updated)
+                                    localStorage.setItem('kindworld_tier_prices', JSON.stringify(updated))
+                                  }}
+                                  style={{ width: '100%', padding: '8px 10px', border: `1px solid ${color}50`, borderRadius: '8px', fontSize: '16px', fontWeight: '700', color: '#1e293b', background: 'white', outline: 'none' }}
+                                />
+                                <span style={{ fontSize: '12px', color: '#6b7280', whiteSpace: 'nowrap' }}>/mo</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })()}
                   <button
                     onClick={() => { setUser(null); setCurrentPage('landing') }}
                     style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '14px 18px', borderRadius: '12px', border: '1px solid #fecaca', background: '#fff5f5', cursor: 'pointer', textAlign: 'left', transition: 'background 0.15s', marginBottom: '10px' }}
@@ -25209,9 +25192,13 @@ export default function KindWorldApp() {
                     {(['bronze', 'silver', 'gold'] as const).map((tier) => {
                       const t2 = tierBenefits[tier]
                       return (
-                        <div key={tier} style={{ borderRadius: '20px', padding: '28px 24px', background: t2.bg, border: `2px solid ${t2.color}30` }}>
+                        <div key={tier} style={{ borderRadius: '20px', padding: '28px 24px', background: t2.bg, border: `2px solid ${t2.color}30`, display: 'flex', flexDirection: 'column' }}>
                           <div style={{ fontSize: '28px', marginBottom: '8px' }}>{t2.emoji}</div>
-                          <div style={{ fontSize: '18px', fontWeight: '800', color: t2.color, marginBottom: '16px' }}>{t2.name}</div>
+                          <div style={{ fontSize: '18px', fontWeight: '800', color: t2.color, marginBottom: '4px' }}>{t2.name}</div>
+                          <div style={{ fontSize: '26px', fontWeight: '800', color: t2.color, marginBottom: '16px' }}>
+                            ${Number(tierPrices[tier]).toLocaleString()}
+                            <span style={{ fontSize: '13px', fontWeight: '500', color: '#6b7280', marginLeft: '4px' }}>/mo</span>
+                          </div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                             {t2.perks.map((perk, i) => (
                               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#374151' }}>
