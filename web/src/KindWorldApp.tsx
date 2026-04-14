@@ -9049,9 +9049,19 @@ export default function KindWorldApp() {
       document.head.appendChild(styleSheet)
     }
   }
-  const [currentPage, setCurrentPage] = useState<'landing' | 'learnmore' | 'signin' | 'dashboard' | 'missions' | 'badges' | 'certificates' | 'profile' | 'friends' | 'leaderboard' | 'badgeManagement' | 'reports' | 'settings' | 'investor' | 'sponsorImpact' | 'whyPartner' | 'contact'>('landing')
+  const [user, setUser] = useState<User | null>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_user') || 'null') } catch { return null }
+  })
+  const [currentPage, setCurrentPage] = useState<'landing' | 'learnmore' | 'signin' | 'dashboard' | 'missions' | 'badges' | 'certificates' | 'profile' | 'friends' | 'leaderboard' | 'badgeManagement' | 'reports' | 'settings' | 'investor' | 'sponsorImpact' | 'whyPartner' | 'contact' | 'terms' | 'privacy'>(() => {
+    try {
+      const savedUser = localStorage.getItem('kindworld_user')
+      const savedPage = localStorage.getItem('kindworld_page')
+      const authenticatedPages = ['dashboard', 'missions', 'badges', 'certificates', 'profile', 'friends', 'leaderboard', 'badgeManagement', 'reports', 'settings', 'contact']
+      if (savedUser && savedPage && authenticatedPages.includes(savedPage)) return savedPage as any
+    } catch {}
+    return 'landing'
+  })
   const [badgeManagementUser, setBadgeManagementUser] = useState<any>(null)
-  const [user, setUser] = useState<User | null>(null)
   const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false)
 
   // Use Redux for language management
@@ -9240,6 +9250,22 @@ export default function KindWorldApp() {
     styleEl.textContent = `:root { ${Object.entries(vars).map(([k, v]) => `${k}: ${v}`).join('; ')} } body { background: var(--tpbg); transition: background 0.4s ease; }`
     localStorage.setItem('kindworld_user_theme', userTheme)
   }, [userTheme])
+
+  // Persist user session and current page to localStorage
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('kindworld_user', JSON.stringify(user))
+    } else {
+      localStorage.removeItem('kindworld_user')
+      localStorage.removeItem('kindworld_page')
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (user && currentPage !== 'landing' && currentPage !== 'signin') {
+      localStorage.setItem('kindworld_page', currentPage)
+    }
+  }, [currentPage, user])
 
   // Scale only font-size properties — never layout dimensions.
   // We inject CSS attribute-selector rules that override the inline px font-size
@@ -12092,7 +12118,11 @@ export default function KindWorldApp() {
               <img src="/kindworld-logo.jpg" alt="KindWorld" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
               <span style={{ fontSize: '20px', fontWeight: '300', color: 'white' }}>KindWorld</span>
             </div>
-            <p style={{ fontSize: '14px', marginBottom: '24px' }}>{t('footerTagline')}</p>
+            <p style={{ fontSize: '14px', marginBottom: '16px' }}>{t('footerTagline')}</p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '16px' }}>
+              <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('terms') }} style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', textDecoration: 'none' }}>{t('termsOfService')}</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('privacy') }} style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', textDecoration: 'none' }}>{t('privacyPolicy')}</a>
+            </div>
             <p style={{ fontSize: '12px' }}>© 2026 {t('footerCopyright')}</p>
           </div>
         </footer>
@@ -12481,9 +12511,239 @@ export default function KindWorldApp() {
               <img src="/kindworld-logo.jpg" alt="KindWorld" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
               <span style={{ fontSize: '20px', fontWeight: '300', color: 'white' }}>KindWorld</span>
             </div>
-            <p style={{ fontSize: '14px', marginBottom: '24px' }}>{t('signInFooterTagline')}</p>
+            <p style={{ fontSize: '14px', marginBottom: '16px' }}>{t('signInFooterTagline')}</p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '16px' }}>
+              <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('terms') }} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', textDecoration: 'none' }}>{t('termsOfService')}</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('privacy') }} style={{ color: 'rgba(255,255,255,0.5)', fontSize: '12px', textDecoration: 'none' }}>{t('privacyPolicy')}</a>
+            </div>
             <p style={{ fontSize: '12px' }}>{t('signInFooterCopyright')}</p>
           </div>
+        </footer>
+      </div>
+    )
+  }
+
+  // Terms of Service Page
+  if (currentPage === 'terms') {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: 'Inter, sans-serif' }}>
+        {/* Header */}
+        <header style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 24px', position: 'sticky', top: 0, zIndex: 100 }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button onClick={() => setCurrentPage('landing')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px' }}>
+              ← Back
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <img src="/kindworld-logo.jpg" alt="KindWorld" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+              <span style={{ fontWeight: '700', color: '#111827', fontSize: '16px' }}>KindWorld</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#111827', marginBottom: '8px' }}>Terms of Service</h1>
+          <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '40px' }}>Effective Date: 1 April 2026 · Last Updated: 14 April 2026</p>
+
+          {[
+            {
+              title: '1. Acceptance of Terms',
+              body: 'By accessing or using the KindWorld platform ("Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the Platform. These Terms apply to all users including volunteers, non-governmental organisations (NGOs), sponsors, and administrators.'
+            },
+            {
+              title: '2. Description of Service',
+              body: 'KindWorld is a volunteer management and community engagement platform that connects volunteers with NGOs and social causes. The Platform allows users to discover volunteer opportunities, track service hours, earn recognition, and communicate with partner organisations.'
+            },
+            {
+              title: '3. User Accounts and Registration',
+              body: 'You must register for an account to access most features of the Platform. You agree to provide accurate, current, and complete information during registration. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must be at least 13 years of age (or the minimum age of digital consent in your jurisdiction) to create an account.'
+            },
+            {
+              title: '4. User Roles',
+              body: 'KindWorld supports three primary user roles: (a) Volunteer — individuals who sign up to participate in missions and community activities; (b) NGO — registered non-profit or community organisations that post and manage volunteer missions; (c) Sponsor — organisations or individuals who support the platform financially or through in-kind contributions. Each role has specific capabilities and responsibilities within the Platform.'
+            },
+            {
+              title: '5. Volunteer Missions and Hours',
+              body: 'Volunteer opportunities listed on the Platform may be real or demonstration events. Events marked with a "Fictional · Not a Real Event" label are for platform testing purposes only and do not constitute actual community activities. Volunteer hours are tracked within the Platform and must be submitted and approved by the relevant NGO before they count toward certificates or recognition milestones.'
+            },
+            {
+              title: '6. Certificates and Recognition',
+              body: 'Certificates and recognition awards issued through KindWorld are issued by KindWorld Foundation based on verified volunteer hours accumulated on the Platform. These certificates recognise engagement within the KindWorld ecosystem. KindWorld does not guarantee that certificates will be recognised by any third-party employer, institution, or authority.'
+            },
+            {
+              title: '7. Prohibited Conduct',
+              body: 'You agree not to: (a) use the Platform for any unlawful purpose; (b) post false, misleading, or fraudulent information; (c) impersonate any person or organisation; (d) attempt to gain unauthorised access to the Platform or other users\' accounts; (e) submit false volunteer hours or mission completion claims; (f) harass, abuse, or harm other users; (g) use automated means to access the Platform without our written consent.'
+            },
+            {
+              title: '8. NGO Obligations',
+              body: 'NGOs using the Platform agree to: (a) only post legitimate volunteer opportunities; (b) accurately represent their organisation and activities; (c) review and approve volunteer hour submissions in a timely manner; (d) comply with all applicable laws regarding volunteer management, data protection, and non-profit operations in their jurisdiction.'
+            },
+            {
+              title: '9. Sponsor Obligations',
+              body: 'Sponsors agree to: (a) accurately represent their organisation; (b) fulfil any commitments made through the Platform; (c) not use the Platform to mislead volunteers or NGOs about the nature or value of their support.'
+            },
+            {
+              title: '10. Intellectual Property',
+              body: 'All content on the Platform, including but not limited to logos, graphics, text, and software, is the property of KindWorld or its licensors and is protected by applicable intellectual property laws. You may not reproduce, distribute, or create derivative works from Platform content without our express written permission.'
+            },
+            {
+              title: '11. Privacy',
+              body: 'Your use of the Platform is also governed by our Privacy Policy, which is incorporated into these Terms by reference. By using the Platform, you consent to the collection and use of your information as described in the Privacy Policy.'
+            },
+            {
+              title: '12. Limitation of Liability',
+              body: 'To the maximum extent permitted by applicable law, KindWorld shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of or inability to use the Platform. KindWorld does not guarantee the accuracy, completeness, or reliability of any volunteer opportunity listed on the Platform and is not responsible for any harm arising from participation in any volunteer mission.'
+            },
+            {
+              title: '13. Termination',
+              body: 'KindWorld reserves the right to suspend or terminate your account at any time for violation of these Terms or for any conduct that we determine to be harmful to the Platform, other users, or the public. You may delete your account at any time from your profile settings.'
+            },
+            {
+              title: '14. Changes to Terms',
+              body: 'We may update these Terms from time to time. We will notify registered users of material changes via the Platform or by email. Continued use of the Platform after changes are posted constitutes your acceptance of the revised Terms.'
+            },
+            {
+              title: '15. Governing Law',
+              body: 'These Terms are governed by and construed in accordance with the laws of Malaysia, without regard to its conflict of law provisions. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the courts of Malaysia.'
+            },
+            {
+              title: '16. Contact',
+              body: 'If you have any questions about these Terms, please contact us at: admin@kindworld.com'
+            }
+          ].map((section, i) => (
+            <div key={i} style={{ marginBottom: '32px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', marginBottom: '10px' }}>{section.title}</h2>
+              <p style={{ fontSize: '15px', color: '#374151', lineHeight: '1.75' }}>{section.body}</p>
+            </div>
+          ))}
+
+          <div style={{ marginTop: '48px', padding: '20px 24px', background: '#f0fdf4', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+            <p style={{ fontSize: '14px', color: '#166534', margin: 0 }}>
+              By using KindWorld, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+            </p>
+          </div>
+
+          <div style={{ marginTop: '32px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <button onClick={() => setCurrentPage('privacy')} style={{ background: 'none', border: '1.5px solid #e5e7eb', borderRadius: '10px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer', color: '#374151', fontWeight: '500' }}>
+              Privacy Policy →
+            </button>
+            <button onClick={() => setCurrentPage('landing')} style={{ background: '#4f46e5', border: 'none', borderRadius: '10px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer', color: 'white', fontWeight: '600' }}>
+              Back to Home
+            </button>
+          </div>
+        </main>
+
+        <footer style={{ background: '#0f172a', color: 'rgba(255,255,255,0.5)', padding: '32px 24px', textAlign: 'center', marginTop: '64px' }}>
+          <p style={{ fontSize: '13px', margin: 0 }}>© 2026 KindWorld Foundation. All rights reserved.</p>
+        </footer>
+      </div>
+    )
+  }
+
+  // Privacy Policy Page
+  if (currentPage === 'privacy') {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f8fafc', fontFamily: 'Inter, sans-serif' }}>
+        {/* Header */}
+        <header style={{ background: 'white', borderBottom: '1px solid #e5e7eb', padding: '16px 24px', position: 'sticky', top: 0, zIndex: 100 }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button onClick={() => setCurrentPage('landing')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', borderRadius: '8px' }}>
+              ← Back
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <img src="/kindworld-logo.jpg" alt="KindWorld" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }} />
+              <span style={{ fontWeight: '700', color: '#111827', fontSize: '16px' }}>KindWorld</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main style={{ maxWidth: '800px', margin: '0 auto', padding: '48px 24px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '800', color: '#111827', marginBottom: '8px' }}>Privacy Policy</h1>
+          <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '40px' }}>Effective Date: 1 April 2026 · Last Updated: 14 April 2026</p>
+
+          <div style={{ padding: '16px 20px', background: '#eff6ff', borderRadius: '10px', border: '1px solid #bfdbfe', marginBottom: '40px' }}>
+            <p style={{ fontSize: '14px', color: '#1e40af', margin: 0, lineHeight: '1.6' }}>
+              KindWorld is committed to protecting your personal data. This Privacy Policy explains what information we collect, how we use it, and your rights. We comply with the Personal Data Protection Act 2010 (PDPA) of Malaysia and applicable international data protection standards.
+            </p>
+          </div>
+
+          {[
+            {
+              title: '1. Who We Are',
+              body: 'KindWorld Foundation operates the KindWorld platform, a volunteer management and community engagement service. Our registered correspondence address is in Malaysia. For data protection enquiries, you may contact us at: admin@kindworld.com'
+            },
+            {
+              title: '2. Information We Collect',
+              body: 'We collect the following categories of personal data:\n\n• Account Information: name, email address, password (stored securely), date of birth (optional), profile photo (optional)\n• Role-Specific Data: for NGOs — organisation name, registration details, mission information; for Sponsors — company name, contact information, sponsorship tier\n• Activity Data: missions registered for, volunteer hours submitted and approved, certificates earned, badges awarded\n• Communications: messages sent through the platform\'s messaging system\n• Technical Data: browser type, device information, IP address, and usage patterns collected via standard web analytics\n• Preference Data: language setting, theme preference, region and country'
+            },
+            {
+              title: '3. How We Use Your Information',
+              body: 'We use your personal data to:\n\n• Create and manage your account\n• Match volunteers with relevant missions and organisations\n• Track and verify volunteer hours and issue certificates\n• Facilitate communication between users, NGOs, and administrators\n• Send important notifications about your missions and account\n• Improve the Platform through anonymised usage analytics\n• Comply with our legal obligations'
+            },
+            {
+              title: '4. Legal Basis for Processing',
+              body: 'We process your personal data on the following legal bases: (a) Contractual necessity — to provide the services you have signed up for; (b) Legitimate interests — to improve the Platform and prevent fraud; (c) Consent — for optional features such as appearing on public leaderboards; (d) Legal obligation — to comply with applicable laws and regulations.'
+            },
+            {
+              title: '5. Data Sharing',
+              body: 'We do not sell your personal data. We share your information only in the following circumstances:\n\n• With NGOs: when you register for a mission, the NGO receives your name, contact email, and submitted hours\n• With Administrators: platform administrators can view user accounts for support and moderation purposes\n• With Service Providers: we use third-party hosting and infrastructure services (e.g., Railway) that process data on our behalf under data processing agreements\n• For Legal Compliance: we may disclose data when required by law or to protect the rights and safety of users'
+            },
+            {
+              title: '6. Data Retention',
+              body: 'We retain your personal data for as long as your account is active. If you delete your account, your personal profile data is removed from the Platform. Some data (e.g., anonymised volunteer hour totals, mission records) may be retained in aggregated form for statistical purposes. Communications may be retained for up to 12 months after account deletion for legal compliance purposes.'
+            },
+            {
+              title: '7. Leaderboard and Public Visibility',
+              body: 'If you have verified volunteer hours on the Platform, your name and hours total may appear on the public volunteer leaderboard. You can opt out of the leaderboard at any time through your Profile settings. Your email address is never shown publicly.'
+            },
+            {
+              title: '8. Data Security',
+              body: 'We implement appropriate technical and organisational measures to protect your personal data against unauthorised access, alteration, disclosure, or destruction. However, no internet transmission is completely secure, and we cannot guarantee absolute security. You are responsible for keeping your account password confidential.'
+            },
+            {
+              title: '9. Your Rights',
+              body: 'Under the PDPA (Malaysia) and applicable data protection laws, you have the right to:\n\n• Access the personal data we hold about you\n• Correct inaccurate or incomplete data\n• Request deletion of your personal data (right to erasure)\n• Object to or restrict certain types of processing\n• Withdraw consent at any time (where processing is based on consent)\n• Lodge a complaint with the relevant data protection authority\n\nTo exercise any of these rights, please contact us at admin@kindworld.com. We will respond within 30 days.'
+            },
+            {
+              title: '10. Children\'s Privacy',
+              body: 'The Platform is not directed to children under the age of 13. Users between 13 and 18 years of age should obtain parental or guardian consent before registering. If we become aware that we have collected personal data from a child under 13 without appropriate consent, we will delete that information promptly.'
+            },
+            {
+              title: '11. International Data Transfers',
+              body: 'KindWorld operates primarily in Malaysia. If your data is transferred to or processed in other countries, we ensure that appropriate safeguards are in place in accordance with applicable data protection laws.'
+            },
+            {
+              title: '12. Cookies and Tracking',
+              body: 'The Platform uses browser localStorage (not third-party cookies) to store your session, preferences, and application data locally on your device. This data does not leave your device unless you take an explicit action within the Platform. We do not currently use advertising trackers or third-party analytics cookies.'
+            },
+            {
+              title: '13. Changes to This Policy',
+              body: 'We may update this Privacy Policy from time to time. We will notify you of material changes through the Platform or by email. Your continued use of the Platform after changes are posted constitutes acceptance of the revised Policy.'
+            },
+            {
+              title: '14. Contact Us',
+              body: 'For any questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact:\n\nKindWorld Foundation\nEmail: admin@kindworld.com\n\nWe are committed to resolving any concerns you have about our handling of your personal data.'
+            }
+          ].map((section, i) => (
+            <div key={i} style={{ marginBottom: '32px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', marginBottom: '10px' }}>{section.title}</h2>
+              <p style={{ fontSize: '15px', color: '#374151', lineHeight: '1.75', whiteSpace: 'pre-line' }}>{section.body}</p>
+            </div>
+          ))}
+
+          <div style={{ marginTop: '32px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <button onClick={() => setCurrentPage('terms')} style={{ background: 'none', border: '1.5px solid #e5e7eb', borderRadius: '10px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer', color: '#374151', fontWeight: '500' }}>
+              Terms of Service →
+            </button>
+            <button onClick={() => setCurrentPage('landing')} style={{ background: '#4f46e5', border: 'none', borderRadius: '10px', padding: '10px 20px', fontSize: '14px', cursor: 'pointer', color: 'white', fontWeight: '600' }}>
+              Back to Home
+            </button>
+          </div>
+        </main>
+
+        <footer style={{ background: '#0f172a', color: 'rgba(255,255,255,0.5)', padding: '32px 24px', textAlign: 'center', marginTop: '64px' }}>
+          <p style={{ fontSize: '13px', margin: 0 }}>© 2026 KindWorld Foundation. All rights reserved.</p>
         </footer>
       </div>
     )
@@ -13416,9 +13676,9 @@ export default function KindWorldApp() {
                 />
                 <label htmlFor="terms" style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.6' }}>
                   {t('agreeTerms')}{' '}
-                  <a href="#" style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('termsOfService')}</a>
+                  <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('terms') }} style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('termsOfService')}</a>
                   {' '}{t('and')}{' '}
-                  <a href="#" style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('privacyPolicy')}</a>
+                  <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage('privacy') }} style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('privacyPolicy')}</a>
                 </label>
               </div>
 
