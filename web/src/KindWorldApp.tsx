@@ -10403,11 +10403,28 @@ export default function KindWorldApp() {
       return
     }
 
-    // Check if email exists in allUsers (real registered or approved user)
+    // Check if email exists in allUsers (real registered user)
     const registeredUser = allUsers.find((u: any) => u.email === emailLower)
-    if (registeredUser) {
-      setSignInError('')
-      setIsLoading(true)
+    if (!registeredUser) {
+      setSignInError('No account found with this email. Please register first.')
+      return
+    }
+
+    // Check password
+    if (registeredUser.password && registeredUser.password !== signInForm.password) {
+      setSignInError(t('invalidCredentials') || 'Invalid email or password.')
+      return
+    }
+
+    // Check role matches
+    if (registeredUser.role !== selectedRole) {
+      const roleLabel = (r: string) => r === 'student' ? 'Volunteer' : r === 'ngo' ? 'NGO' : r === 'sponsor' ? 'Sponsor' : 'Admin'
+      setSignInError(`This account is registered as a ${roleLabel(registeredUser.role)}. Please select "${roleLabel(registeredUser.role)}" above.`)
+      return
+    }
+
+    setSignInError('')
+    setIsLoading(true)
       setTimeout(() => {
         const userData: User = {
           id: registeredUser.id || `user_${Date.now()}`,
@@ -10467,17 +10484,10 @@ export default function KindWorldApp() {
           if (savedRegion) setUserRegion(savedRegion)
         }
       }, 1000)
-      return
-    }
-
-    // Regular sign-in (volunteer/NGO based on selected role)
-    setSignInError('')
-    performSignIn()
   }
 
   const handleSocialSignIn = () => {
-    setSignInError('')
-    performSignIn()
+    setSignInError('Social sign-in is not available yet. Please use email and password.')
   }
 
   // Sample user data for admin dashboard
@@ -12584,6 +12594,7 @@ export default function KindWorldApp() {
             name: newUserData.name,
             role: actualRole,
             email: newUserData.email.toLowerCase().trim(),
+            password: registerForm.password,
             hours: 0,
             joinDate: newUserData.joinDate,
             status: actualRole === 'ngo' ? 'pending' : 'active',
