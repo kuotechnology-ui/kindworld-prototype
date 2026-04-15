@@ -156,6 +156,7 @@ interface Mission {
   country?: string
   language?: string
   registrationDeadline?: string  // ISO datetime string, e.g. "2026-05-10T18:00"
+  isDemo?: boolean  // true for seeded demo missions only
   report?: {
     text: string
     photos: string[]
@@ -10712,7 +10713,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=400&h=250&fit=crop',
       joined: false,
       region: 'NA',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     },
     {
       id: 2,
@@ -10730,7 +10732,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&h=250&fit=crop',
       joined: true,
       region: 'SEA',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     },
     {
       id: 3,
@@ -10748,7 +10751,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&h=250&fit=crop',
       joined: false,
       region: 'EU',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     },
     {
       id: 4,
@@ -10766,7 +10770,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=250&fit=crop',
       joined: false,
       region: 'EA',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     },
     {
       id: 5,
@@ -10784,7 +10789,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=400&h=250&fit=crop',
       joined: false,
       region: 'SEA',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     },
     {
       id: 6,
@@ -10802,7 +10808,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=400&h=250&fit=crop',
       joined: false,
       region: 'OC',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     },
     {
       id: 7,
@@ -10820,7 +10827,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&h=250&fit=crop',
       joined: false,
       region: 'SEA',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     },
     {
       id: 8,
@@ -10838,7 +10846,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=400&h=250&fit=crop',
       joined: false,
       region: 'EA',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     },
     {
       id: 9,
@@ -10856,7 +10865,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=250&fit=crop',
       joined: false,
       region: 'SEA',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     },
     {
       id: 10,
@@ -10874,7 +10884,8 @@ export default function KindWorldApp() {
       image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&h=250&fit=crop',
       joined: false,
       region: 'SEA',
-      language: 'en'
+      language: 'en',
+      isDemo: true
     }
   ]
 
@@ -10891,9 +10902,13 @@ export default function KindWorldApp() {
             5: '2026-04-15', 6: '2026-04-22', 7: '2026-05-01', 8: '2026-05-10',
             9: '2026-05-20', 10: '2026-06-01'
           }
-          const migrated = parsed.map((m: any) =>
-            dateMap[m.id] && m.date.startsWith('2025') ? { ...m, date: dateMap[m.id] } : m
-          )
+          const migrated = parsed.map((m: any) => {
+            let updated = m
+            if (dateMap[m.id] && m.date.startsWith('2025')) updated = { ...updated, date: dateMap[m.id] }
+            // Migrate: tag seeded demo missions (ids 1–10) with isDemo if not already set
+            if (m.id >= 1 && m.id <= 10 && updated.isDemo === undefined) updated = { ...updated, isDemo: true }
+            return updated
+          })
           return migrated
         } catch (e) {
           return defaultMissions
@@ -15142,9 +15157,9 @@ export default function KindWorldApp() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', marginBottom: '10px' }}>
                           <div style={{ fontSize: '14px', fontWeight: '600', color: isPast ? '#6b7280' : '#1e293b', lineHeight: '1.3', flex: 1 }}>
                             {mission.title}
-                            <span style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: '700', background: 'rgba(251,191,36,0.15)', color: '#92400e', border: '1px dashed #f59e0b', whiteSpace: 'nowrap' }}>
+                            {mission.isDemo && <span style={{ marginLeft: '8px', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: '700', background: 'rgba(251,191,36,0.15)', color: '#92400e', border: '1px dashed #f59e0b', whiteSpace: 'nowrap' }}>
                               🧪 Fictional · Not Real
-                            </span>
+                            </span>}
                             {mission.language && mission.language !== language && (
                               <span title={t('missionInOriginalLang')} style={{ marginLeft: '6px', fontSize: '10px', background: 'rgba(0,0,0,0.07)', color: '#6b7280', borderRadius: '4px', padding: '2px 5px', fontWeight: '600' }}>
                                 🌐 {mission.language.toUpperCase()}
@@ -19182,9 +19197,9 @@ export default function KindWorldApp() {
                           {mission.title}
                         </h3>
                         {(() => { const s = getMissionStatus(mission.date); return <span style={{ flexShrink: 0, padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', background: s.bg, color: s.color }}>{s.label}</span> })()}
-                        <span style={{ flexShrink: 0, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: 'rgba(251,191,36,0.15)', color: '#92400e', border: '1px dashed #f59e0b', letterSpacing: '0.3px' }}>
+                        {mission.isDemo && <span style={{ flexShrink: 0, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', background: 'rgba(251,191,36,0.15)', color: '#92400e', border: '1px dashed #f59e0b', letterSpacing: '0.3px' }}>
                           🧪 Fictional · Not a Real Event
-                        </span>
+                        </span>}
                         {mission.language && mission.language !== language && (
                           <span title={t('missionInOriginalLang')} style={{ fontSize: '10px', background: 'rgba(0,0,0,0.07)', color: '#6b7280', borderRadius: '4px', padding: '2px 6px', fontWeight: '600', flexShrink: 0 }}>
                             🌐 {mission.language.toUpperCase()}
