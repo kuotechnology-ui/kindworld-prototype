@@ -9056,7 +9056,7 @@ export default function KindWorldApp() {
     try {
       const savedUser = localStorage.getItem('kindworld_user')
       const savedPage = localStorage.getItem('kindworld_page')
-      const authenticatedPages = ['dashboard', 'missions', 'badges', 'certificates', 'profile', 'friends', 'leaderboard', 'badgeManagement', 'reports', 'settings', 'contact']
+      const authenticatedPages = ['dashboard', 'missions', 'badges', 'certificates', 'profile', 'friends', 'leaderboard', 'badgeManagement', 'reports', 'settings', 'contact', 'investor', 'sponsorImpact', 'whyPartner']
       if (savedUser && savedPage && authenticatedPages.includes(savedPage)) return savedPage as any
     } catch {}
     return 'landing'
