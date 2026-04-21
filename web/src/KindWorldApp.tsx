@@ -10504,7 +10504,8 @@ export default function KindWorldApp() {
         userBadges: [],
         completedMissions: 0,
         organizationsHelped: 0,
-        rating: 0
+        rating: 0,
+        lineId: profile.userId
       }
 
       if (!existingUser) {
@@ -10512,8 +10513,16 @@ export default function KindWorldApp() {
           ...userData,
           password: '',
           status: 'active',
-          lineUserId: profile.userId
+          lineUserId: profile.userId,
+          lineId: profile.userId
         }])
+      } else {
+        // Update lineUserId and lineId on returning LINE users in case they were missing
+        setAllUsers((prev: any[]) => prev.map((u: any) =>
+          u.email === lineEmail || u.lineUserId === profile.userId
+            ? { ...u, lineUserId: profile.userId, lineId: u.lineId || profile.userId }
+            : u
+        ))
       }
 
       setUser(userData)
@@ -22658,15 +22667,33 @@ export default function KindWorldApp() {
                     <div style={{ gridColumn: '1/-1', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
                       <p style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>{t('profileContactChannels')}</p>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        {[
-                          { label: t('profileLineId'), key: 'lineId', placeholder: '', type: 'text' },
-                          { label: t('profileWhatsApp'), key: 'whatsapp', placeholder: '', type: 'tel' }
-                        ].map(f=>(
-                          <div key={f.key}>
-                            <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{f.label}</label>
-                            <input type={f.type} value={(isEditingProfile ? (profileForm as any)[f.key] : (allUsers.find((u: any) => u.email === user?.email) as any)?.[f.key]) || ''} onChange={e=>setProfileForm({...profileForm, [f.key]: e.target.value})} disabled={!isEditingProfile} placeholder={f.placeholder} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }} />
-                          </div>
-                        ))}
+                        {/* LINE ID field */}
+                        {(() => {
+                          const savedUser = allUsers.find((u: any) => u.email === user?.email || u.lineUserId === (user as any)?.lineUserId)
+                          const isLineAccount = !!(savedUser?.lineUserId)
+                          const lineIdValue = isEditingProfile ? profileForm.lineId : (savedUser?.lineId || '')
+                          return (
+                            <div>
+                              <label style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>
+                                {t('profileLineId')}
+                                {isLineAccount && <span style={{ fontSize:'11px', background:'#00b900', color:'white', padding:'2px 8px', borderRadius:'20px', fontWeight:'600' }}>Connected</span>}
+                              </label>
+                              <input
+                                type="text"
+                                value={lineIdValue}
+                                onChange={e => setProfileForm({...profileForm, lineId: e.target.value})}
+                                disabled={!isEditingProfile || isLineAccount}
+                                placeholder={isLineAccount ? '' : 'Your LINE ID'}
+                                style={{ width:'100%', padding:'12px 14px', border: isLineAccount ? '2px solid #00b900' : isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isLineAccount ? '#f0fff0' : isEditingProfile ? 'white' : '#f9fafb', cursor: (isEditingProfile && !isLineAccount) ? 'text' : 'default', boxSizing:'border-box', color: isLineAccount ? '#166534' : 'inherit', fontFamily: isLineAccount ? 'monospace' : 'inherit' }}
+                              />
+                            </div>
+                          )
+                        })()}
+                        {/* WhatsApp field */}
+                        <div>
+                          <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{t('profileWhatsApp')}</label>
+                          <input type="tel" value={(isEditingProfile ? profileForm.whatsapp : (allUsers.find((u: any) => u.email === user?.email) as any)?.whatsapp) || ''} onChange={e=>setProfileForm({...profileForm, whatsapp: e.target.value})} disabled={!isEditingProfile} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }} />
+                        </div>
                       </div>
                     </div>
 
