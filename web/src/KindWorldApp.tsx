@@ -10455,7 +10455,7 @@ export default function KindWorldApp() {
 
   const handleLINECallback = async (code: string) => {
     setIsLoading(true)
-    setCurrentPage('signin')
+    window.history.replaceState({}, document.title, '/')
     try {
       const tokenRes = await fetch('/api/line-token', {
         method: 'POST',
@@ -10469,14 +10469,15 @@ export default function KindWorldApp() {
         })
       })
       const tokenData = await tokenRes.json()
-      if (!tokenData.access_token) throw new Error('Token exchange failed')
+      if (!tokenData.access_token) {
+        throw new Error(tokenData.error_description || tokenData.error || 'Token exchange failed')
+      }
 
       const profileRes = await fetch('/api/line-profile', {
         headers: { Authorization: `Bearer ${tokenData.access_token}` }
       })
       const profile = await profileRes.json()
-
-      window.history.replaceState({}, document.title, '/')
+      if (!profile.userId) throw new Error('Could not fetch LINE profile')
 
       const lineEmail = `line_${profile.userId}@kindworld.line`
       const existingUser = allUsers.find((u: any) => u.email === lineEmail)
@@ -10508,8 +10509,11 @@ export default function KindWorldApp() {
       setUser(userData)
       setSelectedRole('student')
       setCurrentPage('dashboard')
-    } catch {
-      setSignInError('LINE sign-in failed. Please try again.')
+      setNotifications(prev => [...prev, `Welcome, ${profile.displayName}! 🎉`])
+    } catch (err: any) {
+      const msg = err?.message || 'LINE sign-in failed'
+      setNotifications(prev => [...prev, `❌ LINE sign-in failed: ${msg}`])
+      setSignInError(`LINE sign-in failed: ${msg}`)
     } finally {
       setIsLoading(false)
     }
@@ -11196,9 +11200,16 @@ export default function KindWorldApp() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('code')
-    const state = urlParams.get('state')
+    const error = urlParams.get('error')
     const savedState = localStorage.getItem('line_oauth_state')
-    if (code && state && savedState && state === savedState) {
+    if (error) {
+      // LINE returned an error (e.g. user denied)
+      window.history.replaceState({}, document.title, '/')
+      setNotifications(prev => [...prev, `LINE login cancelled: ${error}`])
+      return
+    }
+    if (code) {
+      // Accept any code from LINE, even if state is missing (mobile/in-app browsers may clear localStorage)
       localStorage.removeItem('line_oauth_state')
       handleLINECallback(code)
     }
