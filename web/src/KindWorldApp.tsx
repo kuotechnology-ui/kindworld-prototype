@@ -11881,7 +11881,7 @@ export default function KindWorldApp() {
 
         {/* Founder's Message Section */}
         <AnimatedSection>
-        <section style={{ padding: '120px 48px', background: 'linear-gradient(135deg, var(--tl) 0%, var(--tl2) 100%)' }}>
+        <section style={{ padding: isMobile ? '60px 20px' : '120px 48px', background: 'linear-gradient(135deg, var(--tl) 0%, var(--tl2) 100%)' }}>
           <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
             <div style={{
               display: 'inline-flex',
@@ -11894,7 +11894,7 @@ export default function KindWorldApp() {
             }}>
               <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--tp)', letterSpacing: '1px' }}>{t('founderLabel')}</span>
             </div>
-            <h2 style={{ fontSize: '44px', fontWeight: '700', color: '#1f2937', marginBottom: '48px', letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: isMobile ? 'clamp(26px, 7vw, 36px)' : '44px', fontWeight: '700', color: '#1f2937', marginBottom: isMobile ? '28px' : '48px', letterSpacing: '-0.02em' }}>
               {t('founderSectionTitle')}
             </h2>
 
@@ -11902,13 +11902,13 @@ export default function KindWorldApp() {
             <div style={{
               background: 'white',
               borderRadius: '24px',
-              padding: '48px',
+              padding: isMobile ? '28px 20px' : '48px',
               border: '1px solid #e5e7eb',
               boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
               position: 'relative'
             }}>
               <div style={{
-                fontSize: '72px',
+                fontSize: isMobile ? '48px' : '72px',
                 color: 'var(--ta)',
                 lineHeight: 1,
                 fontFamily: 'Georgia, serif',
@@ -11916,7 +11916,7 @@ export default function KindWorldApp() {
               }}>"</div>
               <p style={{
                 color: '#1f2937',
-                fontSize: '22px',
+                fontSize: isMobile ? '17px' : '22px',
                 lineHeight: '1.9',
                 fontWeight: '400',
                 fontStyle: 'italic',
@@ -12000,7 +12000,7 @@ export default function KindWorldApp() {
 
         {/* SDG Alignment Section */}
         <AnimatedSection>
-        <section style={{ padding: '120px 24px', background: 'linear-gradient(180deg, #fff9ef 0%, #fff4e0 55%, #fff9f4 100%)', position: 'relative', overflow: 'hidden' }}>
+        <section style={{ padding: isMobile ? '60px 16px' : '120px 24px', background: 'linear-gradient(180deg, #fff9ef 0%, #fff4e0 55%, #fff9f4 100%)', position: 'relative', overflow: 'hidden' }}>
           {/* Rainbow top bar */}
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '5px', background: 'linear-gradient(90deg, #e5243b 0%, #dda63a 14%, #4c9f38 28%, #c5192d 42%, #dd1367 56%, #fd9d24 70%, #3f7e44 84%, #19486a 100%)' }} />
           {/* Soft warm glow */}
@@ -12040,8 +12040,8 @@ export default function KindWorldApp() {
                 {/* Grid */}
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
-                  gap: '16px',
+                  gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                  gap: isMobile ? '10px' : '16px',
                   marginBottom: '36px',
                 }}>
                   {sdgs.map((sdg, index) => (
@@ -12051,14 +12051,14 @@ export default function KindWorldApp() {
                       style={{
                         background: sdg.color,
                         borderRadius: '22px',
-                        padding: '28px 24px 22px',
+                        padding: isMobile ? '16px 12px 14px' : '28px 24px 22px',
                         cursor: 'pointer',
                         position: 'relative',
                         overflow: 'hidden',
                         transition: 'transform 0.28s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.28s ease',
                         display: 'flex',
                         flexDirection: 'column',
-                        minHeight: '200px',
+                        minHeight: isMobile ? '130px' : '200px',
                         userSelect: 'none',
                         boxShadow: `0 8px 28px ${sdg.color}55`,
                       }}
@@ -12080,13 +12080,13 @@ export default function KindWorldApp() {
                       </div>
 
                       {/* Large thin number */}
-                      <div style={{ fontSize: '72px', fontWeight: '200', color: 'rgba(255,255,255,0.95)', lineHeight: 1, letterSpacing: '-4px', margin: '8px 0 auto', position: 'relative' }}>
+                      <div style={{ fontSize: isMobile ? '40px' : '72px', fontWeight: '200', color: 'rgba(255,255,255,0.95)', lineHeight: 1, letterSpacing: isMobile ? '-2px' : '-4px', margin: '8px 0 auto', position: 'relative' }}>
                         {String(sdg.num).padStart(2, '0')}
                       </div>
 
                       {/* Thin rule + goal name */}
-                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '12px', marginTop: '12px', position: 'relative' }}>
-                        <div style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,1)', letterSpacing: '0.3px', textTransform: 'uppercase', lineHeight: 1.4 }}>
+                      <div style={{ borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '8px', marginTop: '8px', position: 'relative' }}>
+                        <div style={{ fontSize: isMobile ? '9px' : '11px', fontWeight: '700', color: 'rgba(255,255,255,1)', letterSpacing: '0.3px', textTransform: 'uppercase', lineHeight: 1.4 }}>
                           {t(sdg.nameKey)}
                         </div>
                       </div>
@@ -12125,7 +12125,7 @@ export default function KindWorldApp() {
                       }}
                     >
                       {/* Coloured header zone */}
-                      <div style={{ background: `${active.color}12`, padding: '40px 52px 36px', position: 'relative', borderBottom: `1px solid ${active.color}20` }}>
+                      <div style={{ background: `${active.color}12`, padding: isMobile ? '28px 24px 20px' : '40px 52px 36px', position: 'relative', borderBottom: `1px solid ${active.color}20` }}>
                         {/* 4 px top bar */}
                         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: active.color }} />
 
@@ -12143,7 +12143,7 @@ export default function KindWorldApp() {
                         </p>
 
                         {/* Large thin number */}
-                        <div style={{ fontSize: '88px', fontWeight: '200', color: active.color, lineHeight: 1, letterSpacing: '-5px', margin: '0 0 6px' }}>
+                        <div style={{ fontSize: isMobile ? '56px' : '88px', fontWeight: '200', color: active.color, lineHeight: 1, letterSpacing: isMobile ? '-3px' : '-5px', margin: '0 0 6px' }}>
                           {String(active.num).padStart(2, '0')}
                         </div>
 
@@ -12154,7 +12154,7 @@ export default function KindWorldApp() {
                       </div>
 
                       {/* Body */}
-                      <div style={{ padding: '36px 52px 48px' }}>
+                      <div style={{ padding: isMobile ? '20px 24px 28px' : '36px 52px 48px' }}>
                         {/* Description */}
                         <p style={{ color: '#4b5563', fontSize: '15px', lineHeight: '1.85', margin: '0 0 32px' }}>
                           {t(active.descKey)}
@@ -12189,17 +12189,17 @@ export default function KindWorldApp() {
 
         {/* Why KindWorld Section */}
         <AnimatedSection>
-        <section style={{ padding: '100px 24px', background: '#ffffff' }}>
+        <section style={{ padding: isMobile ? '60px 16px' : '100px 24px', background: '#ffffff' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-              <h2 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '700', color: '#111827', marginBottom: '16px', lineHeight: '1.2' }}>
+            <div style={{ textAlign: 'center', marginBottom: isMobile ? '36px' : '64px' }}>
+              <h2 style={{ fontSize: isMobile ? 'clamp(24px, 7vw, 34px)' : 'clamp(32px, 4vw, 48px)', fontWeight: '700', color: '#111827', marginBottom: '16px', lineHeight: '1.2' }}>
                 {t('whyKindWorldTitle')}
               </h2>
-              <p style={{ fontSize: '20px', color: '#6b7280', maxWidth: '560px', margin: '0 auto', lineHeight: '1.6' }}>
+              <p style={{ fontSize: isMobile ? '15px' : '20px', color: '#6b7280', maxWidth: '560px', margin: '0 auto', lineHeight: '1.6' }}>
                 {t('whyKindWorldSubtitle')}
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '32px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: isMobile ? '12px' : '32px' }}>
               {[
                 { icon: '✅', titleKey: 'whyItem1Title', descKey: 'whyItem1Desc' },
                 { icon: '🏅', titleKey: 'whyItem2Title', descKey: 'whyItem2Desc' },
@@ -12208,13 +12208,13 @@ export default function KindWorldApp() {
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  style={{ background: '#f9fafb', borderRadius: '20px', padding: '40px 32px', border: '1px solid #e5e7eb', transition: 'all 0.3s ease' }}
+                  style={{ background: '#f9fafb', borderRadius: '20px', padding: isMobile ? '24px 16px' : '40px 32px', border: '1px solid #e5e7eb', transition: 'all 0.3s ease' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-6px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 20px 40px rgba(0,0,0,0.08)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}
                 >
-                  <div style={{ fontSize: '40px', marginBottom: '16px' }}>{item.icon}</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#111827', marginBottom: '12px' }}>{t(item.titleKey)}</h3>
-                  <p style={{ fontSize: '15px', color: '#6b7280', lineHeight: '1.7', margin: 0 }}>{t(item.descKey)}</p>
+                  <div style={{ fontSize: isMobile ? '28px' : '40px', marginBottom: '12px' }}>{item.icon}</div>
+                  <h3 style={{ fontSize: isMobile ? '14px' : '20px', fontWeight: '700', color: '#111827', marginBottom: '8px' }}>{t(item.titleKey)}</h3>
+                  <p style={{ fontSize: isMobile ? '12px' : '15px', color: '#6b7280', lineHeight: '1.6', margin: 0 }}>{t(item.descKey)}</p>
                 </div>
               ))}
             </div>
@@ -12224,7 +12224,7 @@ export default function KindWorldApp() {
 
         {/* Early Adopter Section */}
         <AnimatedSection>
-        <section style={{ padding: '100px 24px', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e40af 100%)', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <section style={{ padding: isMobile ? '60px 16px' : '100px 24px', background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e40af 100%)', color: 'white', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(99,102,241,0.2) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(59,130,246,0.2) 0%, transparent 50%)' }}></div>
           <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
             <div style={{ textAlign: 'center', marginBottom: '64px' }}>
@@ -12253,7 +12253,7 @@ export default function KindWorldApp() {
             <div style={{ textAlign: 'center' }}>
               <button
                 onClick={() => { setAuthMode('register'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
-                style={{ padding: '18px 56px', background: 'white', color: '#1e1b4b', border: 'none', borderRadius: '9999px', cursor: 'pointer', fontSize: '18px', fontWeight: '700', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', transition: 'all 0.3s ease' }}
+                style={{ padding: isMobile ? '14px 32px' : '18px 56px', background: 'white', color: '#1e1b4b', border: 'none', borderRadius: '9999px', cursor: 'pointer', fontSize: isMobile ? '15px' : '18px', fontWeight: '700', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', transition: 'all 0.3s ease' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 28px 48px rgba(0,0,0,0.4)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 20px 40px rgba(0,0,0,0.3)' }}
               >
@@ -12338,7 +12338,7 @@ export default function KindWorldApp() {
         </AnimatedSection>
 
         {/* Footer */}
-        <footer style={{ background: '#111827', color: '#9ca3af', padding: '48px 24px' }}>
+        <footer style={{ background: '#111827', color: '#9ca3af', padding: isMobile ? '32px 20px' : '48px 24px' }}>
           <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px' }}>
               <img src="/kindworld-logo.jpg" alt="KindWorld" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
@@ -13155,7 +13155,7 @@ export default function KindWorldApp() {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '80px 20px 60px',
+        padding: isMobile ? '70px 14px 40px' : '80px 20px 60px',
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         position: 'relative',
         overflowX: 'hidden'
@@ -13185,18 +13185,18 @@ export default function KindWorldApp() {
           onClick={() => setCurrentPage('landing')}
           style={{
             position: 'absolute',
-            top: '32px',
-            left: '32px',
+            top: isMobile ? '14px' : '32px',
+            left: isMobile ? '14px' : '32px',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
             background: 'white',
             border: '1px solid #e5e7eb',
             borderRadius: '12px',
-            padding: '10px 20px',
+            padding: isMobile ? '8px 14px' : '10px 20px',
             color: '#4b5563',
             cursor: 'pointer',
-            fontSize: '14px',
+            fontSize: isMobile ? '13px' : '14px',
             fontWeight: '500',
             transition: 'all 0.2s ease',
             zIndex: 10,
@@ -13220,8 +13220,8 @@ export default function KindWorldApp() {
         {/* Language Selector */}
         <div style={{
           position: 'absolute',
-          top: '32px',
-          right: '32px',
+          top: isMobile ? '14px' : '32px',
+          right: isMobile ? '14px' : '32px',
           zIndex: 10
         }}>
           <select
@@ -13232,8 +13232,8 @@ export default function KindWorldApp() {
               background: 'white',
               border: '1px solid #e5e7eb',
               borderRadius: '12px',
-              padding: '10px 40px 10px 16px',
-              fontSize: '14px',
+              padding: isMobile ? '7px 30px 7px 10px' : '10px 40px 10px 16px',
+              fontSize: isMobile ? '12px' : '14px',
               color: '#4b5563',
               cursor: 'pointer',
               boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
@@ -13253,11 +13253,11 @@ export default function KindWorldApp() {
 
 
         <div style={{
-          maxWidth: authMode === 'register' ? (selectedRole === 'sponsor' ? '560px' : '520px') : '440px',
+          maxWidth: isMobile ? '100%' : authMode === 'register' ? (selectedRole === 'sponsor' ? '560px' : '520px') : '440px',
           width: '100%',
           background: 'white',
-          padding: '48px 40px',
-          borderRadius: '28px',
+          padding: isMobile ? '32px 20px' : '48px 40px',
+          borderRadius: isMobile ? '20px' : '28px',
           border: '1px solid #e5e7eb',
           boxShadow: '0 25px 80px rgba(var(--tp-rgb), 0.12)',
           transition: 'max-width 0.3s ease',
@@ -14987,7 +14987,7 @@ export default function KindWorldApp() {
                       </div>
                       <div>
                         <h2 style={{
-                          fontSize: '36px',
+                          fontSize: isMobile ? '22px' : '36px',
                           fontWeight: '700',
                           color: '#1f2937',
                           margin: 0,
@@ -14995,7 +14995,7 @@ export default function KindWorldApp() {
                         }}>
                           {t('adminDashboardTitle')}
                         </h2>
-                        <p style={{ color: '#6b7280', fontSize: '16px', margin: 0, marginTop: '4px' }}>
+                        <p style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '16px', margin: 0, marginTop: '4px' }}>
                           {t('adminDashboardSubtitle')}
                         </p>
                       </div>
@@ -15835,7 +15835,7 @@ export default function KindWorldApp() {
                       </div>
                       <div>
                         <h2 style={{
-                          fontSize: '36px',
+                          fontSize: isMobile ? '22px' : '36px',
                           fontWeight: '700',
                           color: '#1f2937',
                           margin: 0,
@@ -15843,7 +15843,7 @@ export default function KindWorldApp() {
                         }}>
                           {t('ngoDashboardTitle')}
                         </h2>
-                        <p style={{ color: '#6b7280', fontSize: '16px', margin: 0, marginTop: '4px' }}>
+                        <p style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '16px', margin: 0, marginTop: '4px' }}>
                           {t('ngoDashboardSubtitle')}
                         </p>
                       </div>
@@ -18289,7 +18289,7 @@ export default function KindWorldApp() {
                       </div>
                       <div>
                         <h2 style={{
-                          fontSize: '36px',
+                          fontSize: isMobile ? '20px' : '36px',
                           fontWeight: '700',
                           color: '#1f2937',
                           margin: 0,
@@ -18303,7 +18303,7 @@ export default function KindWorldApp() {
                             return `🌙 ${t('goodNight')}, ${user.name}!`
                           })()}
                         </h2>
-                        <p style={{ color: '#6b7280', fontSize: '17px', margin: 0, marginTop: '6px' }}>
+                        <p style={{ color: '#6b7280', fontSize: isMobile ? '14px' : '17px', margin: 0, marginTop: '6px' }}>
                           {t('impactSummary')}
                         </p>
                       </div>
@@ -18992,10 +18992,10 @@ export default function KindWorldApp() {
           {currentPage === 'missions' && (
             <div style={{ animation: 'fadeIn 0.5s ease-in' }}>
               <div style={{ marginBottom: '40px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px', flexDirection: isMobile ? 'column' : 'row' }}>
                   <div>
                     <h2 className="kw-gradient-text" style={{
-                      fontSize: '32px',
+                      fontSize: isMobile ? '24px' : '32px',
                       fontWeight: '800',
                       marginBottom: '8px'
                     }}>
@@ -19009,10 +19009,10 @@ export default function KindWorldApp() {
                        t('availableMissionsSubtitle')}
                     </p>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-end' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: isMobile ? 'stretch' : 'flex-end', width: isMobile ? '100%' : 'auto' }}>
                     {/* Search Bar */}
                     {user?.role !== 'ngo' && user?.role !== 'admin' && (
-                      <div style={{ position: 'relative', width: '280px' }}>
+                      <div style={{ position: 'relative', width: isMobile ? '100%' : '280px' }}>
                         <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '16px' }}>🔍</span>
                         <input
                           type="text"
@@ -19032,13 +19032,13 @@ export default function KindWorldApp() {
                         />
                       </div>
                     )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
                       {/* Category Filter */}
                       {user?.role !== 'ngo' && user?.role !== 'admin' && (
                         <select
                           value={categoryFilter}
                           onChange={(e) => setCategoryFilter(e.target.value)}
-                          style={{ padding: '10px 14px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', fontWeight: '500', outline: 'none', cursor: 'pointer', background: 'white' }}
+                          style={{ padding: '10px 14px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', fontWeight: '500', outline: 'none', cursor: 'pointer', background: 'white', flex: isMobile ? '1 1 auto' : 'none' }}
                         >
                           <option value="all">{t('allCategories')}</option>
                           <option value="Environment">{t('categoryEnvironment')}</option>
@@ -21458,7 +21458,7 @@ export default function KindWorldApp() {
               <div style={{
                 background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                 borderRadius: '24px',
-                padding: '32px',
+                padding: isMobile ? '20px' : '32px',
                 marginBottom: '32px',
                 color: 'white'
               }}>
@@ -21476,7 +21476,7 @@ export default function KindWorldApp() {
                     🏅
                   </div>
                   <div>
-                    <h2 style={{ fontSize: '28px', fontWeight: '700', margin: '0 0 4px 0' }}>
+                    <h2 style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: '700', margin: '0 0 4px 0' }}>
                       {t('myBadges')}
                     </h2>
                     <p style={{ fontSize: '15px', opacity: 0.9, margin: 0 }}>
@@ -21484,7 +21484,7 @@ export default function KindWorldApp() {
                     </p>
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '24px', marginTop: '20px' }}>
+                <div style={{ display: 'flex', gap: isMobile ? '12px' : '24px', marginTop: '20px' }}>
                   <div style={{ textAlign: 'center', padding: '12px 24px', background: 'rgba(255,255,255,0.2)', borderRadius: '12px' }}>
                     <div style={{ fontSize: '24px', fontWeight: '700' }}>{user?.userBadges?.length || 0}</div>
                     <div style={{ fontSize: '12px', opacity: 0.9 }}>{t('earnedLabel')}</div>
@@ -21508,7 +21508,7 @@ export default function KindWorldApp() {
                   ✨ {t('earnedBadgesTitle')}
                 </h3>
                 {user?.userBadges && user.userBadges.length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(130px, 1fr))', gap: '16px' }}>
                     {user.userBadges.map((badge: any, index: number) => (
                       <div key={index} style={{
                         padding: '24px 20px',
@@ -21605,7 +21605,7 @@ export default function KindWorldApp() {
                 <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   🎖️ {t('allAvailableBadges')}
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(130px, 1fr))', gap: '16px' }}>
                   {[
                     { id: 'b1', icon: '🏆', name: 'Community Champion', company: 'KindWorld', color: '#fbbf24', description: 'Top contributor in community service' },
                     { id: 'b2', icon: '🌱', name: 'Environmental Hero', company: 'KindWorld', color: '#22c55e', description: 'Champion of environmental causes' },
@@ -21680,10 +21680,10 @@ export default function KindWorldApp() {
           {currentPage === 'leaderboard' && (
             <div style={{ maxWidth: '1100px', margin: '0 auto', animation: 'fadeIn 0.4s ease-out' }}>
               {/* Header */}
-              <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)', borderRadius: '24px', padding: '32px', marginBottom: '32px', color: 'white' }}>
+              <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)', borderRadius: '24px', padding: isMobile ? '20px' : '32px', marginBottom: '32px', color: 'white' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                   <div>
-                    <h1 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '8px', margin: 0 }}>🏆 {t('leaderboardTitle')}</h1>
+                    <h1 style={{ fontSize: isMobile ? '20px' : '28px', fontWeight: '800', marginBottom: '8px', margin: 0 }}>🏆 {t('leaderboardTitle')}</h1>
                     <p style={{ opacity: 0.9, margin: '8px 0 0' }}>{t('leaderboardDesc')}</p>
                   </div>
                   {user?.role === 'student' && (() => {
@@ -21710,7 +21710,7 @@ export default function KindWorldApp() {
               </div>
 
               {/* Two panels */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
                 {/* Top by Hours */}
                 <div style={{ background: 'white', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
                   <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#1e293b', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -22249,7 +22249,7 @@ export default function KindWorldApp() {
               <div style={{
                 background: 'linear-gradient(135deg, var(--ta) 0%, var(--tb) 100%)',
                 borderRadius: '24px',
-                padding: '40px',
+                padding: isMobile ? '24px 20px' : '40px',
                 marginBottom: '32px',
                 position: 'relative',
                 overflow: 'hidden'
@@ -22263,11 +22263,11 @@ export default function KindWorldApp() {
                   background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
                   transform: 'translate(50%, -50%)'
                 }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '32px', position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '16px' : '32px', position: 'relative', zIndex: 1 }}>
                   <label style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} title={t('profileChangePicture')}>
                     <div className="kw-avatar" style={{
-                      width: '120px',
-                      height: '120px',
+                      width: isMobile ? '80px' : '120px',
+                      height: isMobile ? '80px' : '120px',
                       borderRadius: '50%',
                       background: user.avatar
                         ? `url(${user.avatar}) center/cover`
@@ -22313,7 +22313,7 @@ export default function KindWorldApp() {
                     }} />
                   </label>
                   <div style={{ flex: 1 }}>
-                    <h1 style={{ fontSize: '32px', fontWeight: '700', color: 'white', margin: '0 0 8px 0' }}>
+                    <h1 style={{ fontSize: isMobile ? '22px' : '32px', fontWeight: '700', color: 'white', margin: '0 0 8px 0' }}>
                       {user.name}
                     </h1>
                     <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.8)', margin: '0 0 12px 0' }}>
