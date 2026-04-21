@@ -10436,6 +10436,85 @@ export default function KindWorldApp() {
     { email: 'sponsor@techcorp.com', password: 'sponsor123' }
   ]
 
+  const LINE_CHANNEL_ID = '2009859632'
+  const LINE_CHANNEL_SECRET = '111d50fb2a2b977a58343baf44a41f6d'
+  const LINE_REDIRECT_URI = 'https://kind-world.up.railway.app'
+
+  const handleLINELogin = () => {
+    const state = Math.random().toString(36).substring(2, 18)
+    localStorage.setItem('line_oauth_state', state)
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: LINE_CHANNEL_ID,
+      redirect_uri: LINE_REDIRECT_URI,
+      state,
+      scope: 'profile openid'
+    })
+    window.location.href = `https://access.line.me/oauth2/v2.1/authorize?${params}`
+  }
+
+  const handleLINECallback = async (code: string) => {
+    setIsLoading(true)
+    setCurrentPage('signin')
+    try {
+      const tokenRes = await fetch('https://api.line.me/oauth2/v2.1/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: LINE_REDIRECT_URI,
+          client_id: LINE_CHANNEL_ID,
+          client_secret: LINE_CHANNEL_SECRET
+        })
+      })
+      const tokenData = await tokenRes.json()
+      if (!tokenData.access_token) throw new Error('Token exchange failed')
+
+      const profileRes = await fetch('https://api.line.me/v2/profile', {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` }
+      })
+      const profile = await profileRes.json()
+
+      window.history.replaceState({}, document.title, '/')
+
+      const lineEmail = `line_${profile.userId}@kindworld.line`
+      const existingUser = allUsers.find((u: any) => u.email === lineEmail)
+
+      const userData: User = existingUser ? { ...existingUser } : {
+        id: `user_line_${profile.userId}`,
+        name: profile.displayName,
+        role: 'student',
+        hours: 0,
+        email: lineEmail,
+        avatar: profile.pictureUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.displayName)}&background=4f46e5&color=fff`,
+        joinDate: new Date().toISOString().split('T')[0],
+        badges: [],
+        userBadges: [],
+        completedMissions: 0,
+        organizationsHelped: 0,
+        rating: 0
+      }
+
+      if (!existingUser) {
+        setAllUsers((prev: any[]) => [...prev, {
+          ...userData,
+          password: '',
+          status: 'active',
+          lineUserId: profile.userId
+        }])
+      }
+
+      setUser(userData)
+      setSelectedRole('student')
+      setCurrentPage('dashboard')
+    } catch {
+      setSignInError('LINE sign-in failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleSignIn = () => {
     if (!signInForm.email.trim() || !signInForm.password.trim()) {
       setSignInError(t('pleaseFillAllFields') || 'Please enter your email and password')
@@ -11111,6 +11190,19 @@ export default function KindWorldApp() {
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // Handle LINE OAuth callback — runs once on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const code = urlParams.get('code')
+    const state = urlParams.get('state')
+    const savedState = localStorage.getItem('line_oauth_state')
+    if (code && state && savedState && state === savedState) {
+      localStorage.removeItem('line_oauth_state')
+      handleLINECallback(code)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Reload missions from localStorage when user logs in or page changes (to sync between NGO and student accounts)
@@ -13392,6 +13484,50 @@ export default function KindWorldApp() {
                   }} />
                 )}
                 {isLoading ? t('signIn') + '...' : t('signIn')}
+              </button>
+
+              {/* Divider */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0 16px' }}>
+                <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+                <span style={{ fontSize: '13px', color: '#9ca3af', whiteSpace: 'nowrap' }}>or continue with</span>
+                <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+              </div>
+
+              {/* LINE Login Button */}
+              <button
+                onClick={handleLINELogin}
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  background: '#06C755',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '14px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 4px 12px rgba(6,199,85,0.3)'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = '#05a847'
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(6,199,85,0.4)'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = '#06C755'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(6,199,85,0.3)'
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+                  <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.064-.022.134-.032.202-.032.21 0 .39.09.507.25l2.443 3.317V8.108c0-.345.282-.63.63-.63.346 0 .629.285.629.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+                </svg>
+                Sign in with LINE
               </button>
 
               <div style={{ marginBottom: '8px' }} />
