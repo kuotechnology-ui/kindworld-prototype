@@ -10504,8 +10504,7 @@ export default function KindWorldApp() {
         userBadges: [],
         completedMissions: 0,
         organizationsHelped: 0,
-        rating: 0,
-        lineId: profile.userId
+        rating: 0
       }
 
       if (!existingUser) {
@@ -10513,14 +10512,13 @@ export default function KindWorldApp() {
           ...userData,
           password: '',
           status: 'active',
-          lineUserId: profile.userId,
-          lineId: profile.userId
+          lineUserId: profile.userId   // internal identifier only — NOT shown as LINE ID
         }])
       } else {
-        // Update lineUserId and lineId on returning LINE users in case they were missing
+        // Ensure lineUserId is stored for returning LINE users
         setAllUsers((prev: any[]) => prev.map((u: any) =>
           u.email === lineEmail || u.lineUserId === profile.userId
-            ? { ...u, lineUserId: profile.userId, lineId: u.lineId || profile.userId }
+            ? { ...u, lineUserId: profile.userId }
             : u
         ))
       }
@@ -22346,10 +22344,16 @@ export default function KindWorldApp() {
                     <h1 style={{ fontSize: isMobile ? '22px' : '32px', fontWeight: '700', color: 'white', margin: '0 0 8px 0' }}>
                       {user.name}
                     </h1>
-                    <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.8)', margin: '0 0 12px 0' }}>
+                    <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.8)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                       {user.email.endsWith('@kindworld.line')
                         ? <span style={{ opacity: 0.7, fontStyle: 'italic', fontSize: '14px' }}>No email set — add one in Edit Profile</span>
                         : user.email}
+                      {(allUsers.find((u: any) => u.email === user.email)?.lineUserId || user.email.endsWith('@kindworld.line')) && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#00b900', color: 'white', fontSize: '12px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                          LINE
+                        </span>
+                      )}
                     </p>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                       <span style={{
@@ -22669,22 +22673,23 @@ export default function KindWorldApp() {
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         {/* LINE ID field */}
                         {(() => {
-                          const savedUser = allUsers.find((u: any) => u.email === user?.email || u.lineUserId === (user as any)?.lineUserId)
-                          const isLineAccount = !!(savedUser?.lineUserId)
+                          const savedUser = allUsers.find((u: any) => u.email === user?.email)
+                          const isLineAccount = !!(savedUser?.lineUserId) || user?.email?.endsWith('@kindworld.line')
+                          // lineId is the user's human-readable LINE handle, entered manually
                           const lineIdValue = isEditingProfile ? profileForm.lineId : (savedUser?.lineId || '')
                           return (
                             <div>
                               <label style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>
                                 {t('profileLineId')}
-                                {isLineAccount && <span style={{ fontSize:'11px', background:'#00b900', color:'white', padding:'2px 8px', borderRadius:'20px', fontWeight:'600' }}>Connected</span>}
+                                {isLineAccount && <span style={{ fontSize:'11px', background:'#00b900', color:'white', padding:'2px 8px', borderRadius:'20px', fontWeight:'600' }}>✓ Connected</span>}
                               </label>
                               <input
                                 type="text"
                                 value={lineIdValue}
                                 onChange={e => setProfileForm({...profileForm, lineId: e.target.value})}
-                                disabled={!isEditingProfile || isLineAccount}
-                                placeholder={isLineAccount ? '' : 'Your LINE ID'}
-                                style={{ width:'100%', padding:'12px 14px', border: isLineAccount ? '2px solid #00b900' : isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isLineAccount ? '#f0fff0' : isEditingProfile ? 'white' : '#f9fafb', cursor: (isEditingProfile && !isLineAccount) ? 'text' : 'default', boxSizing:'border-box', color: isLineAccount ? '#166534' : 'inherit', fontFamily: isLineAccount ? 'monospace' : 'inherit' }}
+                                disabled={!isEditingProfile}
+                                placeholder={isLineAccount ? 'Enter your LINE ID (e.g. johndoe123)' : 'Your LINE ID'}
+                                style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }}
                               />
                             </div>
                           )
