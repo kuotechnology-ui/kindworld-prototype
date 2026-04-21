@@ -570,6 +570,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: 'and',
     privacyPolicy: 'Privacy Policy',
     orSignInWith: 'or sign in with',
+    signInWithLINE: 'Sign in with LINE',
+    sponsorRegisterSubtitle: 'Create your company account to sponsor missions and track impact',
     orRegisterWith: 'or register with',
     alreadyHaveAccount: 'Already have an account?',
     selectCountry: 'Select country',
@@ -1412,6 +1414,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: 'dan',
     privacyPolicy: 'Kebijakan Privasi',
     orSignInWith: 'atau masuk dengan',
+    signInWithLINE: 'Masuk dengan LINE',
+    sponsorRegisterSubtitle: 'Buat akun perusahaan Anda untuk mensponsori misi dan melacak dampak',
     orRegisterWith: 'atau daftar dengan',
     alreadyHaveAccount: 'Sudah punya akun?',
     selectCountry: 'Pilih negara',
@@ -2117,6 +2121,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: '和',
     privacyPolicy: '隐私政策',
     orSignInWith: '或使用以下方式登录',
+    signInWithLINE: '使用 LINE 登录',
+    sponsorRegisterSubtitle: '创建您的企业账户以赞助任务并追踪影响',
     orRegisterWith: '或使用以下方式注册',
     alreadyHaveAccount: '已有账户？',
     selectCountry: '选择国家',
@@ -2821,6 +2827,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: '和',
     privacyPolicy: '隱私政策',
     orSignInWith: '或使用以下方式登入',
+    signInWithLINE: '使用 LINE 登入',
+    sponsorRegisterSubtitle: '建立您的企業帳戶以贊助任務並追蹤影響',
     orRegisterWith: '或使用以下方式註冊',
     alreadyHaveAccount: '已有帳號？',
     selectCountry: '選擇國家',
@@ -3524,6 +3532,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: 'y',
     privacyPolicy: 'Política de Privacidad',
     orSignInWith: 'o inicia sesión con',
+    signInWithLINE: 'Iniciar sesión con LINE',
+    sponsorRegisterSubtitle: 'Crea tu cuenta empresarial para patrocinar misiones y hacer seguimiento del impacto',
     orRegisterWith: 'o regístrate con',
     alreadyHaveAccount: '¿Ya tienes cuenta?',
     selectCountry: 'Seleccionar país',
@@ -4207,6 +4217,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: 'et',
     privacyPolicy: 'Politique de Confidentialité',
     orSignInWith: 'ou connectez-vous avec',
+    signInWithLINE: 'Se connecter avec LINE',
+    sponsorRegisterSubtitle: 'Créez votre compte entreprise pour sponsoriser des missions et suivre votre impact',
     orRegisterWith: 'ou inscrivez-vous avec',
     alreadyHaveAccount: 'Déjà un compte?',
     selectCountry: 'Sélectionner un pays',
@@ -4890,6 +4902,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: 'e',
     privacyPolicy: 'Política de Privacidade',
     orSignInWith: 'ou entre com',
+    signInWithLINE: 'Entrar com LINE',
+    sponsorRegisterSubtitle: 'Crie sua conta empresarial para patrocinar missões e acompanhar o impacto',
     orRegisterWith: 'ou registre-se com',
     alreadyHaveAccount: 'Já tem uma conta?',
     selectCountry: 'Selecionar país',
@@ -5573,6 +5587,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: 'と',
     privacyPolicy: 'プライバシーポリシー',
     orSignInWith: 'または以下でログイン',
+    signInWithLINE: 'LINEでログイン',
+    sponsorRegisterSubtitle: '企業アカウントを作成してミッションをスポンサーし、影響を追跡しましょう',
     orRegisterWith: 'または以下で登録',
     alreadyHaveAccount: 'アカウントをお持ちですか？',
     selectCountry: '国を選択',
@@ -6256,6 +6272,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: 'และ',
     privacyPolicy: 'นโยบายความเป็นส่วนตัว',
     orSignInWith: 'หรือเข้าสู่ระบบด้วย',
+    signInWithLINE: 'เข้าสู่ระบบด้วย LINE',
+    sponsorRegisterSubtitle: 'สร้างบัญชีบริษัทของคุณเพื่อสนับสนุนภารกิจและติดตามผลกระทบ',
     orRegisterWith: 'หรือลงทะเบียนด้วย',
     alreadyHaveAccount: 'มีบัญชีแล้ว?',
     selectCountry: 'เลือกประเทศ',
@@ -6939,6 +6957,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: 'và',
     privacyPolicy: 'Chính sách bảo mật',
     orSignInWith: 'hoặc đăng nhập bằng',
+    signInWithLINE: 'Đăng nhập với LINE',
+    sponsorRegisterSubtitle: 'Tạo tài khoản công ty để tài trợ cho các sứ mệnh và theo dõi tác động',
     orRegisterWith: 'hoặc đăng ký bằng',
     alreadyHaveAccount: 'Đã có tài khoản?',
     selectCountry: 'Chọn quốc gia',
@@ -7622,6 +7642,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: '및',
     privacyPolicy: '개인정보 보호정책',
     orSignInWith: '또는 다음으로 로그인',
+    signInWithLINE: 'LINE으로 로그인',
+    sponsorRegisterSubtitle: '기업 계정을 만들어 미션을 후원하고 영향을 추적하세요',
     orRegisterWith: '또는 다음으로 등록',
     alreadyHaveAccount: '이미 계정이 있으신가요?',
     selectCountry: '국가 선택',
@@ -8305,6 +8327,8 @@ const localTranslations: Record<string, Record<string, string>> = {
     and: 'und',
     privacyPolicy: 'Datenschutzrichtlinie',
     orSignInWith: 'oder anmelden mit',
+    signInWithLINE: 'Mit LINE anmelden',
+    sponsorRegisterSubtitle: 'Erstellen Sie Ihr Unternehmenskonto, um Missionen zu sponsern und den Impact zu verfolgen',
     orRegisterWith: 'oder registrieren mit',
     alreadyHaveAccount: 'Bereits ein Konto?',
     selectCountry: 'Land auswählen',
@@ -13312,7 +13336,7 @@ export default function KindWorldApp() {
                 : selectedRole === 'ngo'
                   ? t('ngoRegisterSubtitle')
                   : selectedRole === 'sponsor'
-                    ? 'Create your company account to sponsor missions and track impact'
+                    ? t('sponsorRegisterSubtitle')
                     : t('joinKindWorld')}
             </p>
           </div>
@@ -13517,7 +13541,7 @@ export default function KindWorldApp() {
               {/* Divider */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0 16px' }}>
                 <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
-                <span style={{ fontSize: '13px', color: '#9ca3af', whiteSpace: 'nowrap' }}>or continue with</span>
+                <span style={{ fontSize: '13px', color: '#9ca3af', whiteSpace: 'nowrap' }}>{t('orSignInWith')}</span>
                 <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
               </div>
 
@@ -13555,7 +13579,7 @@ export default function KindWorldApp() {
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
                   <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.064-.022.134-.032.202-.032.21 0 .39.09.507.25l2.443 3.317V8.108c0-.345.282-.63.63-.63.346 0 .629.285.629.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
                 </svg>
-                Sign in with LINE
+                {t('signInWithLINE')}
               </button>
 
               <div style={{ marginBottom: '8px' }} />
