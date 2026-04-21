@@ -10457,7 +10457,7 @@ export default function KindWorldApp() {
     setIsLoading(true)
     setCurrentPage('signin')
     try {
-      const tokenRes = await fetch('https://api.line.me/oauth2/v2.1/token', {
+      const tokenRes = await fetch('/api/line-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
@@ -10471,7 +10471,7 @@ export default function KindWorldApp() {
       const tokenData = await tokenRes.json()
       if (!tokenData.access_token) throw new Error('Token exchange failed')
 
-      const profileRes = await fetch('https://api.line.me/v2/profile', {
+      const profileRes = await fetch('/api/line-profile', {
         headers: { Authorization: `Bearer ${tokenData.access_token}` }
       })
       const profile = await profileRes.json()
