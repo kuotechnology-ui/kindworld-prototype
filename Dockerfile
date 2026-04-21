@@ -11,4 +11,4 @@ RUN cd web && npm run build
 RUN npm install -g serve
 
 EXPOSE 3000
-CMD ["serve", "web/dist", "-p", "3000"]
+CMD serve web/dist -p ${PORT:-3000}
