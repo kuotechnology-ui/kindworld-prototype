@@ -10448,7 +10448,7 @@ export default function KindWorldApp() {
       client_id: LINE_CHANNEL_ID,
       redirect_uri: LINE_REDIRECT_URI,
       state,
-      scope: 'profile openid'
+      scope: 'profile openid email'
     })
     window.location.href = `https://access.line.me/oauth2/v2.1/authorize?${params}`
   }
@@ -10479,8 +10479,18 @@ export default function KindWorldApp() {
       const profile = await profileRes.json()
       if (!profile.userId) throw new Error('Could not fetch LINE profile')
 
-      const lineEmail = `line_${profile.userId}@kindworld.line`
-      const existingUser = allUsers.find((u: any) => u.email === lineEmail)
+      // Try to extract real email from id_token (requires email scope)
+      let lineEmail = `line_${profile.userId}@kindworld.line`
+      if (tokenData.id_token) {
+        try {
+          const payload = JSON.parse(atob(tokenData.id_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+          if (payload.email) lineEmail = payload.email
+        } catch {}
+      }
+      // Look up by LINE userId first, then by email
+      const existingUser = allUsers.find((u: any) =>
+        u.lineUserId === profile.userId || u.email === lineEmail
+      )
 
       const userData: User = existingUser ? { ...existingUser } : {
         id: `user_line_${profile.userId}`,
@@ -22328,7 +22338,9 @@ export default function KindWorldApp() {
                       {user.name}
                     </h1>
                     <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.8)', margin: '0 0 12px 0' }}>
-                      {user.email}
+                      {user.email.endsWith('@kindworld.line')
+                        ? <span style={{ opacity: 0.7, fontStyle: 'italic', fontSize: '14px' }}>No email set — add one in Edit Profile</span>
+                        : user.email}
                     </p>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                       <span style={{
@@ -22571,7 +22583,10 @@ export default function KindWorldApp() {
                       </label>
                       <input
                         type="email"
-                        value={isEditingProfile ? profileForm.email : user.email}
+                        value={isEditingProfile
+                          ? (profileForm.email.endsWith('@kindworld.line') ? '' : profileForm.email)
+                          : (user.email.endsWith('@kindworld.line') ? '' : user.email)}
+                        placeholder={user.email.endsWith('@kindworld.line') ? 'Add your email address' : ''}
                         onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
                         disabled={!isEditingProfile}
                         style={{
@@ -22891,7 +22906,9 @@ export default function KindWorldApp() {
                       // Update user data
                       if (profileForm.name) {
                         const updatedName = profileForm.name
-                        const updatedEmail = profileForm.email || user?.email || ''
+                        // For LINE users: keep synthetic email if no real email entered
+                        const enteredEmail = profileForm.email.endsWith('@kindworld.line') ? '' : profileForm.email
+                        const updatedEmail = enteredEmail || user?.email || ''
                         setUser(prev => prev ? {...prev, name: updatedName, email: updatedEmail} : prev)
                         // Sync to allUsers so admin dashboard reflects the change
                         setAllUsers((prev: any[]) => {
