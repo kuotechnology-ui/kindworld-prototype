@@ -546,6 +546,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: 'Sign in to continue your journey',
     joinKindWorld: 'Join KindWorld and make a difference',
     emailOrUsername: 'Email or Username',
+    enterPassword: 'Enter your password',
     password: 'Password',
     forgotPassword: 'Forgot Password?',
     pleaseFillAllFields: 'Please enter your email and password',
@@ -1390,6 +1391,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: 'Masuk untuk melanjutkan perjalanan Anda',
     joinKindWorld: 'Bergabung dengan KindWorld dan wujudkan perubahan',
     emailOrUsername: 'Email atau Nama Pengguna',
+    enterPassword: 'Masukkan kata sandi Anda',
     password: 'Kata Sandi',
     forgotPassword: 'Lupa Kata Sandi?',
     pleaseFillAllFields: 'Silakan masukkan email dan kata sandi Anda',
@@ -2097,6 +2099,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: '登录以继续您的旅程',
     joinKindWorld: '加入KindWorld，创造改变',
     emailOrUsername: '邮箱或用户名',
+    enterPassword: '请输入密码',
     password: '密码',
     forgotPassword: '忘记密码？',
     pleaseFillAllFields: '请输入您的邮箱和密码',
@@ -2803,6 +2806,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: '登入以繼續您的旅程',
     joinKindWorld: '加入KindWorld，創造改變',
     emailOrUsername: '電子郵件或使用者名稱',
+    enterPassword: '請輸入密碼',
     password: '密碼',
     forgotPassword: '忘記密碼？',
     pleaseFillAllFields: '請輸入您的電子郵件和密碼',
@@ -3508,6 +3512,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: 'Inicia sesión para continuar tu viaje',
     joinKindWorld: 'Únete a KindWorld y marca la diferencia',
     emailOrUsername: 'Email o Nombre de Usuario',
+    enterPassword: 'Ingrese su contraseña',
     password: 'Contraseña',
     forgotPassword: '¿Olvidaste tu Contraseña?',
     pleaseFillAllFields: 'Por favor ingresa tu correo y contraseña',
@@ -4878,6 +4883,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: 'Entre para continuar',
     joinKindWorld: 'Junte-se ao KindWorld e faça a diferença',
     emailOrUsername: 'Email ou Nome de Usuário',
+    enterPassword: 'Digite sua senha',
     password: 'Senha',
     forgotPassword: 'Esqueceu a Senha?',
     pleaseFillAllFields: 'Por favor, insira seu email e senha',
@@ -5563,6 +5569,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: 'ログインして続ける',
     joinKindWorld: 'KindWorldに参加して変化を起こそう',
     emailOrUsername: 'メールまたはユーザー名',
+    enterPassword: 'パスワードを入力してください',
     password: 'パスワード',
     forgotPassword: 'パスワードをお忘れですか？',
     pleaseFillAllFields: 'メールアドレスとパスワードを入力してください',
@@ -6248,6 +6255,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: 'เข้าสู่ระบบเพื่อดำเนินการต่อ',
     joinKindWorld: 'เข้าร่วม KindWorld และสร้างความแตกต่าง',
     emailOrUsername: 'อีเมลหรือชื่อผู้ใช้',
+    enterPassword: 'กรอกรหัสผ่านของคุณ',
     password: 'รหัสผ่าน',
     forgotPassword: 'ลืมรหัสผ่าน?',
     pleaseFillAllFields: 'กรุณากรอกอีเมลและรหัสผ่านของคุณ',
@@ -6933,6 +6941,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: 'Đăng nhập để tiếp tục hành trình của bạn',
     joinKindWorld: 'Tham gia KindWorld và tạo ra sự khác biệt',
     emailOrUsername: 'Email hoặc tên người dùng',
+    enterPassword: 'Nhập mật khẩu của bạn',
     password: 'Mật khẩu',
     forgotPassword: 'Quên mật khẩu?',
     pleaseFillAllFields: 'Vui lòng nhập email và mật khẩu của bạn',
@@ -7618,6 +7627,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: '여정을 계속하려면 로그인하세요',
     joinKindWorld: 'KindWorld에 가입하여 변화를 만드세요',
     emailOrUsername: '이메일 또는 사용자 이름',
+    enterPassword: '비밀번호를 입력하세요',
     password: '비밀번호',
     forgotPassword: '비밀번호를 잊으셨나요?',
     pleaseFillAllFields: '이메일과 비밀번호를 입력해주세요',
@@ -8303,6 +8313,7 @@ const localTranslations: Record<string, Record<string, string>> = {
     signInToContinue: 'Melden Sie sich an, um fortzufahren',
     joinKindWorld: 'Treten Sie KindWorld bei und machen Sie einen Unterschied',
     emailOrUsername: 'E-Mail oder Benutzername',
+    enterPassword: 'Passwort eingeben',
     password: 'Passwort',
     forgotPassword: 'Passwort vergessen?',
     pleaseFillAllFields: 'Bitte geben Sie Ihre E-Mail und Ihr Passwort ein',
@@ -13425,7 +13436,7 @@ export default function KindWorldApp() {
                   type="text"
                   value={signInForm.email}
                   onChange={(e) => { setSignInForm(prev => ({ ...prev, email: e.target.value })); setSignInError('') }}
-                  placeholder="Enter your email or username"
+                  placeholder={t('emailOrUsername')}
                   style={{
                     width: '100%',
                     padding: '14px 16px',
@@ -13460,7 +13471,7 @@ export default function KindWorldApp() {
                   type="password"
                   value={signInForm.password}
                   onChange={(e) => { setSignInForm(prev => ({ ...prev, password: e.target.value })); setSignInError('') }}
-                  placeholder="Enter your password"
+                  placeholder={t('enterPassword')}
                   style={{
                     width: '100%',
                     padding: '14px 16px',
