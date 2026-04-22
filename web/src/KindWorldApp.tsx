@@ -11319,6 +11319,23 @@ export default function KindWorldApp() {
   useEffect(() => { localStorage.setItem('kindworld_admin_emails', JSON.stringify(adminEmails)) }, [adminEmails])
   useEffect(() => { localStorage.setItem('kindworld_friend_msgs', JSON.stringify(friendMessages)) }, [friendMessages])
 
+  // Firestore real-time subscription: receive friend chat messages addressed to this user
+  useEffect(() => {
+    if (!user?.email) return
+    const myEmail = user.email
+    const unsub = subscribeToCollection<any>(COLLECTIONS.FRIEND_MESSAGES, (docs) => {
+      const incoming = docs.filter((d: any) => d.toEmail === myEmail || d.fromEmail === myEmail)
+      if (incoming.length === 0) return
+      setFriendMessages(prev => {
+        const prevIds = new Set(prev.map(m => m.id))
+        const newMsgs = incoming.filter((d: any) => !prevIds.has(d.id))
+        if (newMsgs.length === 0) return prev
+        return [...prev, ...newMsgs.map((d: any) => ({ id: d.id, fromEmail: d.fromEmail, fromName: d.fromName, toEmail: d.toEmail, text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt } as FriendMessage))]
+      })
+    })
+    return () => unsub()
+  }, [user?.email])
+
   // Re-read directMessages from localStorage whenever the user changes (sign in/out)
   // so a newly signed-in user always sees up-to-date messages
   useEffect(() => {
@@ -11405,15 +11422,17 @@ export default function KindWorldApp() {
           return f
         })
         if (!changed) return prev
-        localStorage.setItem('kindworld_friends', JSON.stringify(updated))
-        // Notify A that their request was accepted
-        accepted.forEach((a: any) => {
-          const friendName = a.toName || a.toEmail
-          setNotifications(n => {
-            if (n.some(msg => msg.includes(friendName) && msg.includes('accepted'))) return n
-            return [...n, `🎉 ${friendName} accepted your friend request!`]
+        // Side effects outside the updater via setTimeout to avoid React strict-mode double-invoke
+        setTimeout(() => {
+          localStorage.setItem('kindworld_friends', JSON.stringify(updated))
+          accepted.forEach((a: any) => {
+            const friendName = a.toName || a.toEmail
+            setNotifications(n => {
+              if (n.some(msg => msg.includes(friendName) && msg.includes('accepted'))) return n
+              return [...n, `🎉 ${friendName} accepted your friend request!`]
+            })
           })
-        })
+        }, 0)
         return updated
       })
     })
@@ -12261,7 +12280,7 @@ export default function KindWorldApp() {
               </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '32px', marginBottom: '64px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? '16px' : '32px', marginBottom: '64px' }}>
               {[
                 { value: '2.5M+', labelKey: 'volunteerHoursLogged', icon: '⏱️', descKey: 'hoursLoggedDesc' },
                 { value: '150K+', labelKey: 'treesPlanted', icon: '🌳', descKey: 'treesPlantedDesc' },
@@ -12291,7 +12310,7 @@ export default function KindWorldApp() {
               <h3 style={{ textAlign: 'center', fontSize: '24px', fontWeight: '500', marginBottom: '32px' }}>
                 {t('activeCommunitiesTitle')}
               </h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(5, 1fr)', gap: isMobile ? '12px' : '24px' }}>
                 {[
                   { regionKey: 'northAmerica', volunteers: '28,500+', countries: 'USA, Canada, Mexico' },
                   { regionKey: 'europe', volunteers: '35,200+', countries: 'UK, Germany, France, +15' },
@@ -13930,7 +13949,7 @@ export default function KindWorldApp() {
                       onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
                     />
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>Industry</label>
                       <select value={registerForm.companyIndustry} onChange={(e) => setRegisterForm({ ...registerForm, companyIndustry: e.target.value })}
@@ -13958,7 +13977,7 @@ export default function KindWorldApp() {
                       </select>
                     </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>Website</label>
                       <input type="url" placeholder="https://yourcompany.com" value={registerForm.companyWebsite} onChange={(e) => setRegisterForm({ ...registerForm, companyWebsite: e.target.value })}
@@ -13996,7 +14015,7 @@ export default function KindWorldApp() {
                 </>
               ) : (
                 /* Volunteer: first name + last name grid */
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                   <div>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
                       {t('firstName')} <span style={{ color: '#ef4444' }}>*</span>
@@ -14099,7 +14118,7 @@ export default function KindWorldApp() {
               </div>
 
               {/* Country & Residency — volunteer/NGO only; sponsors collect this in their company section */}
-              {selectedRole !== 'sponsor' && <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              {selectedRole !== 'sponsor' && <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
                     {t('country')}
@@ -14164,7 +14183,7 @@ export default function KindWorldApp() {
               </div>}
 
               {/* Password */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#374151' }}>
                     {t('password')} <span style={{ color: '#ef4444' }}>*</span>
@@ -14607,13 +14626,14 @@ export default function KindWorldApp() {
             if (!txt && !img) return
             const msg: FriendMessage = { id: Date.now().toString(), fromEmail: myEmail, fromName: user?.name || '', toEmail: chatPartner.email, text: txt, imageUrl: img || undefined, sentAt: new Date().toISOString() }
             setFriendMessages(prev => [...prev, msg])
+            saveDocument(COLLECTIONS.FRIEND_MESSAGES, msg.id, msg).catch(() => {})
             setFriendChatInput('')
             setFriendChatImageUrl('')
             setShowEmojiPicker(false)
           }
           return (
-            <div onClick={() => { setShowFriendChat(null); setShowEmojiPicker(false) }} style={{ position: 'fixed', inset: 0, zIndex: 9995, background: 'rgba(15,8,5,0.42)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: '24px' }}>
-              <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '400px', height: '520px', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+            <div onClick={() => { setShowFriendChat(null); setShowEmojiPicker(false) }} style={{ position: 'fixed', inset: 0, zIndex: 9995, background: 'rgba(15,8,5,0.42)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: isMobile ? 'stretch' : 'flex-end', justifyContent: isMobile ? 'stretch' : 'flex-end', padding: isMobile ? '0' : '24px' }}>
+              <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: isMobile ? '0' : '20px', width: '100%', maxWidth: isMobile ? '100%' : '400px', height: isMobile ? '100%' : '520px', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
                 {/* Header */}
                 <div style={{ padding: '16px 20px', background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
                   <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '700', fontSize: '16px', flexShrink: 0 }}>
@@ -15373,7 +15393,7 @@ export default function KindWorldApp() {
                   </div>
 
                   {/* Admin Quick Actions */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '48px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '24px', marginBottom: '48px' }}>
                     {/* Mission Management */}
                     <div style={{
                       background: 'white',
@@ -15798,7 +15818,7 @@ export default function KindWorldApp() {
                     )
 
                     return (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '20px', marginBottom: '24px' }}>
                         {/* Upcoming */}
                         <div style={{
                           background: 'rgba(255,255,255,0.9)',
@@ -16285,7 +16305,7 @@ export default function KindWorldApp() {
                       }
                       const maxMonth = Math.max(...months.map(m => m.count), 1)
                       return (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '32px' }}>
                           {/* Category chart */}
                           <div>
                             <div style={{ fontWeight: '600', fontSize: '15px', color: '#374151', marginBottom: '16px' }}>🏷️ {t('volunteersByCategory')}</div>
@@ -16322,7 +16342,7 @@ export default function KindWorldApp() {
                   </div>
 
                   {/* Quick Actions */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '48px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '24px', marginBottom: '48px' }}>
                     {/* Create Activity */}
                     <div style={{
                       background: 'white',
@@ -17171,7 +17191,7 @@ export default function KindWorldApp() {
                               style={{ width: '100%', padding: '12px 16px', border: '2px solid #e2e8f0', borderRadius: '12px', fontSize: '14px', outline: 'none', resize: 'vertical' }}
                             />
                           </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                             <div>
                               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2d3748' }}>{t('locationLabel')} *</label>
                               <input
@@ -17191,7 +17211,7 @@ export default function KindWorldApp() {
                               />
                             </div>
                           </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                             <div>
                               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2d3748' }}>{t('hoursLabelForm')} *</label>
                               <input
@@ -17235,7 +17255,7 @@ export default function KindWorldApp() {
                             </div>
                           </div>
 
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                             <div>
                               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2d3748' }}>{t('categoryFormLabel')}</label>
                               <select
@@ -17375,7 +17395,7 @@ export default function KindWorldApp() {
                           <h4 style={{ fontSize: '18px', fontWeight: '700', color: '#1e293b', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                             ➕ {t('certProgramSetup')}
                           </h4>
-                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                             <div>
                               <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '6px' }}>{t('certProgramNameLabel')}</label>
                               <input
@@ -18039,7 +18059,7 @@ export default function KindWorldApp() {
                         {/* Content */}
                         <div style={{ padding: '28px 32px' }}>
                           {/* Stats Grid */}
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}>
                             <div style={{
                               padding: '20px',
                               background: 'linear-gradient(135deg, var(--tl), var(--tl2))',
@@ -20320,7 +20340,7 @@ export default function KindWorldApp() {
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151', fontSize: '13px' }}>
                     🗣️ {t('preferredLanguage')}
                   </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)', gap: '6px' }}>
                     {Object.entries(languages).map(([code, lang]) => (
                       <button
                         key={code}
@@ -20761,7 +20781,7 @@ export default function KindWorldApp() {
               </div>
 
               {/* Two Column Layout */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '32px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '24px', marginBottom: '32px' }}>
                 {/* Mission Categories */}
                 <div style={{
                   background: 'white',
@@ -21018,7 +21038,7 @@ export default function KindWorldApp() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', alignItems: 'start' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '28px', alignItems: 'start' }}>
 
                 {/* LEFT: Create Program + My Programs */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -23010,7 +23030,7 @@ export default function KindWorldApp() {
               )}
 
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '24px' }}>
                 {/* Personal Information */}
                 <div style={{
                   background: 'white',
@@ -23127,7 +23147,7 @@ export default function KindWorldApp() {
                     {/* Line ID + WhatsApp */}
                     <div style={{ gridColumn: '1/-1', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
                       <p style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>{t('profileContactChannels')}</p>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                         {/* LINE ID field */}
                         {(() => {
                           const savedUser = allUsers.find((u: any) => u.email === user?.email)
@@ -23162,7 +23182,7 @@ export default function KindWorldApp() {
                     {/* Emergency Contact — volunteers only */}
                     {user.role === 'student' && <div style={{ gridColumn: '1/-1', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
                       <p style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>{t('profileEmergencyContact')}</p>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: '16px' }}>
                         {[
                           { label: t('fullName'), key: 'emergencyContactName', placeholder: '', type: 'text' },
                           { label: t('phoneNumber'), key: 'emergencyContactPhone', placeholder: '', type: 'tel' },
@@ -23181,7 +23201,7 @@ export default function KindWorldApp() {
                       <div style={{ gridColumn: '1/-1', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
                         <p style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 4px' }}>{t('profileHealthLogistics')}</p>
                         <p style={{ fontSize: '12px', color: '#9ca3af', margin: '0 0 16px' }}>{t('profileHealthLogisticsHint')}</p>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                           {[
                             { label: t('profileAllergies'), key: 'allergies', placeholder: t('profileAllergiesPlaceholder') },
                             { label: t('profileMedicalConditions'), key: 'medicalConditions', placeholder: t('profileMedicalConditionsPlaceholder') },
@@ -23213,7 +23233,7 @@ export default function KindWorldApp() {
                             <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{t('profileNgoDescription')}</label>
                             <textarea value={(isEditingProfile ? profileForm.ngoDescription : (allUsers.find((u: any) => u.email === user?.email) as any)?.ngoDescription) || ''} onChange={e=>setProfileForm({...profileForm, ngoDescription: e.target.value})} disabled={!isEditingProfile} placeholder={t('profileNgoDescriptionPlaceholder')} rows={4} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', resize:'vertical', boxSizing:'border-box', color:'#1f2937' }} />
                           </div>
-                          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+                          <div style={{ display:'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap:'16px' }}>
                             <div>
                               <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{t('profileNgoWebsite')}</label>
                               <input type="url" value={(isEditingProfile ? profileForm.ngoWebsite : (allUsers.find((u: any) => u.email === user?.email) as any)?.ngoWebsite) || ''} onChange={e=>setProfileForm({...profileForm, ngoWebsite: e.target.value})} disabled={!isEditingProfile} placeholder={t('profileNgoWebsitePlaceholder')} style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }} />
@@ -23493,7 +23513,7 @@ export default function KindWorldApp() {
               </div>
 
               {/* Two Column Layout */}
-              <div style={{ display: 'grid', gridTemplateColumns: '350px 1fr', gap: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '350px 1fr', gap: '24px' }}>
                 {/* Left: User List */}
                 <div style={{
                   background: 'white',
@@ -24267,7 +24287,7 @@ export default function KindWorldApp() {
                   </div>
 
                   {/* Info grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '28px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px', marginBottom: '28px' }}>
                     <div style={{ padding: '16px', background: '#f9fafb', borderRadius: '14px' }}>
                       <div style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px' }}>📍 {t('locationLabel')}</div>
                       <div style={{ fontSize: '15px', fontWeight: '600', color: '#1f2937' }}>{selectedMissionDetail.location}</div>
@@ -24474,7 +24494,7 @@ export default function KindWorldApp() {
                     />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2d3748' }}>
                         {t('locationLabel')} *
@@ -24522,7 +24542,7 @@ export default function KindWorldApp() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2d3748' }}>
                         {t('durationHours')} *
@@ -24578,7 +24598,7 @@ export default function KindWorldApp() {
                       <span style={{ fontSize: '18px' }}>⏰</span>
                       <label style={{ fontWeight: '700', color: '#075985', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('registrationSettings')}</label>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                       <div>
                         <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', color: '#374151', fontSize: '13px' }}>{t('participantLimitLabel')}</label>
                         <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#6b7280' }}>{t('participantLimitHint')}</p>
@@ -24616,7 +24636,7 @@ export default function KindWorldApp() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2d3748' }}>
                         {t('categoryLabel')} *
@@ -24727,7 +24747,7 @@ export default function KindWorldApp() {
                   </div>
 
                   {/* Start/End Time */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px', marginTop: '16px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#2d3748' }}>
                         🕐 {t('startTimeLabel')}
@@ -25113,7 +25133,7 @@ export default function KindWorldApp() {
                       ))}
                     </select>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr', gap: '12px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>{t('pledgeAmount')}</label>
                       <input type="number" min="1" value={newCampaign.amount} onChange={e => setNewCampaign(p => ({ ...p, amount: e.target.value }))}
@@ -25364,7 +25384,7 @@ export default function KindWorldApp() {
                 </div>
 
                 {/* Quick Stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '28px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '12px', marginBottom: '28px' }}>
                   <div style={{ background: '#f0fdf4', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
                     <div style={{ fontSize: '24px', fontWeight: '700', color: '#059669' }}>{selectedReportMission.currentParticipants}</div>
                     <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>{t('rpParticipants')}</div>
@@ -25424,7 +25444,7 @@ export default function KindWorldApp() {
 
                   {/* Photo Grid */}
                   {reportPhotos.length > 0 && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '10px', marginBottom: '16px' }}>
                       {reportPhotos.map((photo, i) => (
                         <div key={i} style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', aspectRatio: '1', background: '#f3f4f6' }}>
                           <img src={photo} alt={`Event photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -25935,7 +25955,7 @@ export default function KindWorldApp() {
                 </div>
 
                 {/* Two column: category chart + tier benefits */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '28px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '24px', marginBottom: '28px' }}>
                   {/* Category Breakdown */}
                   <div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
                     <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1f2937', margin: '0 0 20px' }}>📊 {t('missionsByCategory')}</h3>

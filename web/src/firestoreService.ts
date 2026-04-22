@@ -23,7 +23,8 @@ export const COLLECTIONS = {
   NGO_MESSAGES: 'ngoMessages',
   ACTIVITY_FEED: 'activityFeed',
   FRIEND_REQUESTS: 'friendRequests',
-  FRIENDSHIPS: 'friendships'
+  FRIENDSHIPS: 'friendships',
+  FRIEND_MESSAGES: 'friendMessages'
 }
 
 // ── Generic helpers ──────────────────────────────────────────────────────────
