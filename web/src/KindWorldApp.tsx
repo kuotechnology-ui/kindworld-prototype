@@ -9178,6 +9178,27 @@ export default function KindWorldApp() {
   const [showHourSubmitModal, setShowHourSubmitModal] = useState(false)
   const [submittingMission, setSubmittingMission] = useState<any>(null)
   const [hourSubmitForm, setHourSubmitForm] = useState({ hours: 0, notes: '' })
+  const [showLinePushModal, setShowLinePushModal] = useState(false)
+  const [linePushTarget, setLinePushTarget] = useState<any>(null) // single user or null for broadcast
+  const [linePushText, setLinePushText] = useState('')
+  const [linePushSending, setLinePushSending] = useState(false)
+  const LINE_MESSAGING_TOKEN = 'r88q++NoflmcdaBAFxbc6vZIKhQ05HBcrx9Q5bblvpAEHTerr6yV2Kjy2Nt/GNdoy5jUyYsMGSRcCpQnI6lJreftjxugLyJAhE8KLMvM5ONAywI8W3RJhZEGvULru0Tjc0IIvdzozg9Rd+JGXZIwyAdB04t89/1O/w1cDnyilFU='
+
+  const sendLinePushMessage = async (toUserId: string, text: string) => {
+    const res = await fetch('/api/line-push', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LINE_MESSAGING_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ to: toUserId, messages: [{ type: 'text', text }] })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message || `LINE API error ${res.status}`)
+    }
+  }
+
   const [showNgoMessageModal, setShowNgoMessageModal] = useState(false)
   const [messagingMission, setMessagingMission] = useState<any>(null)
   const [ngoMessageForm, setNgoMessageForm] = useState({ subject: '', body: '' })
@@ -15834,6 +15855,28 @@ export default function KindWorldApp() {
                           >
                             {t('manageBadges')}
                           </button>
+                          {userData.lineUserId && (
+                            <button
+                              onClick={() => { setLinePushTarget(userData); setLinePushText(''); setShowLinePushModal(true) }}
+                              style={{
+                                padding: '6px 12px',
+                                background: 'rgba(0, 185, 0, 0.1)',
+                                color: '#00b900',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                              LINE
+                            </button>
+                          )}
                           {userData.email !== user?.email && userData.role !== 'admin' && (
                             <>
                             <button
@@ -19869,6 +19912,62 @@ export default function KindWorldApp() {
                     onMouseOut={(e) => { e.currentTarget.style.opacity = '1' }}
                   >
                     {t('deleteAccountConfirmBtn')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* LINE Push Message Modal */}
+          {showLinePushModal && (
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '20px' }}>
+              <div style={{ background: 'white', borderRadius: '20px', padding: '28px', maxWidth: '440px', width: '100%', boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                  <div style={{ width: '44px', height: '44px', background: '#00b900', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', margin: 0 }}>Send LINE Message</h2>
+                    <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>To: {linePushTarget?.name} ({linePushTarget?.email})</p>
+                  </div>
+                </div>
+                <div style={{ background: '#fef9c3', border: '1px solid #fde047', borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', fontSize: '12px', color: '#854d0e' }}>
+                  ⚠️ The user must have added the KindWorld LINE Official Account as a friend to receive this message.
+                </div>
+                <textarea
+                  value={linePushText}
+                  onChange={(e) => setLinePushText(e.target.value)}
+                  placeholder="Type your message..."
+                  rows={4}
+                  style={{ width: '100%', padding: '12px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', resize: 'vertical', outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                />
+                <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                  <button
+                    onClick={() => { setShowLinePushModal(false); setLinePushTarget(null); setLinePushText('') }}
+                    style={{ flex: 1, padding: '12px', background: '#f3f4f6', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', color: '#374151' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={!linePushText.trim() || linePushSending}
+                    onClick={async () => {
+                      if (!linePushTarget?.lineUserId || !linePushText.trim()) return
+                      setLinePushSending(true)
+                      try {
+                        await sendLinePushMessage(linePushTarget.lineUserId, linePushText.trim())
+                        setNotifications(prev => [...prev, `✅ LINE message sent to ${linePushTarget.name}`])
+                        setShowLinePushModal(false)
+                        setLinePushTarget(null)
+                        setLinePushText('')
+                      } catch (err: any) {
+                        setNotifications(prev => [...prev, `❌ Failed to send: ${err.message}`])
+                      } finally {
+                        setLinePushSending(false)
+                      }
+                    }}
+                    style={{ flex: 2, padding: '12px', background: linePushSending ? '#86efac' : '#00b900', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: linePushText.trim() ? 'pointer' : 'not-allowed', color: 'white', transition: 'all 0.2s' }}
+                  >
+                    {linePushSending ? 'Sending...' : 'Send via LINE'}
                   </button>
                 </div>
               </div>
