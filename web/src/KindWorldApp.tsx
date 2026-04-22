@@ -541,6 +541,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: 'Every hour of kindness creates lasting impact',
     heroTitle3: 'Join the Movement',
     heroSubtitle3: 'Be part of a global network of changemakers',
+    heroTitle4: 'Stay Connected on LINE',
+    heroSubtitle4: 'Add us on LINE to receive mission updates and alerts',
+    addOnLINE: 'Add on LINE',
     // Auth
     welcomeBackTitle: 'Welcome Back',
     createAccount: 'Create Account',
@@ -1386,6 +1389,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: 'Setiap jam kebaikan menciptakan dampak yang bermakna',
     heroTitle3: 'Bergabung dengan Gerakan',
     heroSubtitle3: 'Jadilah bagian dari jaringan global para pembuat perubahan',
+    heroTitle4: 'Tetap Terhubung di LINE',
+    heroSubtitle4: 'Tambahkan kami di LINE untuk menerima pembaruan misi',
+    addOnLINE: 'Tambah di LINE',
     // Auth
     welcomeBackTitle: 'Selamat Datang Kembali',
     createAccount: 'Buat Akun',
@@ -2094,6 +2100,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: '每一小时的善举都能产生持久影响',
     heroTitle3: '加入行动',
     heroSubtitle3: '成为全球变革者网络的一员',
+    heroTitle4: '在LINE上保持联系',
+    heroSubtitle4: '在LINE上添加我们，接收任务更新和通知',
+    addOnLINE: '加入LINE',
     // Auth
     welcomeBackTitle: '欢迎回来',
     createAccount: '创建账户',
@@ -2801,6 +2810,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: '每一小時的善意，都能留下深遠的影響',
     heroTitle3: '加入我們',
     heroSubtitle3: '成為全球行動者社群的一份子',
+    heroTitle4: '在LINE上保持聯繫',
+    heroSubtitle4: '在LINE上加入我們，接收任務更新和通知',
+    addOnLINE: '加入LINE',
     // Auth
     welcomeBackTitle: '歡迎回來',
     createAccount: '建立帳號',
@@ -3508,6 +3520,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: 'Cada hora de bondad crea un impacto duradero',
     heroTitle3: 'Únete al Movimiento',
     heroSubtitle3: 'Sé parte de una red global de agentes de cambio',
+    heroTitle4: 'Conéctate en LINE',
+    heroSubtitle4: 'Agréganos en LINE para recibir actualizaciones de misiones',
+    addOnLINE: 'Agregar en LINE',
     welcomeBackTitle: 'Bienvenido de Nuevo',
     createAccount: 'Crear Cuenta',
     signInToContinue: 'Inicia sesión para continuar tu viaje',
@@ -4194,6 +4209,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: 'Chaque heure de bonté crée un impact durable',
     heroTitle3: 'Rejoignez le Mouvement',
     heroSubtitle3: 'Faites partie d\'un réseau mondial d\'acteurs du changement',
+    heroTitle4: 'Restez Connecté sur LINE',
+    heroSubtitle4: 'Ajoutez-nous sur LINE pour recevoir les mises à jour des missions',
+    addOnLINE: 'Ajouter sur LINE',
     welcomeBackTitle: 'Bienvenue',
     createAccount: 'Créer un Compte',
     signInToContinue: 'Connectez-vous pour continuer',
@@ -4879,6 +4897,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: 'Cada hora de bondade cria impacto duradouro',
     heroTitle3: 'Junte-se ao Movimento',
     heroSubtitle3: 'Faça parte de uma rede global de agentes de mudança',
+    heroTitle4: 'Fique Conectado no LINE',
+    heroSubtitle4: 'Adicione-nos no LINE para receber atualizações de missões',
+    addOnLINE: 'Adicionar no LINE',
     welcomeBackTitle: 'Bem-vindo',
     createAccount: 'Criar Conta',
     signInToContinue: 'Entre para continuar',
@@ -5565,6 +5586,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: '優しさの一時間が持続的な影響を生む',
     heroTitle3: '活動に参加',
     heroSubtitle3: 'グローバルなチェンジメーカーネットワークの一員に',
+    heroTitle4: 'LINEでつながろう',
+    heroSubtitle4: 'LINEで友だち追加してミッションの最新情報を受け取ろう',
+    addOnLINE: 'LINEで追加',
     welcomeBackTitle: 'おかえりなさい',
     createAccount: 'アカウント作成',
     signInToContinue: 'ログインして続ける',
@@ -6251,6 +6275,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: 'ทุกชั่วโมงของความเมตตาสร้างผลกระทบที่ยั่งยืน',
     heroTitle3: 'เข้าร่วมขบวนการ',
     heroSubtitle3: 'เป็นส่วนหนึ่งของเครือข่ายผู้สร้างการเปลี่ยนแปลงระดับโลก',
+    heroTitle4: 'ติดตามเราบน LINE',
+    heroSubtitle4: 'เพิ่มเราเป็นเพื่อนบน LINE เพื่อรับการอัปเดตภารกิจ',
+    addOnLINE: 'เพิ่มบน LINE',
     welcomeBackTitle: 'ยินดีต้อนรับกลับ',
     createAccount: 'สร้างบัญชี',
     signInToContinue: 'เข้าสู่ระบบเพื่อดำเนินการต่อ',
@@ -6937,6 +6964,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: 'Mỗi giờ thiện nguyện tạo ra tác động lâu dài',
     heroTitle3: 'Tham gia phong trào',
     heroSubtitle3: 'Trở thành một phần của mạng lưới người thay đổi toàn cầu',
+    heroTitle4: 'Kết Nối Qua LINE',
+    heroSubtitle4: 'Thêm chúng tôi trên LINE để nhận cập nhật về nhiệm vụ',
+    addOnLINE: 'Thêm trên LINE',
     welcomeBackTitle: 'Chào mừng trở lại',
     createAccount: 'Tạo tài khoản',
     signInToContinue: 'Đăng nhập để tiếp tục hành trình của bạn',
@@ -7623,6 +7653,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: '친절의 매 시간이 지속적인 영향을 만듭니다',
     heroTitle3: '활동에 동참하기',
     heroSubtitle3: '글로벌 체인지메이커 네트워크의 일원이 되세요',
+    heroTitle4: 'LINE으로 연결하세요',
+    heroSubtitle4: 'LINE에서 친구 추가하고 미션 업데이트를 받아보세요',
+    addOnLINE: 'LINE에서 추가',
     welcomeBackTitle: '다시 오신 것을 환영합니다',
     createAccount: '계정 만들기',
     signInToContinue: '여정을 계속하려면 로그인하세요',
@@ -8309,6 +8342,9 @@ const localTranslations: Record<string, Record<string, string>> = {
     heroSubtitle2: 'Jede Stunde der Freundlichkeit schafft bleibende Wirkung',
     heroTitle3: 'Der Bewegung beitreten',
     heroSubtitle3: 'Werden Sie Teil eines globalen Netzwerks von Veränderern',
+    heroTitle4: 'Auf LINE verbinden',
+    heroSubtitle4: 'Fügen Sie uns auf LINE hinzu, um Missions-Updates zu erhalten',
+    addOnLINE: 'Auf LINE hinzufügen',
     welcomeBackTitle: 'Willkommen zurück',
     createAccount: 'Konto erstellen',
     signInToContinue: 'Melden Sie sich an, um fortzufahren',
@@ -9334,6 +9370,12 @@ export default function KindWorldApp() {
       url: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=1920&q=90&auto=format&fit=crop',
       title: 'Join the Movement',
       subtitle: 'Be part of a global network of changemakers',
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1920&q=90&auto=format&fit=crop',
+      title: 'Stay Connected on LINE',
+      subtitle: 'Add us on LINE to receive updates and mission alerts',
+      isLine: true
     }
   ]
 
@@ -11760,6 +11802,42 @@ export default function KindWorldApp() {
                     }}>
                       {t(`heroSubtitle${index + 1}`)}
                     </p>
+                    {(image as any).isLine ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '20px' : '32px', flexWrap: 'wrap' }}>
+                        <div style={{ background: 'white', borderRadius: '16px', padding: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+                          <img
+                            src="https://qr-official.line.me/g/p/149jddew.png"
+                            alt="LINE QR Code"
+                            style={{ width: isMobile ? '120px' : '160px', height: isMobile ? '120px' : '160px', display: 'block' }}
+                          />
+                        </div>
+                        <div>
+                          <a
+                            href="https://line.me/R/ti/p/@149jddew"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: isMobile ? '13px 20px' : '16px 28px',
+                              background: '#00b900',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '14px',
+                              cursor: 'pointer',
+                              fontWeight: '700',
+                              fontSize: isMobile ? '14px' : '16px',
+                              textDecoration: 'none',
+                              boxShadow: '0 8px 24px rgba(0,185,0,0.4)'
+                            }}
+                          >
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                            {t('addOnLINE')}
+                          </a>
+                        </div>
+                      </div>
+                    ) : (
                     <div style={{ display: 'flex', gap: isMobile ? '10px' : '16px', flexWrap: 'wrap' }}>
                       <button
                         onClick={() => { setAuthMode('signin'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
@@ -11812,6 +11890,7 @@ export default function KindWorldApp() {
                         {t('learnMore')}
                       </button>
                     </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -22079,7 +22158,7 @@ export default function KindWorldApp() {
                 </p>
               </div>
 
-              {/* Add Friend Section */}
+              {/* Add Friend Section — live search */}
               <div style={{
                 background: 'white',
                 borderRadius: '16px',
@@ -22090,78 +22169,120 @@ export default function KindWorldApp() {
                 <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
                   {t('addFriend')}
                 </h3>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <input
-                    id="friend-search-input"
-                    type="text"
-                    placeholder={t('searchFriendPlaceholder')}
-                    value={friendSearchQuery}
-                    onChange={(e) => setFriendSearchQuery(e.target.value)}
-                    style={{
-                      flex: 1,
-                      padding: '12px 16px',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '12px',
-                      fontSize: '14px',
-                      outline: 'none'
-                    }}
-                  />
-                  <button
-                    onClick={() => {
-                      if (friendSearchQuery.trim()) {
-                        const matchedUser = allUsers.find((u: any) =>
-                          u.name?.toLowerCase().includes(friendSearchQuery.toLowerCase()) ||
-                          u.email?.toLowerCase().includes(friendSearchQuery.toLowerCase())
-                        )
-                        if (!matchedUser) {
-                          alert(t('userNotFound'))
-                          return
-                        }
-                        if ((matchedUser as any).email === user?.email) {
-                          alert(t('cannotAddSelf'))
-                          return
-                        }
-                        if (friends.some(f => f.email === (matchedUser as any).email)) {
-                          alert(t('alreadyFriends'))
-                          return
-                        }
-                        const requestId = Date.now()
-                        const newFriend = {
-                          id: requestId,
-                          name: (matchedUser as any).name,
-                          email: (matchedUser as any).email,
-                          hours: (matchedUser as any).hours || 0,
-                          status: 'pending' as const
-                        }
-                        const updatedFriends = [...friends, newFriend]
-                        setFriends(updatedFriends)
-                        localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
-                        try {
-                          const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
-                          pending.push({
-                            id: requestId,
-                            fromEmail: user?.email,
-                            fromName: user?.name,
-                            fromHours: user?.hours || 0,
-                            toEmail: (matchedUser as any).email,
-                          })
-                          localStorage.setItem('kindworld_pending_requests', JSON.stringify(pending))
-                        } catch {}
-                        setFriendSearchQuery('')
-                      }
-                    }}
-                    style={{
-                      padding: '12px 24px',
-                      background: 'linear-gradient(135deg, var(--ta) 0%, var(--tb) 100%)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '12px',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {t('sendRequest')}
-                  </button>
+                <div style={{ position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', border: '2px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden', background: 'white' }}>
+                    <span style={{ padding: '0 14px', fontSize: '18px', color: '#9ca3af' }}>🔍</span>
+                    <input
+                      id="friend-search-input"
+                      type="text"
+                      placeholder={t('searchFriendPlaceholder')}
+                      value={friendSearchQuery}
+                      onChange={(e) => setFriendSearchQuery(e.target.value)}
+                      onFocus={(e) => { e.currentTarget.parentElement!.parentElement!.querySelector('ul')?.setAttribute('style', 'display:block') }}
+                      style={{
+                        flex: 1,
+                        padding: '13px 8px',
+                        border: 'none',
+                        fontSize: '15px',
+                        outline: 'none',
+                        background: 'transparent'
+                      }}
+                    />
+                    {friendSearchQuery && (
+                      <button onClick={() => setFriendSearchQuery('')} style={{ padding: '0 14px', background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#9ca3af' }}>×</button>
+                    )}
+                  </div>
+                  {/* Live results dropdown */}
+                  {friendSearchQuery.trim().length > 0 && (() => {
+                    const q = friendSearchQuery.toLowerCase()
+                    const results = allUsers.filter((u: any) =>
+                      u.email !== user?.email &&
+                      u.role === 'student' &&
+                      (u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q))
+                    ).slice(0, 8)
+                    return (
+                      <div style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 6px)',
+                        left: 0,
+                        right: 0,
+                        background: 'white',
+                        borderRadius: '14px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                        border: '1px solid #e5e7eb',
+                        zIndex: 100,
+                        overflow: 'hidden'
+                      }}>
+                        {results.length === 0 ? (
+                          <div style={{ padding: '16px', textAlign: 'center', color: '#9ca3af', fontSize: '14px' }}>
+                            {t('userNotFound')}
+                          </div>
+                        ) : results.map((u: any) => {
+                          const alreadyFriend = friends.some(f => f.email === u.email)
+                          const pendingRequest = friends.some(f => f.email === u.email && f.status === 'pending')
+                          return (
+                            <div key={u.email} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '12px 16px',
+                              borderBottom: '1px solid #f3f4f6',
+                              cursor: alreadyFriend ? 'default' : 'pointer',
+                              transition: 'background 0.15s'
+                            }}
+                              onMouseEnter={(e) => { if (!alreadyFriend) e.currentTarget.style.background = '#f9fafb' }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = 'white' }}
+                            >
+                              <div style={{
+                                width: '40px', height: '40px', borderRadius: '50%',
+                                background: 'linear-gradient(135deg, var(--ta), var(--tb))',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: 'white', fontWeight: '700', fontSize: '16px', flexShrink: 0
+                              }}>
+                                {u.avatar ? <img src={u.avatar} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display='none' }} /> : u.name?.charAt(0)}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</div>
+                                <div style={{ fontSize: '12px', color: '#9ca3af' }}>{u.hours || 0}h volunteered</div>
+                              </div>
+                              <button
+                                disabled={alreadyFriend}
+                                onClick={() => {
+                                  if (alreadyFriend) return
+                                  if (u.email === user?.email) return
+                                  const requestId = Date.now()
+                                  const newFriend = { id: requestId, name: u.name, email: u.email, hours: u.hours || 0, status: 'pending' as const }
+                                  const updatedFriends = [...friends, newFriend]
+                                  setFriends(updatedFriends)
+                                  localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
+                                  try {
+                                    const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
+                                    pending.push({ id: requestId, fromEmail: user?.email, fromName: user?.name, fromHours: user?.hours || 0, toEmail: u.email })
+                                    localStorage.setItem('kindworld_pending_requests', JSON.stringify(pending))
+                                  } catch {}
+                                  setFriendSearchQuery('')
+                                  setNotifications(prev => [...prev, `Friend request sent to ${u.name}!`])
+                                }}
+                                style={{
+                                  padding: '7px 16px',
+                                  background: alreadyFriend ? '#f3f4f6' : 'linear-gradient(135deg, var(--ta), var(--tb))',
+                                  color: alreadyFriend ? '#9ca3af' : 'white',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  fontSize: '13px',
+                                  fontWeight: '600',
+                                  cursor: alreadyFriend ? 'default' : 'pointer',
+                                  flexShrink: 0
+                                }}
+                              >
+                                {pendingRequest ? t('pending') : alreadyFriend ? t('alreadyFriends') : t('sendRequest')}
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )
+                  })()}
                 </div>
               </div>
 
