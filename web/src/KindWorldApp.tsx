@@ -9814,6 +9814,9 @@ export default function KindWorldApp() {
     }
     return []
   })
+  // Track IDs of requests the user has already accepted/declined so Firestore
+  // subscription can't race-condition them back into state
+  const processedFriendRequestIds = useRef<Set<number>>(new Set())
 
   const t = (key: string): string => {
     const lang = localTranslations[language]
@@ -11351,10 +11354,12 @@ export default function KindWorldApp() {
     if (!user?.email) return
     const email = user.email
     const unsub = subscribeToCollection<any>(COLLECTIONS.FRIEND_REQUESTS, (docs) => {
-      const incoming = docs.filter((r: any) => r.toEmail === email)
+      const incoming = docs
+        .filter((r: any) => r.toEmail === email)
+        // Never re-add requests already accepted/declined this session
+        .filter((r: any) => !processedFriendRequestIds.current.has(Number(r.id)))
       setFriendRequests(prev => {
-        const newReqs = incoming.map((r: any) => ({ id: r.id, name: r.fromName, email: r.fromEmail, hours: r.fromHours || 0 }))
-        // Notify for any truly new requests (not already in state)
+        const newReqs = incoming.map((r: any) => ({ id: Number(r.id), name: r.fromName, email: r.fromEmail, hours: r.fromHours || 0 }))
         const prevIds = new Set(prev.map(r => r.id))
         newReqs.filter(r => !prevIds.has(r.id)).forEach(r => {
           setNotifications(n => [...n, `👥 ${r.name} sent you a friend request!`])
@@ -11390,8 +11395,10 @@ export default function KindWorldApp() {
       if (e.key === 'kindworld_pending_requests' && user?.email && e.newValue) {
         try {
           const pending: any[] = JSON.parse(e.newValue)
-          const incoming = pending.filter((r: any) => r.toEmail === user.email)
-          const newReqs = incoming.map((r: any) => ({ id: r.id, name: r.fromName, email: r.fromEmail, hours: r.fromHours || 0 }))
+          const incoming = pending
+            .filter((r: any) => r.toEmail === user.email)
+            .filter((r: any) => !processedFriendRequestIds.current.has(Number(r.id)))
+          const newReqs = incoming.map((r: any) => ({ id: Number(r.id), name: r.fromName, email: r.fromEmail, hours: r.fromHours || 0 }))
           setFriendRequests(prev => {
             const prevIds = new Set(prev.map(r => r.id))
             newReqs.filter(r => !prevIds.has(r.id)).forEach(r => {
@@ -22418,11 +22425,13 @@ export default function KindWorldApp() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
+                        gap: '12px',
+                        flexWrap: 'wrap',
                         padding: '16px',
                         background: '#f9fafb',
                         borderRadius: '12px'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 }}>
                           <div className="kw-avatar" style={{
                             width: '48px',
                             height: '48px',
@@ -22433,34 +22442,37 @@ export default function KindWorldApp() {
                             justifyContent: 'center',
                             color: 'white',
                             fontWeight: '600',
-                            fontSize: '18px'
+                            fontSize: '18px',
+                            flexShrink: 0
                           }}>
                             {request.name.charAt(0)}
                           </div>
-                          <div>
-                            <p style={{ fontWeight: '600', color: '#1f2937' }}>{request.name}</p>
-                            <p style={{ fontSize: '14px', color: '#6b7280' }}>{request.email}</p>
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ fontWeight: '600', color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{request.name}</p>
+                            <p style={{ fontSize: '13px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{request.email}</p>
                             <p style={{ fontSize: '12px', color: '#9ca3af' }}>{request.hours} {t('hoursLabel')}</p>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                           <button
                             onClick={() => {
+                              // Mark as processed immediately to prevent Firestore race condition
+                              processedFriendRequestIds.current.add(request.id)
                               const acceptedFriend = { ...request, status: 'accepted' as const }
                               const updatedFriends = [...friends, acceptedFriend]
                               setFriends(updatedFriends)
                               localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
-                              const updatedReqs = friendRequests.filter(r => r.id !== request.id)
-                              setFriendRequests(updatedReqs)
+                              setFriendRequests(prev => prev.filter(r => r.id !== request.id))
                               deleteDocument(COLLECTIONS.FRIEND_REQUESTS, String(request.id)).catch(() => {})
                               try {
                                 const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
-                                const filtered = pending.filter((p: any) => p.id !== request.id)
+                                const filtered = pending.filter((p: any) => Number(p.id) !== request.id)
                                 localStorage.setItem('kindworld_pending_requests', JSON.stringify(filtered))
                                 const friendships = JSON.parse(localStorage.getItem('kindworld_friendships') || '[]')
                                 friendships.push({ id: request.id, fromEmail: request.email, toEmail: user?.email, acceptedAt: new Date().toISOString() })
                                 localStorage.setItem('kindworld_friendships', JSON.stringify(friendships))
                               } catch {}
+                              setNotifications(n => [...n, `✅ You are now friends with ${request.name}!`])
                             }}
                             style={{
                               padding: '8px 16px',
@@ -22468,20 +22480,23 @@ export default function KindWorldApp() {
                               color: 'white',
                               border: 'none',
                               borderRadius: '8px',
-                              fontWeight: '500',
-                              cursor: 'pointer'
+                              fontWeight: '600',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
                             }}
                           >
                             {t('accept')}
                           </button>
                           <button
                             onClick={() => {
-                              const updatedReqs = friendRequests.filter(r => r.id !== request.id)
-                              setFriendRequests(updatedReqs)
+                              // Mark as processed immediately to prevent Firestore race condition
+                              processedFriendRequestIds.current.add(request.id)
+                              setFriendRequests(prev => prev.filter(r => r.id !== request.id))
                               deleteDocument(COLLECTIONS.FRIEND_REQUESTS, String(request.id)).catch(() => {})
                               try {
                                 const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
-                                const filtered = pending.filter((p: any) => p.id !== request.id)
+                                const filtered = pending.filter((p: any) => Number(p.id) !== request.id)
                                 localStorage.setItem('kindworld_pending_requests', JSON.stringify(filtered))
                               } catch {}
                             }}
@@ -22491,8 +22506,10 @@ export default function KindWorldApp() {
                               color: 'white',
                               border: 'none',
                               borderRadius: '8px',
-                              fontWeight: '500',
-                              cursor: 'pointer'
+                              fontWeight: '600',
+                              fontSize: '14px',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap'
                             }}
                           >
                             {t('decline')}
