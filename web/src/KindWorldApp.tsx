@@ -9030,6 +9030,10 @@ export default function KindWorldApp() {
       from { opacity: 0; transform: scale(0.82); }
       to { opacity: 1; transform: scale(1); }
     }
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
     @keyframes confetti0 { 0%{opacity:1;transform:translateY(0) rotate(0deg)} 100%{opacity:0;transform:translateY(200px) rotate(360deg)} }
     @keyframes confetti1 { 0%{opacity:1;transform:translateY(0) rotate(0deg)} 100%{opacity:0;transform:translateY(180px) rotate(-280deg)} }
     @keyframes confetti2 { 0%{opacity:1;transform:translateY(0) rotate(0deg)} 100%{opacity:0;transform:translateY(220px) rotate(420deg)} }
@@ -9542,6 +9546,7 @@ export default function KindWorldApp() {
     try { return JSON.parse(localStorage.getItem('kindworld_admin_emails') || '[]') } catch { return [] }
   })
   const [showCelebration, setShowCelebration] = useState<{type: 'hours'|'badge'|'milestone'|'certificate', title: string, subtitle: string, icon: string} | null>(null)
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   const [rejectionReasonInput, setRejectionReasonInput] = useState('')
   const [showRejectModal, setShowRejectModal] = useState<any>(null)
   const [showReviewModal, setShowReviewModal] = useState<{type:'vol'|'ngo', missionId:number, missionTitle:string, targetEmail:string, targetName:string} | null>(null)
@@ -14373,247 +14378,277 @@ export default function KindWorldApp() {
         <nav style={{
           background: 'var(--tnavbg)',
           backdropFilter: 'blur(12px)',
-          padding: isMobile ? '9px 12px' : '13px 24px',
+          padding: isMobile ? '10px 16px' : '13px 24px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           position: 'sticky',
           top: 0,
-          zIndex: 100,
+          zIndex: 200,
           borderBottom: '1px solid rgba(var(--tp-rgb), 0.15)',
           boxShadow: '0 1px 12px rgba(var(--tp-rgb), 0.08)',
         }}>
+          {/* Logo */}
           <div
             onClick={() => setCurrentPage('landing')}
-            style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '14px', cursor: 'pointer', transition: 'opacity 0.2s ease', flexShrink: 0 }}
-            onMouseOver={(e) => e.currentTarget.style.opacity = '0.75'}
-            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flexShrink: 0 }}
           >
-            <img src="/kindworld-logo.jpg" alt="KindWorld" style={{ width: isMobile ? '30px' : '42px', height: isMobile ? '30px' : '42px', borderRadius: isMobile ? '8px' : '12px', objectFit: 'cover' }} />
-            {!isMobile && <h1 style={{
-              margin: 0,
-              color: '#1f2937',
-              fontSize: '21px',
-              fontWeight: '600',
-              letterSpacing: '-0.02em'
-            }}>
-              {t('title')}
-            </h1>}
+            <img src="/kindworld-logo.jpg" alt="KindWorld" style={{ width: isMobile ? '32px' : '42px', height: isMobile ? '32px' : '42px', borderRadius: isMobile ? '9px' : '12px', objectFit: 'cover' }} />
+            {!isMobile && <h1 style={{ margin: 0, color: '#1f2937', fontSize: '21px', fontWeight: '600', letterSpacing: '-0.02em' }}>{t('title')}</h1>}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '12px', flex: 1, justifyContent: 'flex-end', minWidth: 0 }}>
-            {/* Navigation Buttons */}
-            <div className="kw-nav-buttons" style={{ background: 'rgba(var(--tp-rgb),0.07)', borderRadius: '12px', padding: '4px', maxWidth: isMobile ? 'calc(100vw - 130px)' : 'none', overflowX: isMobile ? 'auto' : 'visible', display: 'flex', scrollbarWidth: 'none' }}>
-              {(() => {
-                if (user?.role === 'ngo') {
-                  const ngoData = allUsers.find((u: any) => u.email === user?.email)
-                  const isApproved = !ngoData || ngoData.status === 'verified' || ngoData.status === 'active'
-                  if (!isApproved) return []
-                  return ['dashboard', 'missions', 'contact', 'certificates', 'profile', 'settings']
-                }
-                if (user?.role === 'admin') return ['dashboard', 'missions', 'reports', 'investor', 'contact', 'profile', 'settings']
-                if (user?.role === 'sponsor') return ['dashboard', 'whyPartner', 'sponsorImpact', 'contact', 'profile', 'settings']
-                return ['dashboard', 'missions', 'badges', 'certificates', 'leaderboard', 'friends', 'profile', 'settings']
-              })().map((page) => {
-                const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', badgeManagement:'🛡️', investor:'💼', sponsorImpact:'📈', whyPartner:'🤝', contact:'💬' }
-                const isActive = currentPage === page
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page as any)}
-                    title={t(page)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '5px',
-                      padding: isMobile ? '8px 10px' : (isActive ? '9px 17px' : '9px 13px'),
-                      background: isActive ? 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)' : 'transparent',
-                      color: isActive ? 'white' : '#6b7280',
-                      border: 'none', borderRadius: '9px', cursor: 'pointer',
-                      fontSize: isMobile ? '12px' : '14px', fontWeight: isActive ? '600' : '400',
-                      transition: 'all 0.15s ease', outline: 'none', whiteSpace: 'nowrap',
-                      position: 'relative', flexShrink: 0,
-                      boxShadow: isActive ? '0 2px 8px rgba(var(--tp-rgb),0.28)' : 'none',
-                    }}
-                    onMouseOver={(e) => { if (!isActive) { e.currentTarget.style.background = 'rgba(var(--tp-rgb),0.1)'; e.currentTarget.style.color = 'var(--tp)' } }}
-                    onMouseOut={(e) => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280' } }}
-                  >
-                    <span style={{ fontSize: isMobile ? '16px' : '18px', lineHeight: '1' }}>{navIcons[page] || '•'}</span>
-                    {isActive && !isMobile && <span style={{ textTransform: 'capitalize' }}>{t(page)}</span>}
-                    {isActive && <span style={{ position: 'absolute', bottom: '2px', left: '50%', transform: 'translateX(-50%)', width: '3px', height: '3px', borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />}
-                    {page === 'friends' && friendRequests.length > 0 && (
-                      <span style={{ position: 'absolute', top: '4px', right: '4px', minWidth: '16px', height: '16px', background: '#ef4444', color: 'white', borderRadius: '8px', fontSize: '10px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', lineHeight: 1 }}>
-                        {friendRequests.length}
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Language Selector — hidden on mobile (accessible from Settings) */}
-            {!isMobile && <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              style={{
-                appearance: 'none',
-                padding: '8px 26px 8px 10px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                background: '#f9fafb',
-                color: '#374151',
-                fontSize: '13px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                outline: 'none',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 6px center',
-                backgroundSize: '14px'
-              }}
-            >
-              {Object.entries(languages).map(([code, lang]) => (
-                <option key={code} value={code} style={{ background: 'white' }}>
-                  {lang.flag} {lang.name}
-                </option>
-              ))}
-            </select>}
-
-            {/* Inbox Button — for volunteers/students */}
-            {user?.role === 'student' && (() => {
-              const unread = directMessages.filter((m:any) => m.toEmail === user?.email && !m.read).length
-              return (
-                <button
-                  onClick={() => setShowInbox(true)}
-                  style={{ position: 'relative', width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '15px' : '18px', transition: 'all 0.2s' }}
-                  title="Inbox"
-                >
-                  💌
-                  {unread > 0 && (
-                    <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', borderRadius: '999px', fontSize: '10px', fontWeight: '700', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
-                      {unread}
+          {isMobile ? (
+            /* ── Mobile: right side icons + hamburger ── */
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* Notification Bell */}
+              <div style={{ position: 'relative' }}>
+                <button onClick={() => setShowNotificationCenter(prev => !prev)}
+                  style={{ position: 'relative', width: '36px', height: '36px', background: showNotificationCenter ? 'var(--tl)' : 'transparent', border: 'none', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                  🔔
+                  {notificationHistory.filter(n => !n.read).length > 0 && (
+                    <span style={{ position: 'absolute', top: '0px', right: '0px', minWidth: '16px', height: '16px', background: '#ef4444', color: 'white', borderRadius: '8px', fontSize: '9px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px' }}>
+                      {notificationHistory.filter(n => !n.read).length}
                     </span>
                   )}
                 </button>
-              )
-            })()}
-
-            {/* Message inbox badge — for NGO, sponsor, and admin */}
-            {(user?.role === 'ngo' || user?.role === 'sponsor' || user?.role === 'admin') && (() => {
-              const unread = directMessages.filter((m:any) => m.toEmail === user?.email && !m.read).length
-              return unread > 0 ? (
-                <button
-                  onClick={() => setCurrentPage('contact' as any)}
-                  style={{ position: 'relative', width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '15px' : '18px', transition: 'all 0.2s' }}
-                  title={t('inboxTabLabel')}
-                >
-                  💌
-                  <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', borderRadius: '999px', fontSize: '10px', fontWeight: '700', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
-                    {unread}
-                  </span>
-                </button>
-              ) : null
-            })()}
-
-            {/* Notification Bell */}
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setShowNotificationCenter(prev => !prev)}
-                style={{ position: 'relative', width: isMobile ? '32px' : '40px', height: isMobile ? '32px' : '40px', background: showNotificationCenter ? 'var(--tl)' : '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '15px' : '18px', transition: 'all 0.2s' }}
-              >
-                🔔
-                {notificationHistory.filter(n => !n.read).length > 0 && (
-                  <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', borderRadius: '999px', fontSize: '10px', fontWeight: '700', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
-                    {notificationHistory.filter(n => !n.read).length}
-                  </span>
-                )}
-              </button>
-              {showNotificationCenter && (
-                <div style={{ position: 'absolute', top: isMobile ? '42px' : '50px', right: 0, width: isMobile ? 'min(320px, calc(100vw - 24px))' : '360px', background: 'white', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', border: '1px solid #e5e7eb', zIndex: 2000, overflow: 'hidden' }}>
-                  <div style={{ padding: '16px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: '700', fontSize: '15px', color: '#1e293b' }}>{t('notifications')}</span>
-                    {notificationHistory.some(n => !n.read) && (
-                      <button onClick={() => setNotificationHistory(prev => prev.map(n => ({ ...n, read: true })))} style={{ fontSize: '12px', color: 'var(--tp)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600' }}>{t('markAllRead')}</button>
-                    )}
-                  </div>
-                  <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
-                    {notificationHistory.length === 0 ? (
-                      <div style={{ padding: '32px 20px', textAlign: 'center', color: '#94a3b8' }}>
-                        <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔔</div>
-                        <div style={{ fontWeight: '600', marginBottom: '4px', color: '#64748b' }}>{t('noNotifications')}</div>
-                        <div style={{ fontSize: '13px' }}>{t('notificationsDesc')}</div>
-                      </div>
-                    ) : notificationHistory.slice().reverse().map(notif => (
-                      <div key={notif.id} onClick={() => setNotificationHistory(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n))} style={{ padding: '14px 20px', borderBottom: '1px solid #f8fafc', background: notif.read ? 'white' : '#f5f3ff', cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: notif.read ? 'transparent' : 'var(--tp)', marginTop: '5px', flexShrink: 0 }} />
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.4' }}>{notif.message}</div>
-                          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>{notif.time}</div>
+                {showNotificationCenter && (
+                  <div style={{ position: 'absolute', top: '44px', right: 0, width: 'min(320px, calc(100vw - 24px))', background: 'white', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', border: '1px solid #e5e7eb', zIndex: 2000, overflow: 'hidden' }}>
+                    <div style={{ padding: '16px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '700', fontSize: '15px', color: '#1e293b' }}>{t('notifications')}</span>
+                      {notificationHistory.some(n => !n.read) && (
+                        <button onClick={() => setNotificationHistory(prev => prev.map(n => ({ ...n, read: true })))} style={{ fontSize: '12px', color: 'var(--tp)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600' }}>{t('markAllRead')}</button>
+                      )}
+                    </div>
+                    <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                      {notificationHistory.length === 0 ? (
+                        <div style={{ padding: '32px 20px', textAlign: 'center', color: '#94a3b8' }}>
+                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔔</div>
+                          <div style={{ fontWeight: '600', marginBottom: '4px', color: '#64748b' }}>{t('noNotifications')}</div>
+                          <div style={{ fontSize: '13px' }}>{t('notificationsDesc')}</div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Divider */}
-            {!isMobile && <div style={{ width: '1px', height: '32px', background: 'var(--tbrd)' }} />}
-
-            {/* User Profile & Logout */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div className="kw-avatar" style={{
-                  width: isMobile ? '30px' : '38px',
-                  height: isMobile ? '30px' : '38px',
-                  background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)',
-                  borderRadius: isMobile ? '8px' : '11px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: isMobile ? '13px' : '15px',
-                  fontWeight: '600',
-                  flexShrink: 0
-                }}>
-                  {user.name.charAt(0)}
-                </div>
-                {!isMobile && (
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{user.name}</span>
-                    <span style={{ fontSize: '12px', color: '#6b7280', textTransform: 'capitalize' }}>
-                      {user.role === 'student' ? 'Volunteer' : user.role.toUpperCase()}
-                    </span>
+                      ) : notificationHistory.slice().reverse().map(notif => (
+                        <div key={notif.id} onClick={() => setNotificationHistory(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n))} style={{ padding: '14px 20px', borderBottom: '1px solid #f8fafc', background: notif.read ? 'white' : '#f5f3ff', cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: notif.read ? 'transparent' : 'var(--tp)', marginTop: '5px', flexShrink: 0 }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.4' }}>{notif.message}</div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>{notif.time}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
+              {/* Hamburger */}
               <button
-                onClick={() => { setUser(null); setCurrentPage('landing') }}
-                style={{
-                  padding: isMobile ? '6px 8px' : '8px 14px',
-                  background: '#fef2f2',
-                  color: '#dc2626',
-                  border: '1px solid #fecaca',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: isMobile ? '16px' : '13px',
-                  fontWeight: '500',
-                  transition: 'all 0.2s ease',
-                  outline: 'none'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.background = '#fee2e2'
-                  e.currentTarget.style.borderColor = '#fca5a5'
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.background = '#fef2f2'
-                  e.currentTarget.style.borderColor = '#fecaca'
-                }}
-                title={t('logout')}
+                onClick={() => setShowMobileSidebar(true)}
+                style={{ width: '36px', height: '36px', background: 'rgba(var(--tp-rgb),0.08)', border: 'none', borderRadius: '10px', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px', padding: '8px' }}
               >
-                {isMobile ? '⏻' : t('logout')}
+                <span style={{ display: 'block', width: '18px', height: '2px', background: 'var(--tp)', borderRadius: '2px' }} />
+                <span style={{ display: 'block', width: '18px', height: '2px', background: 'var(--tp)', borderRadius: '2px' }} />
+                <span style={{ display: 'block', width: '18px', height: '2px', background: 'var(--tp)', borderRadius: '2px' }} />
               </button>
             </div>
-          </div>
+          ) : (
+            /* ── Desktop: full nav ── */
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {/* Nav buttons */}
+              <div className="kw-nav-buttons" style={{ background: 'rgba(var(--tp-rgb),0.07)', borderRadius: '12px', padding: '4px', display: 'flex' }}>
+                {(() => {
+                  if (user?.role === 'ngo') {
+                    const ngoData = allUsers.find((u: any) => u.email === user?.email)
+                    const isApproved = !ngoData || ngoData.status === 'verified' || ngoData.status === 'active'
+                    if (!isApproved) return []
+                    return ['dashboard', 'missions', 'contact', 'certificates', 'profile', 'settings']
+                  }
+                  if (user?.role === 'admin') return ['dashboard', 'missions', 'reports', 'investor', 'contact', 'profile', 'settings']
+                  if (user?.role === 'sponsor') return ['dashboard', 'whyPartner', 'sponsorImpact', 'contact', 'profile', 'settings']
+                  return ['dashboard', 'missions', 'badges', 'certificates', 'leaderboard', 'friends', 'profile', 'settings']
+                })().map((page) => {
+                  const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', badgeManagement:'🛡️', investor:'💼', sponsorImpact:'📈', whyPartner:'🤝', contact:'💬' }
+                  const isActive = currentPage === page
+                  return (
+                    <button key={page} onClick={() => setCurrentPage(page as any)} title={t(page)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: isActive ? '9px 17px' : '9px 13px', background: isActive ? 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)' : 'transparent', color: isActive ? 'white' : '#6b7280', border: 'none', borderRadius: '9px', cursor: 'pointer', fontSize: '14px', fontWeight: isActive ? '600' : '400', transition: 'all 0.15s ease', outline: 'none', whiteSpace: 'nowrap', position: 'relative', flexShrink: 0, boxShadow: isActive ? '0 2px 8px rgba(var(--tp-rgb),0.28)' : 'none' }}
+                      onMouseOver={(e) => { if (!isActive) { e.currentTarget.style.background = 'rgba(var(--tp-rgb),0.1)'; e.currentTarget.style.color = 'var(--tp)' } }}
+                      onMouseOut={(e) => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280' } }}>
+                      <span style={{ fontSize: '18px', lineHeight: '1' }}>{navIcons[page] || '•'}</span>
+                      {isActive && <span style={{ textTransform: 'capitalize' }}>{t(page)}</span>}
+                      {page === 'friends' && friendRequests.length > 0 && (
+                        <span style={{ position: 'absolute', top: '4px', right: '4px', minWidth: '16px', height: '16px', background: '#ef4444', color: 'white', borderRadius: '8px', fontSize: '10px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', lineHeight: 1 }}>
+                          {friendRequests.length}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              {/* Language */}
+              <select value={language} onChange={(e) => setLanguage(e.target.value)}
+                style={{ appearance: 'none', padding: '8px 26px 8px 10px', border: '1px solid #e5e7eb', borderRadius: '8px', background: '#f9fafb', color: '#374151', fontSize: '13px', cursor: 'pointer', outline: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center', backgroundSize: '14px' }}>
+                {Object.entries(languages).map(([code, lang]) => (
+                  <option key={code} value={code} style={{ background: 'white' }}>{lang.flag} {lang.name}</option>
+                ))}
+              </select>
+              {/* Inbox for student */}
+              {user?.role === 'student' && (() => {
+                const unread = directMessages.filter((m:any) => m.toEmail === user?.email && !m.read).length
+                return (
+                  <button onClick={() => setShowInbox(true)} style={{ position: 'relative', width: '40px', height: '40px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }} title="Inbox">
+                    💌
+                    {unread > 0 && <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', borderRadius: '999px', fontSize: '10px', fontWeight: '700', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>{unread}</span>}
+                  </button>
+                )
+              })()}
+              {/* Inbox for NGO/sponsor/admin */}
+              {(user?.role === 'ngo' || user?.role === 'sponsor' || user?.role === 'admin') && (() => {
+                const unread = directMessages.filter((m:any) => m.toEmail === user?.email && !m.read).length
+                return unread > 0 ? (
+                  <button onClick={() => setCurrentPage('contact' as any)} style={{ position: 'relative', width: '40px', height: '40px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }} title={t('inboxTabLabel')}>
+                    💌
+                    <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', borderRadius: '999px', fontSize: '10px', fontWeight: '700', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>{unread}</span>
+                  </button>
+                ) : null
+              })()}
+              {/* Notification bell */}
+              <div style={{ position: 'relative' }}>
+                <button onClick={() => setShowNotificationCenter(prev => !prev)}
+                  style={{ position: 'relative', width: '40px', height: '40px', background: showNotificationCenter ? 'var(--tl)' : '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                  🔔
+                  {notificationHistory.filter(n => !n.read).length > 0 && (
+                    <span style={{ position: 'absolute', top: '-4px', right: '-4px', background: '#ef4444', color: 'white', borderRadius: '999px', fontSize: '10px', fontWeight: '700', minWidth: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
+                      {notificationHistory.filter(n => !n.read).length}
+                    </span>
+                  )}
+                </button>
+                {showNotificationCenter && (
+                  <div style={{ position: 'absolute', top: '50px', right: 0, width: '360px', background: 'white', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', border: '1px solid #e5e7eb', zIndex: 2000, overflow: 'hidden' }}>
+                    <div style={{ padding: '16px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: '700', fontSize: '15px', color: '#1e293b' }}>{t('notifications')}</span>
+                      {notificationHistory.some(n => !n.read) && (
+                        <button onClick={() => setNotificationHistory(prev => prev.map(n => ({ ...n, read: true })))} style={{ fontSize: '12px', color: 'var(--tp)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '600' }}>{t('markAllRead')}</button>
+                      )}
+                    </div>
+                    <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                      {notificationHistory.length === 0 ? (
+                        <div style={{ padding: '32px 20px', textAlign: 'center', color: '#94a3b8' }}>
+                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔔</div>
+                          <div style={{ fontWeight: '600', marginBottom: '4px', color: '#64748b' }}>{t('noNotifications')}</div>
+                          <div style={{ fontSize: '13px' }}>{t('notificationsDesc')}</div>
+                        </div>
+                      ) : notificationHistory.slice().reverse().map(notif => (
+                        <div key={notif.id} onClick={() => setNotificationHistory(prev => prev.map(n => n.id === notif.id ? { ...n, read: true } : n))} style={{ padding: '14px 20px', borderBottom: '1px solid #f8fafc', background: notif.read ? 'white' : '#f5f3ff', cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: notif.read ? 'transparent' : 'var(--tp)', marginTop: '5px', flexShrink: 0 }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.4' }}>{notif.message}</div>
+                            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>{notif.time}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div style={{ width: '1px', height: '32px', background: 'var(--tbrd)' }} />
+              {/* User + Logout */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className="kw-avatar" style={{ width: '38px', height: '38px', background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)', borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '15px', fontWeight: '600' }}>
+                    {user.name.charAt(0)}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{user.name}</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280', textTransform: 'capitalize' }}>{user.role === 'student' ? 'Volunteer' : user.role.toUpperCase()}</span>
+                  </div>
+                </div>
+                <button onClick={() => { setUser(null); setCurrentPage('landing') }}
+                  style={{ padding: '8px 14px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: '500' }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = '#fee2e2' }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = '#fef2f2' }}>
+                  {t('logout')}
+                </button>
+              </div>
+            </div>
+          )}
         </nav>
+
+        {/* ── Mobile Sidebar ── */}
+        {isMobile && showMobileSidebar && (
+          <>
+            {/* Backdrop */}
+            <div
+              onClick={() => setShowMobileSidebar(false)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 300, backdropFilter: 'blur(2px)' }}
+            />
+            {/* Drawer */}
+            <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '280px', background: 'white', zIndex: 400, display: 'flex', flexDirection: 'column', boxShadow: '4px 0 32px rgba(0,0,0,0.18)', animation: 'slideInLeft 0.22s ease-out' }}>
+              {/* Sidebar header */}
+              <div style={{ padding: '20px 20px 16px', background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="kw-avatar" style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.25)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '20px', fontWeight: '700', flexShrink: 0 }}>
+                  {user.name.charAt(0)}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: '700', color: 'white', fontSize: '15px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)', textTransform: 'capitalize' }}>{user.role === 'student' ? 'Volunteer' : user.role.toUpperCase()}</div>
+                </div>
+                <button onClick={() => setShowMobileSidebar(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '8px', width: '30px', height: '30px', color: 'white', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>✕</button>
+              </div>
+              {/* Nav items */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px' }}>
+                {(() => {
+                  const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', investor:'💼', sponsorImpact:'📈', whyPartner:'🤝', contact:'💬' }
+                  let pages: string[] = []
+                  if (user?.role === 'ngo') {
+                    const ngoData = allUsers.find((u: any) => u.email === user?.email)
+                    const isApproved = !ngoData || ngoData.status === 'verified' || ngoData.status === 'active'
+                    pages = isApproved ? ['dashboard', 'missions', 'contact', 'certificates', 'profile', 'settings'] : []
+                  } else if (user?.role === 'admin') {
+                    pages = ['dashboard', 'missions', 'reports', 'investor', 'contact', 'profile', 'settings']
+                  } else if (user?.role === 'sponsor') {
+                    pages = ['dashboard', 'whyPartner', 'sponsorImpact', 'contact', 'profile', 'settings']
+                  } else {
+                    pages = ['dashboard', 'missions', 'badges', 'certificates', 'leaderboard', 'friends', 'profile', 'settings']
+                  }
+                  return pages.map((page) => {
+                    const isActive = currentPage === page
+                    return (
+                      <button key={page} onClick={() => { setCurrentPage(page as any); setShowMobileSidebar(false) }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '13px 16px', marginBottom: '4px', background: isActive ? 'linear-gradient(135deg, var(--tp), var(--ts))' : 'transparent', color: isActive ? 'white' : '#374151', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: isActive ? '600' : '400', textAlign: 'left', transition: 'all 0.15s', position: 'relative' }}>
+                        <span style={{ fontSize: '20px', width: '24px', textAlign: 'center', flexShrink: 0 }}>{navIcons[page] || '•'}</span>
+                        <span style={{ textTransform: 'capitalize', flex: 1 }}>{t(page)}</span>
+                        {page === 'friends' && friendRequests.length > 0 && (
+                          <span style={{ minWidth: '20px', height: '20px', background: isActive ? 'rgba(255,255,255,0.3)' : '#ef4444', color: 'white', borderRadius: '10px', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px' }}>
+                            {friendRequests.length}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })
+                })()}
+                {/* Inbox shortcut */}
+                {user?.role === 'student' && (() => {
+                  const unread = directMessages.filter((m:any) => m.toEmail === user?.email && !m.read).length
+                  return (
+                    <button onClick={() => { setShowInbox(true); setShowMobileSidebar(false) }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '13px 16px', marginBottom: '4px', background: 'transparent', color: '#374151', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '400', textAlign: 'left' }}>
+                      <span style={{ fontSize: '20px', width: '24px', textAlign: 'center' }}>💌</span>
+                      <span style={{ flex: 1 }}>{t('inboxTabLabel') || 'Inbox'}</span>
+                      {unread > 0 && <span style={{ minWidth: '20px', height: '20px', background: '#ef4444', color: 'white', borderRadius: '10px', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px' }}>{unread}</span>}
+                    </button>
+                  )
+                })()}
+              </div>
+              {/* Logout at bottom */}
+              <div style={{ padding: '12px 12px 28px' }}>
+                <button onClick={() => { setUser(null); setCurrentPage('landing'); setShowMobileSidebar(false) }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '13px 16px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600' }}>
+                  <span style={{ fontSize: '20px', width: '24px', textAlign: 'center' }}>🚪</span>
+                  {t('logout')}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* ── Friend Chat Modal ── */}
         {showFriendChat && (() => {
