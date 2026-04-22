@@ -14638,8 +14638,20 @@ export default function KindWorldApp() {
                   )
                 })()}
               </div>
+              {/* Language selector */}
+              <div style={{ padding: '8px 12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: '#f9fafb', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+                  <span style={{ fontSize: '18px', width: '24px', textAlign: 'center', flexShrink: 0 }}>🌐</span>
+                  <select value={language} onChange={(e) => setLanguage(e.target.value)}
+                    style={{ flex: 1, appearance: 'none', background: 'transparent', border: 'none', color: '#374151', fontSize: '14px', cursor: 'pointer', outline: 'none', fontWeight: '500' }}>
+                    {Object.entries(languages).map(([code, lang]) => (
+                      <option key={code} value={code}>{lang.flag} {lang.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               {/* Logout at bottom */}
-              <div style={{ padding: '12px 12px 28px' }}>
+              <div style={{ padding: '8px 12px 28px' }}>
                 <button onClick={() => { setUser(null); setCurrentPage('landing'); setShowMobileSidebar(false) }}
                   style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', padding: '13px 16px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', fontWeight: '600' }}>
                   <span style={{ fontSize: '20px', width: '24px', textAlign: 'center' }}>🚪</span>
@@ -18677,20 +18689,21 @@ export default function KindWorldApp() {
               })() : (
                 // Student/Volunteer Dashboard
                 <div>
-                  <div style={{ marginBottom: '48px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+                  <div style={{ marginBottom: isMobile ? '24px' : '48px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '16px', marginBottom: '12px' }}>
                       <div style={{
-                        width: '72px',
-                        height: '72px',
+                        width: isMobile ? '48px' : '72px',
+                        height: isMobile ? '48px' : '72px',
                         background: 'linear-gradient(135deg, var(--td) 0%, var(--ts) 100%)',
-                        borderRadius: '22px',
+                        borderRadius: isMobile ? '14px' : '22px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '36px',
+                        fontSize: isMobile ? '22px' : '36px',
                         boxShadow: '0 10px 30px rgba(79, 70, 229, 0.35)',
                         color: 'white',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        flexShrink: 0
                       }}>
                         {user.name.charAt(0)}
                       </div>
@@ -18733,26 +18746,26 @@ export default function KindWorldApp() {
                 const doneCount = items.filter(i=>i.done).length
                 if (doneCount === items.length) return null
                 return (
-                  <div style={{ background:'linear-gradient(135deg,#f0fdf4,#dcfce7)', border:'1px solid #bbf7d0', borderRadius:'20px', padding:'24px 28px', marginBottom:'32px' }}>
-                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
+                  <div style={{ background:'linear-gradient(135deg,#f0fdf4,#dcfce7)', border:'1px solid #bbf7d0', borderRadius:'20px', padding: isMobile ? '16px' : '24px 28px', marginBottom: isMobile ? '20px' : '32px' }}>
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'14px' }}>
                       <div>
-                        <h3 style={{ fontSize:'18px', fontWeight:'800', color:'#166534', margin:'0 0 4px' }}>🚀 {t('getStartedChecklist')}</h3>
+                        <h3 style={{ fontSize: isMobile ? '15px' : '18px', fontWeight:'800', color:'#166534', margin:'0 0 4px' }}>🚀 {t('getStartedChecklist')}</h3>
                         <p style={{ fontSize:'13px', color:'#16a34a', margin:0 }}>{doneCount} {t('of')} {items.length} {t('stepsCompleted')}</p>
                       </div>
-                      <div style={{ width:'52px', height:'52px', borderRadius:'50%', background:`conic-gradient(#22c55e ${doneCount/items.length*360}deg, #d1fae5 0)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                        <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:'800', fontSize:'13px', color:'#166534' }}>{Math.round(doneCount/items.length*100)}%</div>
+                      <div style={{ width:'48px', height:'48px', borderRadius:'50%', background:`conic-gradient(#22c55e ${doneCount/items.length*360}deg, #d1fae5 0)`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink: 0 }}>
+                        <div style={{ width:'36px', height:'36px', borderRadius:'50%', background:'white', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:'800', fontSize:'12px', color:'#166534' }}>{Math.round(doneCount/items.length*100)}%</div>
                       </div>
                     </div>
-                    <div style={{ display:'grid', gap:'10px' }}>
+                    <div style={{ display:'grid', gap:'8px' }}>
                       {items.map((item, idx) => (
-                        <div key={idx} style={{ display:'flex', alignItems:'center', gap:'14px', padding:'12px 16px', background: item.done ? 'rgba(34,197,94,0.08)' : 'white', borderRadius:'12px', border: item.done ? '1px solid rgba(34,197,94,0.2)' : '1px solid #e5e7eb' }}>
-                          <span style={{ fontSize:'20px', flexShrink:0 }}>{item.done ? '✅' : '⬜'}</span>
-                          <div style={{ flex:1 }}>
-                            <p style={{ fontSize:'14px', fontWeight:'600', color: item.done ? '#166534' : '#374151', margin:'0 0 2px', textDecoration: item.done ? 'line-through' : 'none', opacity: item.done ? 0.7 : 1 }}>{item.label}</p>
+                        <div key={idx} style={{ display:'flex', alignItems: isMobile ? 'flex-start' : 'center', gap:'12px', padding: isMobile ? '10px 12px' : '12px 16px', background: item.done ? 'rgba(34,197,94,0.08)' : 'white', borderRadius:'12px', border: item.done ? '1px solid rgba(34,197,94,0.2)' : '1px solid #e5e7eb', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                          <span style={{ fontSize:'18px', flexShrink:0, marginTop: isMobile ? '1px' : '0' }}>{item.done ? '✅' : '⬜'}</span>
+                          <div style={{ flex:1, minWidth: 0 }}>
+                            <p style={{ fontSize: isMobile ? '13px' : '14px', fontWeight:'600', color: item.done ? '#166534' : '#374151', margin:'0 0 2px', textDecoration: item.done ? 'line-through' : 'none', opacity: item.done ? 0.7 : 1 }}>{item.label}</p>
                             <p style={{ fontSize:'12px', color:'#6b7280', margin:0 }}>{item.desc}</p>
                           </div>
                           {!item.done && item.action && (
-                            <button onClick={item.action} style={{ padding:'6px 14px', background:'#22c55e', color:'white', border:'none', borderRadius:'8px', fontSize:'12px', fontWeight:'700', cursor:'pointer', flexShrink:0 }}>{item.cta}</button>
+                            <button onClick={item.action} style={{ padding: isMobile ? '6px 12px' : '6px 14px', background:'#22c55e', color:'white', border:'none', borderRadius:'8px', fontSize:'12px', fontWeight:'700', cursor:'pointer', flexShrink:0, whiteSpace:'nowrap' }}>{item.cta}</button>
                           )}
                           {!item.done && !item.action && (
                             <span style={{ fontSize:'11px', color:'#9ca3af', flexShrink:0 }}>⏳ {t('waitingLabel')}</span>
@@ -18765,7 +18778,7 @@ export default function KindWorldApp() {
               })()}
 
               {/* Stats Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '48px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(240px, 1fr))', gap: isMobile ? '12px' : '24px', marginBottom: isMobile ? '24px' : '48px' }}>
                 {(() => {
                   const now = new Date()
                   // Deduplicate: if somehow multiple approved submissions exist for the same mission, only count the latest
@@ -18799,8 +18812,8 @@ export default function KindWorldApp() {
                     className="kw-card-accent"
                     style={{
                       background: '#fdfcfb',
-                      padding: '36px',
-                      borderRadius: '24px',
+                      padding: isMobile ? '16px 12px' : '36px',
+                      borderRadius: isMobile ? '16px' : '24px',
                       textAlign: 'center',
                       border: (stat as any).highlight ? '2px solid rgba(5, 150, 105, 0.3)' : '1px solid rgba(0, 0, 0, 0.05)',
                       boxShadow: (stat as any).highlight ? '0 10px 40px rgba(5, 150, 105, 0.15)' : '0 10px 40px rgba(0, 0, 0, 0.08)',
@@ -18837,23 +18850,23 @@ export default function KindWorldApp() {
                       </div>
                     )}
 
-                    <div style={{ position: 'relative', width: '80px', height: '80px', margin: '0 auto 24px auto' }}>
+                    <div style={{ position: 'relative', width: isMobile ? '52px' : '80px', height: isMobile ? '52px' : '80px', margin: isMobile ? '0 auto 10px auto' : '0 auto 24px auto' }}>
                       {(stat as any).ring && <ProgressRing value={stat.value} goal={100} color={stat.color} />}
                       <div style={{
                         position: 'absolute',
-                        inset: (stat as any).ring ? '7px' : '0',
+                        inset: (stat as any).ring ? (isMobile ? '5px' : '7px') : '0',
                         background: stat.bg,
-                        borderRadius: '20px',
+                        borderRadius: isMobile ? '12px' : '20px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: (stat as any).ring ? '32px' : '40px'
+                        fontSize: isMobile ? ((stat as any).ring ? '20px' : '24px') : ((stat as any).ring ? '32px' : '40px')
                       }}>
                         {stat.icon}
                       </div>
                     </div>
                     <AnimatedNumber value={stat.value} color={stat.color} />
-                    <div style={{ color: '#6b7280', fontSize: '15px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <div style={{ color: '#6b7280', fontSize: isMobile ? '11px' : '15px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: isMobile ? '2px' : '0' }}>
                       {stat.label}
                     </div>
 
@@ -18878,15 +18891,15 @@ export default function KindWorldApp() {
 
               {/* Get Started banner for brand-new users */}
               {(user.hours || 0) === 0 && (user.completedMissions || 0) === 0 && (
-                <div style={{ background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 50%, #ec4899 100%)', borderRadius: '24px', padding: '40px 48px', marginBottom: '32px', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '32px', flexWrap: 'wrap', boxShadow: '0 20px 60px rgba(var(--tp-rgb), 0.35)' }}>
+                <div style={{ background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 50%, #ec4899 100%)', borderRadius: '20px', padding: isMobile ? '20px 16px' : '40px 48px', marginBottom: isMobile ? '20px' : '32px', color: 'white', display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: isMobile ? '16px' : '32px', flexWrap: 'wrap', boxShadow: '0 20px 60px rgba(var(--tp-rgb), 0.35)', flexDirection: isMobile ? 'column' : 'row' }}>
                   <div>
-                    <div style={{ fontSize: '48px', marginBottom: '12px' }}>🌍</div>
-                    <h3 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '10px', margin: '0 0 10px 0' }}>{t('getStartedTitle')}</h3>
-                    <p style={{ fontSize: '15px', opacity: 0.9, margin: 0, maxWidth: '420px' }}>{t('getStartedDesc')}</p>
+                    <div style={{ fontSize: isMobile ? '32px' : '48px', marginBottom: '8px' }}>🌍</div>
+                    <h3 style={{ fontSize: isMobile ? '18px' : '24px', fontWeight: '800', margin: '0 0 8px 0' }}>{t('getStartedTitle')}</h3>
+                    <p style={{ fontSize: isMobile ? '13px' : '15px', opacity: 0.9, margin: 0, maxWidth: '420px' }}>{t('getStartedDesc')}</p>
                   </div>
                   <button
                     onClick={() => setCurrentPage('missions')}
-                    style={{ padding: '14px 32px', background: 'white', color: 'var(--tp)', border: 'none', borderRadius: '14px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
+                    style={{ padding: isMobile ? '11px 20px' : '14px 32px', background: 'white', color: 'var(--tp)', border: 'none', borderRadius: '12px', fontSize: isMobile ? '14px' : '16px', fontWeight: '700', cursor: 'pointer', whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', alignSelf: isMobile ? 'stretch' : 'auto', textAlign: 'center' }}
                   >
                     🔍 {t('findMissions')}
                   </button>
@@ -19464,7 +19477,7 @@ export default function KindWorldApp() {
                             setRegionFilter(e.target.value)
                             setCountryFilter('all')
                           }}
-                          style={{ padding: '10px 16px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', fontWeight: '500', outline: 'none', cursor: 'pointer', background: 'white', minWidth: '160px' }}
+                          style={{ padding: isMobile ? '8px 10px' : '10px 16px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: isMobile ? '13px' : '14px', fontWeight: '500', outline: 'none', cursor: 'pointer', background: 'white', minWidth: isMobile ? '120px' : '160px', flex: isMobile ? '1' : 'none' }}
                         >
                           <option value="all">{t('allRegions')}</option>
                           {regions.map(region => (
@@ -19479,7 +19492,7 @@ export default function KindWorldApp() {
                           <select
                             value={countryFilter}
                             onChange={(e) => setCountryFilter(e.target.value)}
-                            style={{ padding: '10px 16px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', fontWeight: '500', outline: 'none', cursor: 'pointer', background: 'white', minWidth: '160px' }}
+                            style={{ padding: isMobile ? '8px 10px' : '10px 16px', border: '2px solid #e5e7eb', borderRadius: '10px', fontSize: isMobile ? '13px' : '14px', fontWeight: '500', outline: 'none', cursor: 'pointer', background: 'white', minWidth: isMobile ? '120px' : '160px', flex: isMobile ? '1' : 'none' }}
                           >
                             <option value="all">{t('allCountries')}</option>
                             {regions.find(r => r.code === regionFilter)?.countries.map(country => (
@@ -19564,8 +19577,8 @@ export default function KindWorldApp() {
                 if (upcomingJoined.length === 0 && completedJoined.length === 0) return null
                 const tabMissions = myMissionsTab === 'upcoming' ? upcomingJoined : completedJoined
                 return (
-                  <div style={{ background: 'white', borderRadius: '20px', padding: '28px 32px', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', marginBottom: '8px', border: '1px solid rgba(0,0,0,0.04)' }}>
-                    <h3 style={{ margin: '0 0 20px', fontSize: '20px', fontWeight: '700', color: '#1e293b' }}>🗓️ {t('myMissionsTitle')}</h3>
+                  <div style={{ background: 'white', borderRadius: '20px', padding: isMobile ? '16px' : '28px 32px', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', marginBottom: '8px', border: '1px solid rgba(0,0,0,0.04)' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: isMobile ? '16px' : '20px', fontWeight: '700', color: '#1e293b' }}>🗓️ {t('myMissionsTitle')}</h3>
                     {/* Tabs */}
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
                       {(['upcoming', 'completed'] as const).map(tab => (
@@ -19819,14 +19832,15 @@ export default function KindWorldApp() {
                     return true
                   })
                   .map((mission, index) => (
-                  <div 
-                    key={mission.id} 
-                    style={{ 
-                      background: 'rgba(255, 255, 255, 0.9)', 
+                  <div
+                    key={mission.id}
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
                       backdropFilter: 'blur(10px)',
-                      padding: '32px', 
-                      borderRadius: '20px', 
+                      padding: isMobile ? '16px' : '32px',
+                      borderRadius: isMobile ? '14px' : '20px',
                       display: 'flex',
+                      flexDirection: isMobile ? 'column' : 'row',
                       justifyContent: 'space-between',
                       alignItems: 'flex-start',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -19851,11 +19865,11 @@ export default function KindWorldApp() {
                         const fallback = 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&h=250&fit=crop'
                         if (el.src !== fallback) { el.src = fallback } else { el.style.display = 'none' }
                       }}
-                      style={{ width: '100px', height: '80px', objectFit: 'cover', borderRadius: '12px', marginRight: '20px', flexShrink: 0 }}
+                      style={{ width: isMobile ? '100%' : '100px', height: isMobile ? '140px' : '80px', objectFit: 'cover', borderRadius: '10px', marginRight: isMobile ? '0' : '20px', marginBottom: isMobile ? '12px' : '0', flexShrink: 0 }}
                     />
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                        <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#2d3748' }}>
+                        <h3 style={{ margin: 0, fontSize: isMobile ? '15px' : '20px', fontWeight: '700', color: '#2d3748' }}>
                           {mission.title}
                         </h3>
                         {(() => { const s = getMissionStatus(mission.date); return <span style={{ flexShrink: 0, padding: '3px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '600', background: s.bg, color: s.color }}>{s.label}</span> })()}
@@ -19868,14 +19882,14 @@ export default function KindWorldApp() {
                           </span>
                         )}
                       </div>
-                      <div style={{ display: 'flex', gap: '20px', marginBottom: '8px' }}>
-                        <span style={{ color: '#718096', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div style={{ display: 'flex', gap: isMobile ? '8px' : '20px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ color: '#718096', fontSize: isMobile ? '11px' : '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           📍 {mission.location}
                         </span>
-                        <span style={{ color: '#718096', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ color: '#718096', fontSize: isMobile ? '11px' : '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           📅 {mission.date}{mission.startTime ? ` · ${mission.startTime}${mission.endTime ? `–${mission.endTime}` : ''}` : ''}
                         </span>
-                        <span style={{ color: '#718096', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ color: '#718096', fontSize: isMobile ? '11px' : '14px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           ⏰ {mission.hours} {t('hoursLabel')}
                         </span>
                       </div>
@@ -19990,7 +20004,7 @@ export default function KindWorldApp() {
                     </div>
                     {/* Show different buttons based on user role */}
                     {user?.role === 'ngo' || user?.role === 'admin' ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: '6px', alignItems: isMobile ? 'stretch' : 'flex-end', flexShrink: 0, marginTop: isMobile ? '10px' : '0', width: isMobile ? '100%' : 'auto' }}>
                         <button
                           onClick={() => {
                             setSelectedMissionDetail(mission)
@@ -20041,7 +20055,7 @@ export default function KindWorldApp() {
                         </button>
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: isMobile ? '10px' : '0', flexWrap: isMobile ? 'wrap' : 'nowrap', width: isMobile ? '100%' : 'auto' }}>
                         {mission.report && (mission.report.text || mission.report.photos.length > 0) && (
                           <button
                             onClick={() => {
@@ -20049,13 +20063,13 @@ export default function KindWorldApp() {
                               setShowPhotoGallery(true)
                             }}
                             style={{
-                              padding: '12px 20px',
+                              padding: isMobile ? '10px 14px' : '12px 20px',
                               background: 'rgba(var(--tp-rgb), 0.1)',
                               color: 'var(--tp)',
                               border: '2px solid rgba(var(--tp-rgb), 0.2)',
                               borderRadius: '12px',
                               cursor: 'pointer',
-                              fontSize: '14px',
+                              fontSize: isMobile ? '13px' : '14px',
                               fontWeight: '600',
                               transition: 'all 0.3s ease',
                               outline: 'none'
@@ -20105,7 +20119,7 @@ export default function KindWorldApp() {
                               }
                             }}
                             style={{
-                              padding: '12px 24px',
+                              padding: isMobile ? '10px 16px' : '12px 24px',
                               background: joinedMissionIds.has(mission.id)
                                 ? 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)'
                                 : 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
@@ -20113,10 +20127,11 @@ export default function KindWorldApp() {
                               border: 'none',
                               borderRadius: '12px',
                               cursor: 'pointer',
-                              fontSize: '14px',
+                              fontSize: isMobile ? '13px' : '14px',
                               fontWeight: '600',
                               transition: 'all 0.3s ease',
-                              outline: 'none'
+                              outline: 'none',
+                              flex: isMobile ? '1' : 'none'
                             }}
                             onMouseOver={(e) => {
                               e.currentTarget.style.transform = 'translateY(-2px)'
@@ -21069,11 +21084,11 @@ export default function KindWorldApp() {
             <div style={{ animation: 'fadeIn 0.5s ease-in' }}>
               {/* ── NGO Certificate Management Page ── */}
               <div style={{ marginBottom: '36px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px' }}>
-                  <div style={{ width: '56px', height: '56px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', boxShadow: '0 8px 24px rgba(99,102,241,0.3)' }}>🏆</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{ width: isMobile ? '40px' : '56px', height: isMobile ? '40px' : '56px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? '20px' : '28px', boxShadow: '0 8px 24px rgba(99,102,241,0.3)', flexShrink: 0 }}>🏆</div>
                   <div>
-                    <h2 style={{ fontSize: '30px', fontWeight: '700', color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>{t('manageCertificatesTitle')}</h2>
-                    <p style={{ color: '#64748b', fontSize: '15px', margin: 0, marginTop: '3px' }}>{t('certProgramSetup')} · {t('certPendingRequests')}</p>
+                    <h2 style={{ fontSize: isMobile ? '20px' : '30px', fontWeight: '700', color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>{t('manageCertificatesTitle')}</h2>
+                    <p style={{ color: '#64748b', fontSize: isMobile ? '12px' : '15px', margin: 0, marginTop: '3px' }}>{t('certProgramSetup')} · {t('certPendingRequests')}</p>
                   </div>
                 </div>
               </div>
@@ -21084,7 +21099,7 @@ export default function KindWorldApp() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
                   {/* Create New Program card */}
-                  <div style={{ background: 'white', borderRadius: '24px', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(99,102,241,0.12)' }}>
+                  <div style={{ background: 'white', borderRadius: '20px', padding: isMobile ? '16px' : '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', border: '1px solid rgba(99,102,241,0.12)' }}>
                     <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1e293b', margin: '0 0 22px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <span style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', borderRadius: '10px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>➕</span>
                       {t('certProgramSetup')}
@@ -21305,21 +21320,21 @@ export default function KindWorldApp() {
           {/* Certificates — student view */}
           {currentPage === 'certificates' && user?.role !== 'ngo' && (
             <div style={{ animation: 'fadeIn 0.5s ease-in' }}>
-              <div style={{ marginBottom: '40px' }}>
+              <div style={{ marginBottom: isMobile ? '20px' : '40px' }}>
                 <h2 style={{
-                  fontSize: '32px',
+                  fontSize: isMobile ? '22px' : '32px',
                   fontWeight: '700',
                   color: '#2d3748',
                   marginBottom: '8px'
                 }}>
                   🏆 {t('certificatesTitle')}
                 </h2>
-                <p style={{ color: '#718096', fontSize: '16px', margin: 0 }}>
+                <p style={{ color: '#718096', fontSize: isMobile ? '13px' : '16px', margin: 0 }}>
                   {t('certificatesSubtitle')}
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(320px, 1fr))', gap: isMobile ? '14px' : '24px' }}>
                 {certificates.map((cert, index) => {
                   const isEarned = (user?.hours || 0) >= cert.hours
                   return (
@@ -21328,8 +21343,8 @@ export default function KindWorldApp() {
                     style={{
                       background: 'rgba(255, 255, 255, 0.9)',
                       backdropFilter: 'blur(10px)',
-                      padding: '32px',
-                      borderRadius: '20px',
+                      padding: isMobile ? '16px' : '32px',
+                      borderRadius: isMobile ? '14px' : '20px',
                       border: isEarned ? '2px solid #28a745' : '1px solid rgba(255, 255, 255, 0.2)',
                       boxShadow: isEarned
                         ? '0 8px 32px rgba(40, 167, 69, 0.2)'
@@ -21369,25 +21384,25 @@ export default function KindWorldApp() {
                     )}
                     
                     <div style={{
-                      width: '60px',
-                      height: '60px',
+                      width: isMobile ? '44px' : '60px',
+                      height: isMobile ? '44px' : '60px',
                       background: isEarned
                         ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)'
                         : 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%)',
-                      borderRadius: '16px',
+                      borderRadius: '14px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      marginBottom: '20px',
-                      fontSize: '24px'
+                      marginBottom: isMobile ? '12px' : '20px',
+                      fontSize: isMobile ? '18px' : '24px'
                     }}>
                       {isEarned ? '🏆' : '⏳'}
                     </div>
 
                     <h3 style={{
-                      margin: '0 0 12px 0',
+                      margin: '0 0 10px 0',
                       color: isEarned ? '#28a745' : '#718096',
-                      fontSize: '18px',
+                      fontSize: isMobile ? '15px' : '18px',
                       fontWeight: '700'
                     }}>
                       {cert.name}
@@ -21568,20 +21583,20 @@ export default function KindWorldApp() {
               </div>
 
               {/* Available Certificates from NGOs */}
-              <div style={{ marginTop: '48px' }}>
+              <div style={{ marginTop: isMobile ? '28px' : '48px' }}>
                 <h3 style={{
-                  fontSize: '24px',
+                  fontSize: isMobile ? '18px' : '24px',
                   fontWeight: '700',
                   color: '#2d3748',
                   marginBottom: '8px'
                 }}>
                   📋 {t('availableCertsFromNGOs')}
                 </h3>
-                <p style={{ color: '#718096', fontSize: '14px', marginBottom: '24px' }}>
+                <p style={{ color: '#718096', fontSize: isMobile ? '12px' : '14px', marginBottom: isMobile ? '14px' : '24px' }}>
                   {t('availableCertsDesc')}
                 </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(260px, 1fr))', gap: isMobile ? '12px' : '20px' }}>
                   {uploadedCertificates.filter(c => c.status === 'Active').map((cert) => {
                     const userHours = user?.hours || 0
                     const progress = Math.min((userHours / cert.requiredHours) * 100, 100)
@@ -21607,14 +21622,14 @@ export default function KindWorldApp() {
                       >
                         {/* Certificate Preview */}
                         <div style={{
-                          height: '140px',
+                          height: isMobile ? '100px' : '140px',
                           background: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url(${cert.previewUrl}) center/cover`,
                           position: 'relative',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center'
                         }}>
-                          <span style={{ fontSize: '48px' }}>{canClaim ? '🏆' : '📜'}</span>
+                          <span style={{ fontSize: isMobile ? '32px' : '48px' }}>{canClaim ? '🏆' : '📜'}</span>
                           {canClaim && (
                             <span style={{
                               position: 'absolute',
