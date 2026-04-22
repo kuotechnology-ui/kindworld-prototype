@@ -11346,6 +11346,25 @@ export default function KindWorldApp() {
     } catch {}
   }, [user?.email])
 
+  // Subscribe to Firestore FRIEND_REQUESTS for real-time cross-device delivery
+  useEffect(() => {
+    if (!user?.email) return
+    const email = user.email
+    const unsub = subscribeToCollection<any>(COLLECTIONS.FRIEND_REQUESTS, (docs) => {
+      const incoming = docs.filter((r: any) => r.toEmail === email)
+      setFriendRequests(prev => {
+        const newReqs = incoming.map((r: any) => ({ id: r.id, name: r.fromName, email: r.fromEmail, hours: r.fromHours || 0 }))
+        // Notify for any truly new requests (not already in state)
+        const prevIds = new Set(prev.map(r => r.id))
+        newReqs.filter(r => !prevIds.has(r.id)).forEach(r => {
+          setNotifications(n => [...n, `👥 ${r.name} sent you a friend request!`])
+        })
+        return newReqs
+      })
+    })
+    return () => unsub()
+  }, [user?.email])
+
   // When any of current user's sent requests get accepted, update friends list pending→accepted
   useEffect(() => {
     if (!user?.email) return
@@ -11372,7 +11391,14 @@ export default function KindWorldApp() {
         try {
           const pending: any[] = JSON.parse(e.newValue)
           const incoming = pending.filter((r: any) => r.toEmail === user.email)
-          setFriendRequests(incoming.map((r: any) => ({ id: r.id, name: r.fromName, email: r.fromEmail, hours: r.fromHours || 0 })))
+          const newReqs = incoming.map((r: any) => ({ id: r.id, name: r.fromName, email: r.fromEmail, hours: r.fromHours || 0 }))
+          setFriendRequests(prev => {
+            const prevIds = new Set(prev.map(r => r.id))
+            newReqs.filter(r => !prevIds.has(r.id)).forEach(r => {
+              setNotifications(n => [...n, `👥 ${r.name} sent you a friend request!`])
+            })
+            return newReqs
+          })
         } catch {}
       }
       if (e.key === 'kindworld_friendships' && user?.email && e.newValue) {
@@ -11587,7 +11613,7 @@ export default function KindWorldApp() {
         minHeight: '100vh',
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         position: 'relative',
-        overflow: 'hidden',
+        overflowX: 'hidden',
         background: 'linear-gradient(135deg, #f8fafc 0%, var(--tl2) 50%, var(--tl3) 100%)'
       }}>
         {/* Decorative gradient blobs */}
@@ -11806,7 +11832,7 @@ export default function KindWorldApp() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '20px' : '32px', flexWrap: 'wrap' }}>
                         <div style={{ background: 'white', borderRadius: '16px', padding: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
                           <img
-                            src="https://qr-official.line.me/g/p/149jddew.png"
+                            src="/line-qr.png"
                             alt="LINE QR Code"
                             style={{ width: isMobile ? '120px' : '160px', height: isMobile ? '120px' : '160px', display: 'block' }}
                           />
@@ -12483,11 +12509,11 @@ export default function KindWorldApp() {
               <h2 style={{ fontSize: 'clamp(32px, 4vw, 48px)', fontWeight: '700', marginBottom: '16px', lineHeight: '1.2' }}>
                 {t('earlyAdopterTitle')}
               </h2>
-              <p style={{ fontSize: '20px', opacity: 0.85, maxWidth: '560px', margin: '0 auto', lineHeight: '1.6' }}>
+              <p style={{ fontSize: isMobile ? '16px' : '20px', opacity: 0.85, maxWidth: '560px', margin: '0 auto', lineHeight: '1.6' }}>
                 {t('earlyAdopterSubtitle')}
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '56px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: isMobile ? '16px' : '24px', marginBottom: '56px' }}>
               {[
                 { labelKey: 'earlyAdopterBadgeLabel', descKey: 'earlyAdopterBadgeDesc' },
                 { labelKey: 'earlyAdopterFeedbackLabel', descKey: 'earlyAdopterFeedbackDesc' },
@@ -12516,29 +12542,29 @@ export default function KindWorldApp() {
 
         {/* Final CTA Section */}
         <AnimatedSection>
-        <section style={{ padding: '120px 24px', background: 'linear-gradient(135deg, var(--ts), var(--tp))', color: 'white', position: 'relative', overflow: 'hidden' }}>
+        <section style={{ padding: isMobile ? '60px 20px' : '120px 24px', background: 'linear-gradient(135deg, var(--ts), var(--tp))', color: 'white', position: 'relative', overflow: 'hidden' }}>
           {/* Background decoration */}
           <div style={{ position: 'absolute', top: '-50%', left: '-25%', width: '50%', height: '200%', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', transform: 'rotate(-15deg)' }}></div>
           <div style={{ position: 'absolute', bottom: '-50%', right: '-25%', width: '50%', height: '200%', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', transform: 'rotate(15deg)' }}></div>
 
           <div style={{ maxWidth: '896px', margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-            <h2 style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: '300', marginBottom: '24px', lineHeight: '1.2' }}>
+            <h2 style={{ fontSize: isMobile ? 'clamp(26px, 7vw, 36px)' : 'clamp(36px, 5vw, 56px)', fontWeight: '300', marginBottom: '24px', lineHeight: '1.2' }}>
               {t('readyToImpact')}
             </h2>
-            <p style={{ fontSize: '22px', marginBottom: '48px', fontWeight: '300', lineHeight: '1.6', opacity: 0.9 }}>
+            <p style={{ fontSize: isMobile ? '16px' : '22px', marginBottom: isMobile ? '32px' : '48px', fontWeight: '300', lineHeight: '1.6', opacity: 0.9 }}>
               {t('readyToImpactSubtitle')}
             </p>
-            <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: isMobile ? '12px' : '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
                 onClick={() => { setAuthMode('signin'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
                 style={{
-                  padding: '20px 48px',
+                  padding: isMobile ? '14px 28px' : '20px 48px',
                   background: 'white',
                   color: 'var(--td)',
                   border: 'none',
                   borderRadius: '9999px',
                   cursor: 'pointer',
-                  fontSize: '18px',
+                  fontSize: isMobile ? '15px' : '18px',
                   fontWeight: '600',
                   boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
                   transition: 'all 0.3s ease'
@@ -12557,13 +12583,13 @@ export default function KindWorldApp() {
               <button
                 onClick={() => { setSelectedRole('ngo'); setAuthMode('register'); setCurrentPage('signin'); window.scrollTo(0, 0) }}
                 style={{
-                  padding: '20px 48px',
+                  padding: isMobile ? '14px 28px' : '20px 48px',
                   background: 'transparent',
                   color: 'white',
                   border: '2px solid white',
                   borderRadius: '9999px',
                   cursor: 'pointer',
-                  fontSize: '18px',
+                  fontSize: isMobile ? '15px' : '18px',
                   fontWeight: '500',
                   transition: 'all 0.3s ease'
                 }}
@@ -12699,8 +12725,8 @@ export default function KindWorldApp() {
 
         {/* Hero — Our Story */}
         <section style={{
-          paddingTop: '140px',
-          paddingBottom: '80px',
+          paddingTop: isMobile ? '100px' : '140px',
+          paddingBottom: isMobile ? '48px' : '80px',
           textAlign: 'center',
           position: 'relative',
           overflow: 'hidden'
@@ -12731,7 +12757,7 @@ export default function KindWorldApp() {
               <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--tp)', letterSpacing: '1px' }}>{t('lmOurStoryLabel')}</span>
             </div>
             <h1 style={{
-              fontSize: '52px',
+              fontSize: isMobile ? 'clamp(26px, 8vw, 36px)' : '52px',
               fontWeight: '300',
               color: '#1f2937',
               marginBottom: '24px',
@@ -12740,7 +12766,7 @@ export default function KindWorldApp() {
               {t('lmHeroTitle')}
             </h1>
             <p style={{
-              fontSize: '20px',
+              fontSize: isMobile ? '15px' : '20px',
               color: '#6b7280',
               maxWidth: '640px',
               margin: '0 auto',
@@ -12753,30 +12779,30 @@ export default function KindWorldApp() {
         </section>
 
         {/* Founder's Quote */}
-        <section style={{ padding: '80px 24px', background: '#fdfcfb' }}>
+        <section style={{ padding: isMobile ? '40px 20px' : '80px 24px', background: '#fdfcfb' }}>
           <div style={{ maxWidth: '760px', margin: '0 auto' }}>
             <div style={{
               borderLeft: '4px solid',
               borderImage: 'linear-gradient(to bottom, var(--tp), var(--ts)) 1',
-              padding: '40px 48px',
+              padding: isMobile ? '28px 20px 28px 24px' : '40px 48px',
               background: 'white',
               borderRadius: '0 20px 20px 0',
               boxShadow: '0 8px 40px rgba(0,0,0,0.07)',
               position: 'relative'
             }}>
               <div style={{
-                position: 'absolute', top: '24px', left: '48px',
-                fontSize: '96px', lineHeight: 1, color: 'var(--tl2)',
+                position: 'absolute', top: '16px', left: isMobile ? '20px' : '48px',
+                fontSize: isMobile ? '64px' : '96px', lineHeight: 1, color: 'var(--tl2)',
                 fontFamily: 'Georgia, serif', opacity: 0.6, userSelect: 'none'
               }}>"</div>
               <p style={{
-                fontSize: '26px',
+                fontSize: isMobile ? '17px' : '26px',
                 fontWeight: '400',
                 color: '#1f2937',
                 lineHeight: '1.85',
                 fontStyle: 'italic',
-                marginBottom: '32px',
-                marginTop: '40px',
+                marginBottom: '24px',
+                marginTop: isMobile ? '32px' : '40px',
                 fontFamily: 'Georgia, serif',
                 position: 'relative',
                 zIndex: 1
@@ -12795,17 +12821,17 @@ export default function KindWorldApp() {
         </section>
 
         {/* Our Beginning */}
-        <section style={{ padding: '80px 24px', background: 'linear-gradient(135deg, var(--tdk1) 0%, var(--tdk2) 100%)' }}>
+        <section style={{ padding: isMobile ? '48px 20px' : '80px 24px', background: 'linear-gradient(135deg, var(--tdk1) 0%, var(--tdk2) 100%)' }}>
           <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-              <h2 style={{ fontSize: '40px', fontWeight: '300', color: 'white', marginBottom: '16px' }}>
+            <div style={{ textAlign: 'center', marginBottom: isMobile ? '32px' : '48px' }}>
+              <h2 style={{ fontSize: isMobile ? '26px' : '40px', fontWeight: '300', color: 'white', marginBottom: '16px' }}>
                 {t('lmOriginTitle')}
               </h2>
               <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.5)', fontWeight: '500' }}>
                 {t('lmOriginDate')}
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '24px' : '48px', alignItems: 'center' }}>
               <div style={{
                 borderRadius: '20px',
                 overflow: 'hidden',
@@ -12818,11 +12844,11 @@ export default function KindWorldApp() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-                <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.9', fontWeight: '300' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <p style={{ fontSize: isMobile ? '15px' : '17px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.9', fontWeight: '300' }}>
                   {t('lmOriginP1')}
                 </p>
-                <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.9', fontWeight: '300' }}>
+                <p style={{ fontSize: isMobile ? '15px' : '17px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.9', fontWeight: '300' }}>
                   {t('lmOriginP2')}
                 </p>
               </div>
@@ -12831,9 +12857,9 @@ export default function KindWorldApp() {
         </section>
 
         {/* Our Mission */}
-        <section style={{ padding: '80px 24px', background: 'white' }}>
+        <section style={{ padding: isMobile ? '48px 20px' : '80px 24px', background: 'white' }}>
           <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: '40px', fontWeight: '300', color: '#1f2937', textAlign: 'center', marginBottom: '48px' }}>
+            <h2 style={{ fontSize: isMobile ? '26px' : '40px', fontWeight: '300', color: '#1f2937', textAlign: 'center', marginBottom: isMobile ? '28px' : '48px' }}>
               {t('lmMissionTitle')}
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
@@ -12869,8 +12895,8 @@ export default function KindWorldApp() {
         </section>
 
         {/* Photo Strip */}
-        <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', height: '320px' }}>
-          <div style={{ overflow: 'hidden' }}>
+        <section style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', height: isMobile ? 'auto' : '320px' }}>
+          <div style={{ overflow: 'hidden', height: isMobile ? '200px' : '100%' }}>
             <img
               src="https://images.unsplash.com/photo-1526976668912-1a811878dd37?w=640&q=80&auto=format&fit=crop"
               alt="Volunteers planting together"
@@ -12879,7 +12905,7 @@ export default function KindWorldApp() {
               onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
             />
           </div>
-          <div style={{ overflow: 'hidden' }}>
+          <div style={{ overflow: 'hidden', height: isMobile ? '200px' : '100%' }}>
             <img
               src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=640&q=80&auto=format&fit=crop"
               alt="Friends walking together outdoors"
@@ -12888,7 +12914,7 @@ export default function KindWorldApp() {
               onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
             />
           </div>
-          <div style={{ overflow: 'hidden' }}>
+          <div style={{ overflow: 'hidden', height: isMobile ? '200px' : '100%' }}>
             <img
               src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=640&q=80&auto=format&fit=crop"
               alt="Young people collaborating"
@@ -12900,7 +12926,7 @@ export default function KindWorldApp() {
         </section>
 
         {/* Our Vision */}
-        <section style={{ padding: '100px 24px', position: 'relative', overflow: 'hidden' }}>
+        <section style={{ padding: isMobile ? '60px 20px' : '100px 24px', position: 'relative', overflow: 'hidden' }}>
           <div style={{
             position: 'absolute',
             inset: 0,
@@ -12914,10 +12940,10 @@ export default function KindWorldApp() {
             background: 'linear-gradient(135deg, rgba(var(--tl-rgb),0.93) 0%, rgba(var(--tl2-rgb),0.93) 100%)'
           }} />
           <div style={{ maxWidth: '900px', margin: '0 auto', position: 'relative' }}>
-            <h2 style={{ fontSize: '40px', fontWeight: '300', color: '#1f2937', textAlign: 'center', marginBottom: '48px' }}>
+            <h2 style={{ fontSize: isMobile ? '28px' : '40px', fontWeight: '300', color: '#1f2937', textAlign: 'center', marginBottom: '32px' }}>
               {t('lmVisionTitle')}
             </h2>
-            <p style={{ fontSize: '18px', color: '#4b5563', lineHeight: '1.9', fontWeight: '300', textAlign: 'center', maxWidth: '750px', margin: '0 auto' }}>
+            <p style={{ fontSize: isMobile ? '15px' : '18px', color: '#4b5563', lineHeight: '1.9', fontWeight: '300', textAlign: 'center', maxWidth: '750px', margin: '0 auto' }}>
               {t('lmVisionDesc')}
             </p>
           </div>
@@ -12925,7 +12951,7 @@ export default function KindWorldApp() {
 
         {/* CTA */}
         <section style={{
-          padding: '100px 24px',
+          padding: isMobile ? '60px 20px' : '100px 24px',
           textAlign: 'center',
           position: 'relative',
           overflow: 'hidden'
@@ -12943,10 +12969,10 @@ export default function KindWorldApp() {
             background: 'linear-gradient(135deg, rgba(var(--tdk1-rgb),0.92) 0%, rgba(var(--tdk2-rgb),0.9) 50%, rgba(var(--tp-rgb),0.88) 100%)'
           }} />
           <div style={{ position: 'relative', maxWidth: '800px', margin: '0 auto' }}>
-            <h2 style={{ fontSize: '48px', fontWeight: '300', color: 'white', marginBottom: '24px' }}>
+            <h2 style={{ fontSize: isMobile ? 'clamp(24px, 7vw, 36px)' : '48px', fontWeight: '300', color: 'white', marginBottom: '24px' }}>
               {t('lmCtaTitle')}
             </h2>
-            <p style={{ fontSize: '20px', color: 'rgba(255,255,255,0.8)', marginBottom: '40px', lineHeight: '1.7' }}>
+            <p style={{ fontSize: isMobile ? '15px' : '20px', color: 'rgba(255,255,255,0.8)', marginBottom: isMobile ? '28px' : '40px', lineHeight: '1.7' }}>
               {t('lmCtaSubtitle')}
             </p>
             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -13827,7 +13853,7 @@ export default function KindWorldApp() {
                 <>
                   {/* Contact Person */}
                   <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--td)', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px' }}>👤 Contact Person</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
                     <div>
                       <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '500', color: '#374151' }}>{t('firstName')} <span style={{ color: '#ef4444' }}>*</span></label>
                       <input type="text" value={registerForm.firstName} onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
@@ -14356,6 +14382,11 @@ export default function KindWorldApp() {
                     <span style={{ fontSize: isMobile ? '16px' : '18px', lineHeight: '1' }}>{navIcons[page] || '•'}</span>
                     {isActive && !isMobile && <span style={{ textTransform: 'capitalize' }}>{t(page)}</span>}
                     {isActive && <span style={{ position: 'absolute', bottom: '2px', left: '50%', transform: 'translateX(-50%)', width: '3px', height: '3px', borderRadius: '50%', background: 'rgba(255,255,255,0.7)' }} />}
+                    {page === 'friends' && friendRequests.length > 0 && (
+                      <span style={{ position: 'absolute', top: '4px', right: '4px', minWidth: '16px', height: '16px', background: '#ef4444', color: 'white', borderRadius: '8px', fontSize: '10px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', lineHeight: 1 }}>
+                        {friendRequests.length}
+                      </span>
+                    )}
                   </button>
                 )
               })}
@@ -15420,7 +15451,7 @@ export default function KindWorldApp() {
                   {/* NGO Applications Section */}
                   <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(360px, 1fr))',
                     gap: '24px',
                     marginBottom: '24px'
                   }}>
@@ -15834,11 +15865,14 @@ export default function KindWorldApp() {
                       </button>
                     </div>
 
+                    {/* Table — horizontally scrollable on mobile */}
+                    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                    <div style={{ minWidth: '700px' }}>
                     {/* Table Header */}
-                    <div style={{ 
-                      display: 'grid', 
-                      gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr', 
-                      gap: '16px', 
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr',
+                      gap: '16px',
                       padding: '16px 20px',
                       background: 'rgba(var(--ta-rgb), 0.1)',
                       borderRadius: '12px',
@@ -15858,12 +15892,12 @@ export default function KindWorldApp() {
 
                     {/* Table Rows */}
                     {allUsers.map((userData: any) => (
-                      <div 
+                      <div
                         key={userData.id}
-                        style={{ 
-                          display: 'grid', 
-                          gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr', 
-                          gap: '16px', 
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr',
+                          gap: '16px',
                           padding: '20px',
                           background: 'rgba(255, 255, 255, 0.5)',
                           borderRadius: '12px',
@@ -16084,6 +16118,8 @@ export default function KindWorldApp() {
                         </div>
                       </div>
                     ))}
+                    </div>
+                    </div>
                   </div>
                 </div>
               ) : user.role === 'ngo' && (() => { const d = allUsers.find((u: any) => u.email === user?.email); return !d || d.status === 'verified' || d.status === 'active' })() ? (
@@ -16487,7 +16523,8 @@ export default function KindWorldApp() {
                         </p>
                       </div>
                     ) : (
-                      <div style={{ display: 'grid', gap: '12px' }}>
+                      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                      <div style={{ display: 'grid', gap: '12px', minWidth: '600px' }}>
                         {allPending.map((verification: any) => (
                           <div key={verification.id} style={{
                             padding: '20px',
@@ -16633,6 +16670,7 @@ export default function KindWorldApp() {
                             </div>
                           </div>
                         ))}
+                      </div>
                       </div>
                     )})()}
                   </div>
@@ -22255,11 +22293,13 @@ export default function KindWorldApp() {
                                   const updatedFriends = [...friends, newFriend]
                                   setFriends(updatedFriends)
                                   localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
+                                  const reqData = { id: requestId, fromEmail: user?.email, fromName: user?.name, fromHours: user?.hours || 0, toEmail: u.email }
                                   try {
                                     const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
-                                    pending.push({ id: requestId, fromEmail: user?.email, fromName: user?.name, fromHours: user?.hours || 0, toEmail: u.email })
+                                    pending.push(reqData)
                                     localStorage.setItem('kindworld_pending_requests', JSON.stringify(pending))
                                   } catch {}
+                                  saveDocument(COLLECTIONS.FRIEND_REQUESTS, String(requestId), reqData).catch(() => {})
                                   setFriendSearchQuery('')
                                   setNotifications(prev => [...prev, `Friend request sent to ${u.name}!`])
                                 }}
@@ -22412,6 +22452,7 @@ export default function KindWorldApp() {
                               localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
                               const updatedReqs = friendRequests.filter(r => r.id !== request.id)
                               setFriendRequests(updatedReqs)
+                              deleteDocument(COLLECTIONS.FRIEND_REQUESTS, String(request.id)).catch(() => {})
                               try {
                                 const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
                                 const filtered = pending.filter((p: any) => p.id !== request.id)
@@ -22437,6 +22478,7 @@ export default function KindWorldApp() {
                             onClick={() => {
                               const updatedReqs = friendRequests.filter(r => r.id !== request.id)
                               setFriendRequests(updatedReqs)
+                              deleteDocument(COLLECTIONS.FRIEND_REQUESTS, String(request.id)).catch(() => {})
                               try {
                                 const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
                                 const filtered = pending.filter((p: any) => p.id !== request.id)
