@@ -11376,9 +11376,9 @@ export default function KindWorldApp() {
     if (!user?.email) return
     const email = user.email
     const unsub = subscribeToCollection<any>(COLLECTIONS.FRIEND_REQUESTS, (docs) => {
+      // Incoming requests (sent to me — I need to accept/decline)
       const incoming = docs
         .filter((r: any) => r.toEmail === email)
-        // Never re-add requests already accepted/declined this session
         .filter((r: any) => !processedFriendRequestIds.current.has(Number(r.id)))
       setFriendRequests(prev => {
         const newReqs = incoming.map((r: any) => ({ id: Number(r.id), name: r.fromName, email: r.fromEmail, hours: r.fromHours || 0 }))
@@ -11388,54 +11388,94 @@ export default function KindWorldApp() {
         })
         return newReqs
       })
+      // Outgoing requests (sent by me — restore pending friends on fresh login / new device)
+      const outgoing = docs.filter((r: any) => r.fromEmail === email)
+      if (outgoing.length > 0) {
+        setFriends(prev => {
+          let changed = false
+          const updated = [...prev]
+          outgoing.forEach((req: any) => {
+            const exists = updated.some(f => f.email === req.toEmail)
+            if (!exists) {
+              updated.push({ id: Number(req.id), name: req.toName || req.toEmail, email: req.toEmail, hours: 0, status: 'pending' as const })
+              changed = true
+            }
+          })
+          if (!changed) return prev
+          setTimeout(() => { localStorage.setItem('kindworld_friends', JSON.stringify(updated)) }, 0)
+          return updated
+        })
+      }
     })
     return () => unsub()
   }, [user?.email])
 
-  // When any of current user's sent requests get accepted, update friends list pending→accepted
+  // On login, restore accepted friends from localStorage friendships (both directions)
   useEffect(() => {
     if (!user?.email) return
     try {
+      const myEmail = user.email
       const friendships: any[] = JSON.parse(localStorage.getItem('kindworld_friendships') || '[]')
-      const myAccepted = friendships.filter((a: any) => a.fromEmail === user.email)
-      if (myAccepted.length > 0) {
-        setFriends(prev => {
-          const updated = prev.map(f => {
-            const found = myAccepted.find((a: any) => a.toEmail === f.email)
-            return found ? { ...f, status: 'accepted' as const } : f
-          })
-          localStorage.setItem('kindworld_friends', JSON.stringify(updated))
-          return updated
-        })
-      }
+      const asSender   = friendships.filter((a: any) => a.fromEmail === myEmail)
+      const asAccepter = friendships.filter((a: any) => a.toEmail   === myEmail)
+      if (asSender.length === 0 && asAccepter.length === 0) return
+      setFriends(prev => {
+        let changed = false
+        const updated = [...prev]
+        const upsert = (email: string, name: string, id: number) => {
+          const idx = updated.findIndex(f => f.email === email)
+          if (idx >= 0) {
+            if (updated[idx].status !== 'accepted') { updated[idx] = { ...updated[idx], status: 'accepted' as const }; changed = true }
+          } else {
+            updated.push({ id, name: name || email, email, hours: 0, status: 'accepted' as const }); changed = true
+          }
+        }
+        asSender.forEach((a: any)   => upsert(a.toEmail,   a.toName   || a.toEmail,   Number(a.id)))
+        asAccepter.forEach((a: any) => upsert(a.fromEmail, a.fromName || a.fromEmail, Number(a.id)))
+        if (!changed) return prev
+        localStorage.setItem('kindworld_friends', JSON.stringify(updated))
+        return updated
+      })
     } catch {}
   }, [user?.email])
 
-  // Firestore real-time subscription: notify A when B accepts their request (cross-device)
+  // Firestore real-time subscription: sync accepted friendships cross-device (both directions)
   useEffect(() => {
     if (!user?.email) return
     const myEmail = user.email
     const unsub = subscribeToCollection<any>(COLLECTIONS.FRIENDSHIPS, (docs) => {
-      // Find friendships where current user was the sender (fromEmail)
-      const accepted = docs.filter((d: any) => d.fromEmail === myEmail)
-      if (accepted.length === 0) return
+      // I was the original requester — friend is toEmail/toName
+      const asSender   = docs.filter((d: any) => d.fromEmail === myEmail)
+      // I accepted someone's request — friend is fromEmail/fromName
+      const asAccepter = docs.filter((d: any) => d.toEmail   === myEmail)
+      if (asSender.length === 0 && asAccepter.length === 0) return
       setFriends(prev => {
         let changed = false
-        const updated = prev.map(f => {
-          const match = accepted.find((a: any) => a.toEmail === f.email)
-          if (match && f.status !== 'accepted') { changed = true; return { ...f, status: 'accepted' as const } }
-          return f
-        })
+        const updated = [...prev]
+        const upsert = (email: string, name: string, id: number) => {
+          const idx = updated.findIndex(f => f.email === email)
+          if (idx >= 0) {
+            if (updated[idx].status !== 'accepted') { updated[idx] = { ...updated[idx], status: 'accepted' as const }; changed = true }
+          } else {
+            updated.push({ id, name: name || email, email, hours: 0, status: 'accepted' as const }); changed = true
+          }
+        }
+        asSender.forEach((a: any)   => upsert(a.toEmail,   a.toName   || a.toEmail,   Number(a.id)))
+        asAccepter.forEach((a: any) => upsert(a.fromEmail, a.fromName || a.fromEmail, Number(a.id)))
         if (!changed) return prev
-        // Side effects outside the updater via setTimeout to avoid React strict-mode double-invoke
+        // Side effects via setTimeout to avoid React strict-mode double-invoke
         setTimeout(() => {
           localStorage.setItem('kindworld_friends', JSON.stringify(updated))
-          accepted.forEach((a: any) => {
-            const friendName = a.toName || a.toEmail
-            setNotifications(n => {
-              if (n.some(msg => msg.includes(friendName) && msg.includes('accepted'))) return n
-              return [...n, `🎉 ${friendName} accepted your friend request!`]
-            })
+          // Notify only for newly accepted (sender side — I sent the request and it got accepted)
+          asSender.forEach((a: any) => {
+            const wasAlreadyAccepted = prev.some(f => f.email === a.toEmail && f.status === 'accepted')
+            if (!wasAlreadyAccepted) {
+              const friendName = a.toName || a.toEmail
+              setNotifications(n => {
+                if (n.some(msg => msg.includes(friendName) && msg.includes('accepted'))) return n
+                return [...n, `🎉 ${friendName} accepted your friend request!`]
+              })
+            }
           })
         }, 0)
         return updated
@@ -11465,18 +11505,28 @@ export default function KindWorldApp() {
       }
       if (e.key === 'kindworld_friendships' && user?.email && e.newValue) {
         try {
+          const myEmail = user.email
           const friendships: any[] = JSON.parse(e.newValue)
-          const myAccepted = friendships.filter((a: any) => a.fromEmail === user.email)
-          if (myAccepted.length > 0) {
-            setFriends(prev => {
-              const updated = prev.map(f => {
-                const found = myAccepted.find((a: any) => a.toEmail === f.email)
-                return found ? { ...f, status: 'accepted' as const } : f
-              })
-              localStorage.setItem('kindworld_friends', JSON.stringify(updated))
-              return updated
-            })
-          }
+          const asSender   = friendships.filter((a: any) => a.fromEmail === myEmail)
+          const asAccepter = friendships.filter((a: any) => a.toEmail   === myEmail)
+          if (asSender.length === 0 && asAccepter.length === 0) return
+          setFriends(prev => {
+            let changed = false
+            const updated = [...prev]
+            const upsert = (email: string, name: string, id: number) => {
+              const idx = updated.findIndex(f => f.email === email)
+              if (idx >= 0) {
+                if (updated[idx].status !== 'accepted') { updated[idx] = { ...updated[idx], status: 'accepted' as const }; changed = true }
+              } else {
+                updated.push({ id, name: name || email, email, hours: 0, status: 'accepted' as const }); changed = true
+              }
+            }
+            asSender.forEach((a: any)   => upsert(a.toEmail,   a.toName   || a.toEmail,   Number(a.id)))
+            asAccepter.forEach((a: any) => upsert(a.fromEmail, a.fromName || a.fromEmail, Number(a.id)))
+            if (!changed) return prev
+            localStorage.setItem('kindworld_friends', JSON.stringify(updated))
+            return updated
+          })
         } catch {}
       }
     }
@@ -22406,7 +22456,7 @@ export default function KindWorldApp() {
                                   const updatedFriends = [...friends, newFriend]
                                   setFriends(updatedFriends)
                                   localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
-                                  const reqData = { id: requestId, fromEmail: user?.email, fromName: user?.name, fromHours: user?.hours || 0, toEmail: u.email }
+                                  const reqData = { id: requestId, fromEmail: user?.email, fromName: user?.name, fromHours: user?.hours || 0, toEmail: u.email, toName: u.name }
                                   try {
                                     const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
                                     pending.push(reqData)
@@ -22554,9 +22604,9 @@ export default function KindWorldApp() {
                             {request.name.charAt(0)}
                           </div>
                           <div style={{ minWidth: 0 }}>
-                            <p style={{ fontWeight: '600', color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{request.name}</p>
-                            <p style={{ fontSize: '13px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{request.email}</p>
-                            <p style={{ fontSize: '12px', color: '#9ca3af' }}>{request.hours} {t('hoursLabel')}</p>
+                            <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{request.name}</div>
+                            <div style={{ fontSize: '12px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '1px' }}>{request.email}</div>
+                            <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '1px' }}>{request.hours} {t('hoursLabel')}</div>
                           </div>
                         </div>
                         <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
@@ -22656,42 +22706,38 @@ export default function KindWorldApp() {
                   }}>{friends.filter(f => f.status === 'accepted').length}</span>
                 </h3>
                 {friends.filter(f => f.status === 'accepted').length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
                     {friends.filter(f => f.status === 'accepted').map((friend) => (
                       <div key={friend.id} style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        padding: '16px',
+                        padding: '12px 14px',
                         background: '#f9fafb',
-                        borderRadius: '12px'
+                        borderRadius: '12px',
+                        border: '1px solid #f0f0f0',
+                        gap: '10px'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
                           <div className="kw-avatar" style={{
-                            width: '48px',
-                            height: '48px',
-                            borderRadius: '50%',
+                            width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
                             background: friend.avatar ? `url(${friend.avatar}) center/cover` : 'linear-gradient(135deg, var(--ta) 0%, var(--tb) 100%)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontWeight: '600',
-                            fontSize: '18px'
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'white', fontWeight: '700', fontSize: '16px'
                           }}>
-                            {!friend.avatar && friend.name.charAt(0)}
+                            {!friend.avatar && (friend.name || '?').charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <p style={{ fontWeight: '600', color: '#1f2937' }}>{friend.name}</p>
-                            <p style={{ fontSize: '14px', color: '#6b7280' }}>{friend.hours} {t('hoursLabel')}</p>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{friend.name || friend.email}</div>
+                            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '1px' }}>{friend.hours} {t('hoursLabel')}</div>
                           </div>
                         </div>
-                        <div style={{ display: 'flex', gap: '6px' }}>
+                        <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                           <button
-                            onClick={() => { setShowFriendChat({ id: friend.id, name: friend.name, email: friend.email }); setFriendChatInput(''); setFriendChatImageUrl(''); setShowEmojiPicker(false) }}
-                            style={{ padding: '6px 12px', background: 'rgba(var(--tp-rgb),0.1)', color: 'var(--tp)', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer' }}
+                            onClick={() => { setShowFriendChat({ id: friend.id, name: friend.name || friend.email, email: friend.email }); setFriendChatInput(''); setFriendChatImageUrl(''); setShowEmojiPicker(false) }}
+                            style={{ padding: '6px 10px', background: 'rgba(var(--tp-rgb),0.1)', color: 'var(--tp)', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '600', cursor: 'pointer', whiteSpace: 'nowrap' }}
                           >
-                            💬 Chat
+                            💬 {isMobile ? '' : 'Chat'}
                           </button>
                           <button
                             onClick={() => {
@@ -22699,9 +22745,9 @@ export default function KindWorldApp() {
                               setFriends(updatedFriends)
                               localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
                             }}
-                            style={{ padding: '6px 12px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '500', cursor: 'pointer' }}
+                            style={{ padding: '6px 10px', background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: '500', cursor: 'pointer', whiteSpace: 'nowrap' }}
                           >
-                            {t('removeFriend')}
+                            {isMobile ? '✕' : t('removeFriend')}
                           </button>
                         </div>
                       </div>
@@ -22752,11 +22798,9 @@ export default function KindWorldApp() {
                             }}>
                               {friend.name.charAt(0)}
                             </div>
-                            <div>
-                              <p style={{ fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>{friend.name}</p>
-                              <p style={{ fontSize: '12px', color: '#92400e' }}>
-                                {t('requestSent')}
-                              </p>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontWeight: '600', color: '#1f2937', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{friend.name || friend.email}</div>
+                              <div style={{ fontSize: '12px', color: '#92400e', marginTop: '1px' }}>{t('requestSent')}</div>
                             </div>
                           </div>
                           <button
@@ -22764,6 +22808,12 @@ export default function KindWorldApp() {
                               const updatedFriends = friends.filter(f => f.id !== friend.id)
                               setFriends(updatedFriends)
                               localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
+                              // Remove from Firestore so the recipient no longer sees the request
+                              deleteDocument(COLLECTIONS.FRIEND_REQUESTS, String(friend.id)).catch(() => {})
+                              try {
+                                const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
+                                localStorage.setItem('kindworld_pending_requests', JSON.stringify(pending.filter((p: any) => Number(p.id) !== friend.id)))
+                              } catch {}
                             }}
                             style={{
                               padding: '4px 10px',
