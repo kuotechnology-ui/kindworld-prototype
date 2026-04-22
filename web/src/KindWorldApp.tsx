@@ -10562,6 +10562,9 @@ export default function KindWorldApp() {
       setSelectedRole('student')
       setCurrentPage('dashboard')
       setNotifications(prev => [...prev, `Welcome, ${profile.displayName}! 🎉`])
+      // Show region+language setup for new LINE users (or returning users with no language set)
+      const savedLanguage = localStorage.getItem('kindworld_language')
+      if (!savedLanguage) setShowRegionSetup(true)
     } catch (err: any) {
       const msg = err?.message || 'LINE sign-in failed'
       setNotifications(prev => [...prev, `❌ LINE sign-in failed: ${msg}`])
@@ -22466,6 +22469,22 @@ export default function KindWorldApp() {
                     }}
                   >
                     {isEditingProfile ? t('cancelEditLabel') : t('editProfile')}
+                  </button>
+                  <button
+                    onClick={() => setShowRegionSetup(true)}
+                    style={{
+                      padding: '12px 20px',
+                      background: 'rgba(255,255,255,0.15)',
+                      border: '2px solid rgba(255,255,255,0.3)',
+                      borderRadius: '12px',
+                      color: 'white',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      fontSize: '14px'
+                    }}
+                  >
+                    🌍 {t('regionSetup')}
                   </button>
                 </div>
               </div>
