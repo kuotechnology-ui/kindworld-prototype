@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAppSelector, useAppDispatch } from './hooks/redux'
 import { setLanguage as setReduxLanguage } from './store/slices/languageSlice'
 import emailjs from '@emailjs/browser'
+import { subscribeToCollection, saveDocument, deleteDocument, COLLECTIONS } from './firestoreService'
 
 interface User {
   id: string
@@ -10796,25 +10797,89 @@ export default function KindWorldApp() {
     return defaultAllUsers
   })
 
-  // Save allUsers to localStorage when they change
+  // Save allUsers to localStorage and Firestore when they change
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kindworld_allusers', JSON.stringify(allUsers))
+      allUsers.forEach((u: any) => syncUserToFirestore(u))
     }
   }, [allUsers])
 
-  // Sync current user's badges from allUsers when allUsers changes (for when admin updates badges)
+  // ── Firestore real-time subscriptions ────────────────────────────────────
+  // Each subscription keeps local state in sync with Firestore across all devices.
+  // Local state is still the source of truth for reads; Firestore is the sync layer.
   useEffect(() => {
-    if (user && allUsers.length > 0) {
-      const updatedUserData = allUsers.find((u: any) => u.id === user.id || u.email === user.email)
-      if (updatedUserData && updatedUserData.userBadges) {
-        // Only update if badges have changed
-        const currentBadges = JSON.stringify(user.userBadges || [])
-        const newBadges = JSON.stringify(updatedUserData.userBadges || [])
-        if (currentBadges !== newBadges) {
-          setUser(prev => prev ? { ...prev, userBadges: updatedUserData.userBadges } : null)
-        }
-      }
+    const unsubs: (() => void)[] = []
+
+    unsubs.push(subscribeToCollection<any>(COLLECTIONS.USERS, (docs) => {
+      if (docs.length > 0) setAllUsers(docs)
+    }))
+
+    unsubs.push(subscribeToCollection<any>(COLLECTIONS.MISSIONS, (docs) => {
+      if (docs.length > 0) setMissions(docs)
+    }))
+
+    unsubs.push(subscribeToCollection<any>(COLLECTIONS.REGISTRATIONS, (docs) => {
+      setMissionRegistrations(docs)
+    }))
+
+    unsubs.push(subscribeToCollection<any>(COLLECTIONS.HOUR_SUBMISSIONS, (docs) => {
+      setHourSubmissions(docs)
+    }))
+
+    unsubs.push(subscribeToCollection<any>(COLLECTIONS.DIRECT_MESSAGES, (docs) => {
+      setDirectMessages(docs)
+    }))
+
+    unsubs.push(subscribeToCollection<any>(COLLECTIONS.CERT_REQUESTS, (docs) => {
+      setCertRequests(docs)
+    }))
+
+    return () => unsubs.forEach(u => u())
+  }, [])
+
+  // ── Firestore write helpers ───────────────────────────────────────────────
+  // Call these after any local state update to persist the change to Firestore.
+  const syncUserToFirestore = useCallback((u: any) => {
+    const id = String(u.id || u.email)
+    saveDocument(COLLECTIONS.USERS, id, u).catch(console.error)
+  }, [])
+
+  const syncMissionToFirestore = useCallback((m: any) => {
+    saveDocument(COLLECTIONS.MISSIONS, String(m.id), m).catch(console.error)
+  }, [])
+
+  const syncRegistrationToFirestore = useCallback((r: any) => {
+    const id = `${r.missionId}_${r.volunteer?.email || r.volunteer?.id}`
+    saveDocument(COLLECTIONS.REGISTRATIONS, id, r).catch(console.error)
+  }, [])
+
+  const syncHourSubmissionToFirestore = useCallback((s: any) => {
+    saveDocument(COLLECTIONS.HOUR_SUBMISSIONS, String(s.id), s).catch(console.error)
+  }, [])
+
+  const syncMessageToFirestore = useCallback((m: any) => {
+    saveDocument(COLLECTIONS.DIRECT_MESSAGES, String(m.id), m).catch(console.error)
+  }, [])
+
+  const syncCertRequestToFirestore = useCallback((r: any) => {
+    saveDocument(COLLECTIONS.CERT_REQUESTS, String(r.id), r).catch(console.error)
+  }, [])
+
+  const deleteRegistrationFromFirestore = useCallback((missionId: number, volunteerEmail: string) => {
+    deleteDocument(COLLECTIONS.REGISTRATIONS, `${missionId}_${volunteerEmail}`).catch(console.error)
+  }, [])
+
+  // Sync current user state from allUsers whenever allUsers changes
+  // This keeps hours, badges, completedMissions, name, etc. consistent across all UI
+  useEffect(() => {
+    if (!user || allUsers.length === 0) return
+    const latest = allUsers.find((u: any) => u.id === user.id || u.email === user.email)
+    if (!latest) return
+    const fields: (keyof User)[] = ['name', 'hours', 'userBadges', 'badges', 'completedMissions', 'organizationsHelped', 'avatar', 'rating']
+    const needsUpdate = fields.some(f => JSON.stringify((user as any)[f]) !== JSON.stringify((latest as any)[f]))
+    if (needsUpdate) {
+      setUser(prev => prev ? { ...prev, ...Object.fromEntries(fields.map(f => [f, (latest as any)[f] ?? (prev as any)[f]])) } : null)
     }
   }, [allUsers])
 
@@ -11127,12 +11192,21 @@ export default function KindWorldApp() {
     return defaultMissions
   })
 
-  // Save missions to localStorage when they change
+  // Save missions to localStorage and Firestore when they change
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kindworld_missions', JSON.stringify(missions))
+      missions.forEach((m: any) => syncMissionToFirestore(m))
     }
   }, [missions])
+
+  // Save hourSubmissions to localStorage and Firestore when they change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kindworld_hour_submissions', JSON.stringify(hourSubmissions))
+      hourSubmissions.forEach((s: any) => syncHourSubmissionToFirestore(s))
+    }
+  }, [hourSubmissions])
 
   // Per-user joined mission IDs (so join state is not shared globally across accounts)
   const [joinedMissionIds, setJoinedMissionIds] = useState<Set<number>>(new Set())
@@ -11152,6 +11226,7 @@ export default function KindWorldApp() {
   }, [certPrograms])
   useEffect(() => {
     localStorage.setItem('kindworld_cert_requests', JSON.stringify(certRequests))
+    certRequests.forEach((r: any) => syncCertRequestToFirestore(r))
   }, [certRequests])
   useEffect(() => {
     localStorage.setItem('kindworld_sponsor_profile', JSON.stringify(sponsorProfile))
@@ -11177,7 +11252,10 @@ export default function KindWorldApp() {
   useEffect(() => { localStorage.setItem('kindworld_noshow', JSON.stringify(noShowRecords)) }, [noShowRecords])
   useEffect(() => { localStorage.setItem('kindworld_vol_reviews', JSON.stringify(volunteerReviews)) }, [volunteerReviews])
   useEffect(() => { localStorage.setItem('kindworld_ngo_reviews', JSON.stringify(ngoReviews)) }, [ngoReviews])
-  useEffect(() => { localStorage.setItem('kindworld_direct_msgs', JSON.stringify(directMessages)) }, [directMessages])
+  useEffect(() => {
+    localStorage.setItem('kindworld_direct_msgs', JSON.stringify(directMessages))
+    directMessages.forEach((m: any) => syncMessageToFirestore(m))
+  }, [directMessages])
   useEffect(() => { localStorage.setItem('kindworld_admin_emails', JSON.stringify(adminEmails)) }, [adminEmails])
   useEffect(() => { localStorage.setItem('kindworld_friend_msgs', JSON.stringify(friendMessages)) }, [friendMessages])
 
@@ -11360,10 +11438,11 @@ export default function KindWorldApp() {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
-  // Save registrations to localStorage when they change
+  // Save registrations to localStorage and Firestore when they change
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kindworld_registrations', JSON.stringify(missionRegistrations))
+      missionRegistrations.forEach((r: any) => syncRegistrationToFirestore(r))
     }
   }, [missionRegistrations])
 
@@ -11381,32 +11460,21 @@ export default function KindWorldApp() {
     }
   }, [user, currentPage])
 
-  // Sync user badges from allUsers when going to badges or profile page
+  // Sync all user fields from localStorage when navigating to key pages (cross-tab consistency)
   useEffect(() => {
-    if (user && (currentPage === 'badges' || currentPage === 'profile') && typeof window !== 'undefined') {
+    if (!user || typeof window === 'undefined') return
+    try {
       const savedUsers = localStorage.getItem('kindworld_allusers')
-      if (savedUsers) {
-        try {
-          const parsedUsers = JSON.parse(savedUsers)
-          const currentUserData = parsedUsers.find((u: any) => u.id === user.id || u.email === user.email)
-          if (currentUserData && currentUserData.userBadges) {
-            const currentBadges = JSON.stringify(user.userBadges || [])
-            const newBadges = JSON.stringify(currentUserData.userBadges || [])
-            if (currentBadges !== newBadges) {
-              setUser(prev => prev ? { ...prev, userBadges: currentUserData.userBadges } : null)
-              // Also update kindworld_user in localStorage
-              const savedUser = localStorage.getItem('kindworld_user')
-              if (savedUser) {
-                const parsedUser = JSON.parse(savedUser)
-                parsedUser.userBadges = currentUserData.userBadges
-                localStorage.setItem('kindworld_user', JSON.stringify(parsedUser))
-              }
-            }
-          }
-        } catch (e) {
-        }
+      if (!savedUsers) return
+      const parsedUsers = JSON.parse(savedUsers)
+      const latest = parsedUsers.find((u: any) => u.id === user.id || u.email === user.email)
+      if (!latest) return
+      const fields = ['name', 'hours', 'userBadges', 'badges', 'completedMissions', 'organizationsHelped', 'avatar', 'rating']
+      const needsUpdate = fields.some(f => JSON.stringify((user as any)[f]) !== JSON.stringify(latest[f]))
+      if (needsUpdate) {
+        setUser(prev => prev ? { ...prev, ...Object.fromEntries(fields.map(f => [f, latest[f] ?? (prev as any)[f]])) } : null)
       }
-    }
+    } catch {}
   }, [currentPage, user?.id])
 
   // Save friends to localStorage when they change
