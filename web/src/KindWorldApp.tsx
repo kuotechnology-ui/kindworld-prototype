@@ -10797,42 +10797,57 @@ export default function KindWorldApp() {
     return defaultAllUsers
   })
 
-  // Save allUsers to localStorage and Firestore when they change
+  // Save allUsers to localStorage; write to Firestore only after initial load
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kindworld_allusers', JSON.stringify(allUsers))
-      allUsers.forEach((u: any) => syncUserToFirestore(u))
+      if (firestoreReady.current) allUsers.forEach((u: any) => syncUserToFirestore(u))
     }
   }, [allUsers])
 
   // ── Firestore real-time subscriptions ────────────────────────────────────
-  // Each subscription keeps local state in sync with Firestore across all devices.
-  // Local state is still the source of truth for reads; Firestore is the sync layer.
+  // Firestore is the single source of truth. On first load, if Firestore is
+  // empty we seed it from localStorage so existing data is preserved.
+  // After that, all writes go to Firestore and subscriptions update local state.
+  const firestoreReady = useRef(false)
+
   useEffect(() => {
     const unsubs: (() => void)[] = []
 
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.USERS, (docs) => {
-      if (docs.length > 0) setAllUsers(docs)
+      if (docs.length > 0) {
+        setAllUsers(docs)
+      } else if (!firestoreReady.current) {
+        // Firestore empty — seed from localStorage
+        const local = localStorage.getItem('kindworld_allusers')
+        if (local) { try { const arr = JSON.parse(local); arr.forEach((u: any) => saveDocument(COLLECTIONS.USERS, String(u.id || u.email), u).catch(() => {})) } catch {} }
+      }
+      firestoreReady.current = true
     }))
 
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.MISSIONS, (docs) => {
-      if (docs.length > 0) setMissions(docs)
+      if (docs.length > 0) {
+        setMissions(docs)
+      } else if (!firestoreReady.current) {
+        const local = localStorage.getItem('kindworld_missions')
+        if (local) { try { const arr = JSON.parse(local); arr.forEach((m: any) => saveDocument(COLLECTIONS.MISSIONS, String(m.id), m).catch(() => {})) } catch {} }
+      }
     }))
 
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.REGISTRATIONS, (docs) => {
-      setMissionRegistrations(docs)
+      if (docs.length > 0) setMissionRegistrations(docs)
     }))
 
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.HOUR_SUBMISSIONS, (docs) => {
-      setHourSubmissions(docs)
+      if (docs.length > 0) setHourSubmissions(docs)
     }))
 
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.DIRECT_MESSAGES, (docs) => {
-      setDirectMessages(docs)
+      if (docs.length > 0) setDirectMessages(docs)
     }))
 
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.CERT_REQUESTS, (docs) => {
-      setCertRequests(docs)
+      if (docs.length > 0) setCertRequests(docs)
     }))
 
     return () => unsubs.forEach(u => u())
@@ -11192,19 +11207,19 @@ export default function KindWorldApp() {
     return defaultMissions
   })
 
-  // Save missions to localStorage and Firestore when they change
+  // Save missions to localStorage; write to Firestore only after initial load
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kindworld_missions', JSON.stringify(missions))
-      missions.forEach((m: any) => syncMissionToFirestore(m))
+      if (firestoreReady.current) missions.forEach((m: any) => syncMissionToFirestore(m))
     }
   }, [missions])
 
-  // Save hourSubmissions to localStorage and Firestore when they change
+  // Save hourSubmissions to localStorage; write to Firestore only after initial load
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kindworld_hour_submissions', JSON.stringify(hourSubmissions))
-      hourSubmissions.forEach((s: any) => syncHourSubmissionToFirestore(s))
+      if (firestoreReady.current) hourSubmissions.forEach((s: any) => syncHourSubmissionToFirestore(s))
     }
   }, [hourSubmissions])
 
@@ -11226,7 +11241,7 @@ export default function KindWorldApp() {
   }, [certPrograms])
   useEffect(() => {
     localStorage.setItem('kindworld_cert_requests', JSON.stringify(certRequests))
-    certRequests.forEach((r: any) => syncCertRequestToFirestore(r))
+    if (firestoreReady.current) certRequests.forEach((r: any) => syncCertRequestToFirestore(r))
   }, [certRequests])
   useEffect(() => {
     localStorage.setItem('kindworld_sponsor_profile', JSON.stringify(sponsorProfile))
@@ -11254,7 +11269,7 @@ export default function KindWorldApp() {
   useEffect(() => { localStorage.setItem('kindworld_ngo_reviews', JSON.stringify(ngoReviews)) }, [ngoReviews])
   useEffect(() => {
     localStorage.setItem('kindworld_direct_msgs', JSON.stringify(directMessages))
-    directMessages.forEach((m: any) => syncMessageToFirestore(m))
+    if (firestoreReady.current) directMessages.forEach((m: any) => syncMessageToFirestore(m))
   }, [directMessages])
   useEffect(() => { localStorage.setItem('kindworld_admin_emails', JSON.stringify(adminEmails)) }, [adminEmails])
   useEffect(() => { localStorage.setItem('kindworld_friend_msgs', JSON.stringify(friendMessages)) }, [friendMessages])
@@ -11438,11 +11453,11 @@ export default function KindWorldApp() {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
-  // Save registrations to localStorage and Firestore when they change
+  // Save registrations to localStorage; write to Firestore only after initial load
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('kindworld_registrations', JSON.stringify(missionRegistrations))
-      missionRegistrations.forEach((r: any) => syncRegistrationToFirestore(r))
+      if (firestoreReady.current) missionRegistrations.forEach((r: any) => syncRegistrationToFirestore(r))
     }
   }, [missionRegistrations])
 
