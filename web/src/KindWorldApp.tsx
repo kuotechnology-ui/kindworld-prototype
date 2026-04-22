@@ -14403,7 +14403,7 @@ export default function KindWorldApp() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '12px', flex: 1, justifyContent: 'flex-end', minWidth: 0 }}>
             {/* Navigation Buttons */}
-            <div className="kw-nav-buttons" style={{ background: 'rgba(var(--tp-rgb),0.07)', borderRadius: '12px', padding: '4px', maxWidth: isMobile ? 'calc(100vw - 140px)' : 'none' }}>
+            <div className="kw-nav-buttons" style={{ background: 'rgba(var(--tp-rgb),0.07)', borderRadius: '12px', padding: '4px', maxWidth: isMobile ? 'calc(100vw - 130px)' : 'none', overflowX: isMobile ? 'auto' : 'visible', display: 'flex', scrollbarWidth: 'none' }}>
               {(() => {
                 if (user?.role === 'ngo') {
                   const ngoData = allUsers.find((u: any) => u.email === user?.email)
@@ -14556,42 +14556,45 @@ export default function KindWorldApp() {
             </div>
 
             {/* Divider */}
-            <div style={{ width: '1px', height: '32px', background: 'var(--tbrd)' }} />
+            {!isMobile && <div style={{ width: '1px', height: '32px', background: 'var(--tbrd)' }} />}
 
             {/* User Profile & Logout */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '6px' : '10px', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div className="kw-avatar" style={{
-                  width: '38px',
-                  height: '38px',
+                  width: isMobile ? '30px' : '38px',
+                  height: isMobile ? '30px' : '38px',
                   background: 'linear-gradient(135deg, var(--tp) 0%, var(--ts) 100%)',
-                  borderRadius: '11px',
+                  borderRadius: isMobile ? '8px' : '11px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
-                  fontSize: '15px',
-                  fontWeight: '600'
+                  fontSize: isMobile ? '13px' : '15px',
+                  fontWeight: '600',
+                  flexShrink: 0
                 }}>
                   {user.name.charAt(0)}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{user.name}</span>
-                  <span style={{ fontSize: '12px', color: '#6b7280', textTransform: 'capitalize' }}>
-                    {user.role === 'student' ? 'Volunteer' : user.role.toUpperCase()}
-                  </span>
-                </div>
+                {!isMobile && (
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>{user.name}</span>
+                    <span style={{ fontSize: '12px', color: '#6b7280', textTransform: 'capitalize' }}>
+                      {user.role === 'student' ? 'Volunteer' : user.role.toUpperCase()}
+                    </span>
+                  </div>
+                )}
               </div>
               <button
                 onClick={() => { setUser(null); setCurrentPage('landing') }}
                 style={{
-                  padding: '8px 14px',
+                  padding: isMobile ? '6px 8px' : '8px 14px',
                   background: '#fef2f2',
                   color: '#dc2626',
                   border: '1px solid #fecaca',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  fontSize: '13px',
+                  fontSize: isMobile ? '16px' : '13px',
                   fontWeight: '500',
                   transition: 'all 0.2s ease',
                   outline: 'none'
@@ -14604,8 +14607,9 @@ export default function KindWorldApp() {
                   e.currentTarget.style.background = '#fef2f2'
                   e.currentTarget.style.borderColor = '#fecaca'
                 }}
+                title={t('logout')}
               >
-                {t('logout')}
+                {isMobile ? '⏻' : t('logout')}
               </button>
             </div>
           </div>
@@ -15269,13 +15273,14 @@ export default function KindWorldApp() {
         {notifications.length > 0 && (
           <div style={{
             position: 'fixed',
-            top: '100px',
-            right: '20px',
+            top: isMobile ? '70px' : '100px',
+            right: '12px',
+            left: isMobile ? '12px' : 'auto',
             zIndex: 1000,
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
-            maxWidth: '400px'
+            gap: '10px',
+            maxWidth: isMobile ? 'none' : '400px'
           }}>
             {notifications.map((notification, index) => (
               <div
