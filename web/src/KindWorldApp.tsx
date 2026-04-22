@@ -11389,6 +11389,37 @@ export default function KindWorldApp() {
     } catch {}
   }, [user?.email])
 
+  // Firestore real-time subscription: notify A when B accepts their request (cross-device)
+  useEffect(() => {
+    if (!user?.email) return
+    const myEmail = user.email
+    const unsub = subscribeToCollection<any>(COLLECTIONS.FRIENDSHIPS, (docs) => {
+      // Find friendships where current user was the sender (fromEmail)
+      const accepted = docs.filter((d: any) => d.fromEmail === myEmail)
+      if (accepted.length === 0) return
+      setFriends(prev => {
+        let changed = false
+        const updated = prev.map(f => {
+          const match = accepted.find((a: any) => a.toEmail === f.email)
+          if (match && f.status !== 'accepted') { changed = true; return { ...f, status: 'accepted' as const } }
+          return f
+        })
+        if (!changed) return prev
+        localStorage.setItem('kindworld_friends', JSON.stringify(updated))
+        // Notify A that their request was accepted
+        accepted.forEach((a: any) => {
+          const friendName = a.toName || a.toEmail
+          setNotifications(n => {
+            if (n.some(msg => msg.includes(friendName) && msg.includes('accepted'))) return n
+            return [...n, `🎉 ${friendName} accepted your friend request!`]
+          })
+        })
+        return updated
+      })
+    })
+    return () => unsub()
+  }, [user?.email])
+
   // Real-time cross-tab sync for friend requests and friendships
   useEffect(() => {
     const handler = (e: StorageEvent) => {
@@ -22464,12 +22495,22 @@ export default function KindWorldApp() {
                               localStorage.setItem('kindworld_friends', JSON.stringify(updatedFriends))
                               setFriendRequests(prev => prev.filter(r => r.id !== request.id))
                               deleteDocument(COLLECTIONS.FRIEND_REQUESTS, String(request.id)).catch(() => {})
+                              // Save to Firestore FRIENDSHIPS so the sender (A) gets notified cross-device
+                              const friendshipData = {
+                                id: request.id,
+                                fromEmail: request.email,
+                                fromName: request.name,
+                                toEmail: user?.email,
+                                toName: user?.name,
+                                acceptedAt: new Date().toISOString()
+                              }
+                              saveDocument(COLLECTIONS.FRIENDSHIPS, String(request.id), friendshipData).catch(() => {})
                               try {
                                 const pending = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
                                 const filtered = pending.filter((p: any) => Number(p.id) !== request.id)
                                 localStorage.setItem('kindworld_pending_requests', JSON.stringify(filtered))
                                 const friendships = JSON.parse(localStorage.getItem('kindworld_friendships') || '[]')
-                                friendships.push({ id: request.id, fromEmail: request.email, toEmail: user?.email, acceptedAt: new Date().toISOString() })
+                                friendships.push(friendshipData)
                                 localStorage.setItem('kindworld_friendships', JSON.stringify(friendships))
                               } catch {}
                               setNotifications(n => [...n, `✅ You are now friends with ${request.name}!`])

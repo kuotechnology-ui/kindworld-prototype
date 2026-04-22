@@ -21,7 +21,9 @@ export const COLLECTIONS = {
   DIRECT_MESSAGES: 'directMessages',
   CERT_REQUESTS: 'certRequests',
   NGO_MESSAGES: 'ngoMessages',
-  ACTIVITY_FEED: 'activityFeed'
+  ACTIVITY_FEED: 'activityFeed',
+  FRIEND_REQUESTS: 'friendRequests',
+  FRIENDSHIPS: 'friendships'
 }
 
 // ── Generic helpers ──────────────────────────────────────────────────────────
