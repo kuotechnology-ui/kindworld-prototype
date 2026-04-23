@@ -11423,16 +11423,15 @@ export default function KindWorldApp() {
   useEffect(() => {
     setFriends([])
     setFriendRequests([])
-    // Note: friendMessages is NOT cleared here — the subscription does a full replace
-    // on user change, so clearing here causes a race condition where messages flash empty.
     processedFriendRequestIds.current.clear()
+    // Always clear friend-related localStorage on any user change (login, logout, or account switch)
+    // so a new account never inherits the previous user's friend data from localStorage.
+    localStorage.removeItem('kindworld_friends')
+    localStorage.removeItem('kindworld_friend_requests')
+    localStorage.removeItem('kindworld_friend_msgs')
+    localStorage.removeItem('kindworld_friendships')
+    localStorage.removeItem('kindworld_pending_requests')
     if (!user?.email) {
-      // Clear friend-related localStorage on logout so the next account starts clean
-      localStorage.removeItem('kindworld_friends')
-      localStorage.removeItem('kindworld_friend_requests')
-      localStorage.removeItem('kindworld_friend_msgs')
-      localStorage.removeItem('kindworld_friendships')
-      localStorage.removeItem('kindworld_pending_requests')
     }
   }, [user?.email])
 
