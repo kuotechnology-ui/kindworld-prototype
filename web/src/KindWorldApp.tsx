@@ -14991,7 +14991,7 @@ export default function KindWorldApp() {
                       value={friendChatInput}
                       onChange={e => setFriendChatInput(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
-                      placeholder={t('typeMessage') || 'Type a message...'}
+                      placeholder="Type a message..."
                       rows={2}
                       style={{ width: '100%', padding: '8px 12px', border: '1.5px solid #e5e7eb', borderRadius: '12px', fontSize: '14px', outline: 'none', resize: 'none', lineHeight: '1.5', boxSizing: 'border-box', fontFamily: 'inherit' }}
                       onFocus={e => { e.target.style.borderColor = 'var(--tp)' }}
@@ -15011,14 +15011,6 @@ export default function KindWorldApp() {
                           e.target.value = ''
                         }} />
                       </label>
-                      <input
-                        value={friendChatImageUrl.startsWith('data:') ? '' : friendChatImageUrl}
-                        onChange={e => setFriendChatImageUrl(e.target.value)}
-                        placeholder={t('imageUrlPlaceholder') || 'or paste image URL...'}
-                        style={{ flex: 1, padding: '5px 10px', border: '1.5px solid #e5e7eb', borderRadius: '8px', fontSize: '12px', outline: 'none' }}
-                        onFocus={e => { e.target.style.borderColor = 'var(--tp)' }}
-                        onBlur={e => { e.target.style.borderColor = '#e5e7eb' }}
-                      />
                     </div>
                   </div>
                   <button
