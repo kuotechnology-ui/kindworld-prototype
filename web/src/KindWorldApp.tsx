@@ -427,6 +427,25 @@ const localTranslations: Record<string, Record<string, string>> = {
     viewProof: 'View proof document',
     confirmPayment: 'Confirm Payment Received',
     reject: 'Reject',
+    ngoFinance: 'Finances',
+    ngoFinanceTitle: '💰 Sponsorship & Finance',
+    ngoFinanceSubtitle: 'Track all incoming sponsorships, verify payments, and view your financial summary',
+    ngoFinanceTotalReceived: 'Total Received',
+    ngoFinancePending: 'Pending Verification',
+    ngoFinanceActive: 'Active Sponsorships',
+    ngoFinanceCompleted: 'Completed',
+    ngoFinanceAllCampaigns: 'All Sponsorship Campaigns',
+    ngoFinanceNoCampaigns: 'No sponsorship campaigns yet',
+    ngoFinancePaymentStatus: 'Payment Status',
+    ngoFinanceVerifyPayment: 'Verify Transfer',
+    ngoFinanceRejectPayment: 'Reject',
+    ngoFinanceConfirmNote: 'I confirm the bank/online transfer has been received in full.',
+    ngoFinancePaymentConfirmed: 'Payment Confirmed',
+    ngoFinanceAuditLog: 'Audit Trail',
+    ngoFinanceSummaryByCompany: 'By Company',
+    ngoFinanceMarkComplete: 'Mark Completed',
+    ngoFinanceNoProof: 'No proof uploaded yet',
+    ngoFinanceBudgetAllocated: 'Budget Allocated to Us',
     optional: 'optional',
     // Reject modal
     rejectSubmissionTitle: 'Reject Hour Submission',
@@ -929,6 +948,34 @@ const localTranslations: Record<string, Record<string, string>> = {
     investorPerk10: 'Custom mission categories',
     investorPerk11: 'Unlimited co-hosted missions',
     investorPerk12: 'Direct dashboard access',
+    // Investor dashboard extra strings
+    investorImpactSummary: '📈 Platform Impact Summary',
+    investorVolHoursLogged: 'Volunteer Hours Logged',
+    investorCommunitiesReached: 'Communities Reached',
+    investorVolRegistrations: 'Volunteer Registrations',
+    investorCertsService: 'Certificates of Service',
+    investorAvgHours: 'Avg Hours / Volunteer',
+    investorCompletionRate: 'Mission Completion Rate',
+    investorInterestedTitle: 'Interested in Partnering?',
+    investorInterestedDesc: 'Reach out to discuss sponsorship opportunities, CSR partnerships, or investment in the KindWorld platform.',
+    investorContactBtn: '📧 Contact KindWorld',
+    // Budget tracking
+    budgetAllocated: '💰 Budget Allocation',
+    budgetAllocatedDesc: 'See how your sponsorship funds are being used across programs',
+    budgetCategory: 'Category',
+    budgetAmount: 'Amount',
+    budgetDescription: 'Description',
+    budgetDate: 'Date',
+    budgetNoBudget: 'No budget allocations recorded yet',
+    budgetTotalAllocated: 'Total Allocated',
+    budgetByCompany: 'Allocations by Company',
+    budgetAddEntry: '+ Add Budget Entry',
+    budgetManagement: '💰 Budget Management',
+    budgetManagementDesc: 'Record how sponsorship funds are allocated and spent',
+    budgetSelectCompany: 'Company (sponsor)',
+    budgetSave: 'Save Entry',
+    budgetCancel: 'Cancel',
+    budgetCategoryOptions: 'Operations,Events,Marketing,Technology,Personnel,NGO Support,Volunteer Programs,Admin',
     // Admin Dashboard specific translations
     adminDashboardTitle: 'Admin Dashboard',
     adminDashboardSubtitle: 'Manage users, monitor platform activity, and oversee volunteer programs',
@@ -3742,6 +3789,73 @@ const localTranslations: Record<string, Record<string, string>> = {
     category: 'Categoría',
     status: 'Estado',
     missions: 'Misiones',
+    investorDashboardLabel: 'KINDWORLD · PANEL DEL INVERSOR',
+    investorPlatformOverview: 'Resumen de la Plataforma',
+    investorSubtitle: 'Métricas en tiempo real, datos de impacto de voluntarios y resumen de asociaciones ONG.',
+    investorLiveData: '✓ Datos en Vivo',
+    investorPlatformActive: '● Plataforma Activa',
+    investorLanguages: '🌏 12 Idiomas',
+    investorKpiVolunteers: 'Total de Voluntarios',
+    investorKpiNGOs: 'ONG Activas',
+    investorKpiNGOsSub: 'organizaciones verificadas',
+    investorKpiMissions: 'Total de Misiones',
+    investorKpiHours: 'Horas de Voluntariado',
+    investorKpiHoursSub: 'horas contribuidas en total',
+    investorKpiRegistrations: 'Registros',
+    investorKpiRegistrationsSub: 'inscripciones en misiones',
+    investorKpiCerts: 'Certificados Emitidos',
+    investorKpiCertsSub: 'aprobados por ONGs',
+    investorMissionCategories: '📊 Categorías de Misiones',
+    investorNoMissionData: 'Sin datos de misiones aún',
+    investorMissionsCount: 'misiones',
+    investorNGOPartners: '🏢 Socios ONG',
+    investorNoNGOs: 'Sin socios ONG aún',
+    investorVerified: '✓ Verificado',
+    investorRegistrations: 'registros',
+    investorRecentMissions: '🌍 Misiones Recientes',
+    investorColMission: 'Misión',
+    investorColNGO: 'ONG',
+    investorColDate: 'Fecha',
+    investorColLocation: 'Ubicación',
+    investorColRegistered: 'Registrados',
+    investorColStatus: 'Estado',
+    investorStatusCompleted: 'Completado',
+    investorStatusActive: 'Activo',
+    investorNoMissions: 'Sin misiones aún',
+    investorWhyPartner: '💛 Por Qué Asociarse con Nosotros',
+    investorBrandVisibility: 'Visibilidad de Marca',
+    investorBrandVisibilityDesc: 'Tu logo en certificados, misiones y 12 mercados de idiomas',
+    investorImpactReports: 'Informes de Impacto',
+    investorImpactReportsDesc: 'Informes trimestrales listos para RSC con horas, voluntarios y comunidades alcanzadas',
+    investorGlobalReach: 'Alcance Global',
+    investorGlobalReachDesc: 'voluntarios en el Sudeste Asiático y más allá',
+    investorMissionCobranding: 'Co-marca en Misiones',
+    investorMissionCobrandingDesc: 'Co-organiza eventos de voluntariado con el nombre de tu empresa',
+    investorSponsorTiers: '🏅 Niveles de Patrocinio',
+    investorBronze: 'Socio Bronce', investorBronzeAmount: '$1,000 / año',
+    investorSilver: 'Socio Plata', investorSilverAmount: '$5,000 / año',
+    investorGold: 'Socio Oro', investorGoldAmount: '$15,000 / año',
+    investorPerk1: 'Logo en la plataforma', investorPerk2: 'Informe mensual', investorPerk3: '1 misión co-organizada',
+    investorPerk4: 'Todo Bronce +', investorPerk5: 'Marca en certificados', investorPerk6: 'Informe RSC trimestral', investorPerk7: '3 misiones co-organizadas',
+    investorPerk8: 'Todo Plata +', investorPerk9: 'Destacado ONG', investorPerk10: 'Categorías personalizadas', investorPerk11: 'Misiones ilimitadas', investorPerk12: 'Acceso directo al panel',
+    investorImpactSummary: '📈 Resumen de Impacto de la Plataforma',
+    investorVolHoursLogged: 'Horas de Voluntariado',
+    investorCommunitiesReached: 'Comunidades Alcanzadas',
+    investorVolRegistrations: 'Registros de Voluntarios',
+    investorCertsService: 'Certificados de Servicio',
+    investorAvgHours: 'Promedio de Horas / Voluntario',
+    investorCompletionRate: 'Tasa de Finalización de Misiones',
+    investorInterestedTitle: '¿Interesado en Asociarse?',
+    investorInterestedDesc: 'Contáctenos para discutir oportunidades de patrocinio, alianzas de RSC o inversión en KindWorld.',
+    investorContactBtn: '📧 Contactar a KindWorld',
+    budgetAllocated: '💰 Asignación de Presupuesto',
+    budgetAllocatedDesc: 'Vea cómo se utilizan sus fondos de patrocinio',
+    budgetCategory: 'Categoría', budgetAmount: 'Monto', budgetDescription: 'Descripción', budgetDate: 'Fecha',
+    budgetNoBudget: 'Aún no hay asignaciones de presupuesto registradas',
+    budgetTotalAllocated: 'Total Asignado', budgetByCompany: 'Asignaciones por Empresa',
+    budgetAddEntry: '+ Agregar Entrada de Presupuesto', budgetManagement: '💰 Gestión de Presupuesto',
+    budgetManagementDesc: 'Registra cómo se asignan los fondos de patrocinio',
+    budgetSelectCompany: 'Empresa (patrocinador)', budgetSave: 'Guardar', budgetCancel: 'Cancelar',
     certificates: 'Certificados',
     badges: 'Insignias',
     friends: 'Amigos',
@@ -4431,6 +4545,73 @@ const localTranslations: Record<string, Record<string, string>> = {
     category: 'Catégorie',
     status: 'Statut',
     missions: 'Missions',
+    investorDashboardLabel: 'KINDWORLD · TABLEAU DE BORD INVESTISSEUR',
+    investorPlatformOverview: 'Aperçu de la Plateforme',
+    investorSubtitle: 'Métriques en temps réel, données d\'impact bénévole et aperçu des partenariats ONG.',
+    investorLiveData: '✓ Données en Direct',
+    investorPlatformActive: '● Plateforme Active',
+    investorLanguages: '🌏 12 Langues',
+    investorKpiVolunteers: 'Total Bénévoles',
+    investorKpiNGOs: 'ONG Partenaires Actives',
+    investorKpiNGOsSub: 'organisations vérifiées',
+    investorKpiMissions: 'Total Missions',
+    investorKpiHours: 'Heures de Bénévolat',
+    investorKpiHoursSub: 'heures contribuées au total',
+    investorKpiRegistrations: 'Inscriptions',
+    investorKpiRegistrationsSub: 'inscriptions aux missions',
+    investorKpiCerts: 'Certificats Émis',
+    investorKpiCertsSub: 'approuvés par les ONG',
+    investorMissionCategories: '📊 Catégories de Missions',
+    investorNoMissionData: 'Pas encore de données',
+    investorMissionsCount: 'missions',
+    investorNGOPartners: '🏢 Partenaires ONG',
+    investorNoNGOs: 'Pas encore de partenaires ONG',
+    investorVerified: '✓ Vérifié',
+    investorRegistrations: 'inscriptions',
+    investorRecentMissions: '🌍 Missions Récentes',
+    investorColMission: 'Mission',
+    investorColNGO: 'ONG',
+    investorColDate: 'Date',
+    investorColLocation: 'Lieu',
+    investorColRegistered: 'Inscrits',
+    investorColStatus: 'Statut',
+    investorStatusCompleted: 'Terminé',
+    investorStatusActive: 'Actif',
+    investorNoMissions: 'Pas encore de missions',
+    investorWhyPartner: '💛 Pourquoi S\'associer avec Nous',
+    investorBrandVisibility: 'Visibilité de Marque',
+    investorBrandVisibilityDesc: 'Votre logo sur les certificats, missions et 12 marchés linguistiques',
+    investorImpactReports: 'Rapports d\'Impact',
+    investorImpactReportsDesc: 'Rapports trimestriels RSE avec heures, bénévoles et communautés atteintes',
+    investorGlobalReach: 'Portée Mondiale',
+    investorGlobalReachDesc: 'bénévoles en Asie du Sud-Est et au-delà',
+    investorMissionCobranding: 'Co-branding de Mission',
+    investorMissionCobrandingDesc: 'Co-organisez des événements bénévoles avec le nom de votre entreprise',
+    investorSponsorTiers: '🏅 Niveaux de Parrainage',
+    investorBronze: 'Partenaire Bronze', investorBronzeAmount: '1 000 $ / an',
+    investorSilver: 'Partenaire Argent', investorSilverAmount: '5 000 $ / an',
+    investorGold: 'Partenaire Or', investorGoldAmount: '15 000 $ / an',
+    investorPerk1: 'Logo sur la plateforme', investorPerk2: 'Rapport mensuel', investorPerk3: '1 mission co-organisée',
+    investorPerk4: 'Tout Bronze +', investorPerk5: 'Marque sur certificats', investorPerk6: 'Rapport RSE trimestriel', investorPerk7: '3 missions co-organisées',
+    investorPerk8: 'Tout Argent +', investorPerk9: 'Spotlight ONG', investorPerk10: 'Catégories personnalisées', investorPerk11: 'Missions illimitées', investorPerk12: 'Accès direct au tableau',
+    investorImpactSummary: '📈 Résumé d\'Impact de la Plateforme',
+    investorVolHoursLogged: 'Heures de Bénévolat',
+    investorCommunitiesReached: 'Communautés Atteintes',
+    investorVolRegistrations: 'Inscriptions Bénévoles',
+    investorCertsService: 'Certificats de Service',
+    investorAvgHours: 'Moy. Heures / Bénévole',
+    investorCompletionRate: 'Taux d\'Achèvement des Missions',
+    investorInterestedTitle: 'Intéressé par un Partenariat ?',
+    investorInterestedDesc: 'Contactez-nous pour discuter des opportunités de parrainage, de partenariats RSE ou d\'investissement.',
+    investorContactBtn: '📧 Contacter KindWorld',
+    budgetAllocated: '💰 Allocation Budgétaire',
+    budgetAllocatedDesc: 'Voir comment vos fonds de parrainage sont utilisés',
+    budgetCategory: 'Catégorie', budgetAmount: 'Montant', budgetDescription: 'Description', budgetDate: 'Date',
+    budgetNoBudget: 'Aucune allocation budgétaire enregistrée',
+    budgetTotalAllocated: 'Total Alloué', budgetByCompany: 'Allocations par Entreprise',
+    budgetAddEntry: '+ Ajouter une Entrée', budgetManagement: '💰 Gestion Budgétaire',
+    budgetManagementDesc: 'Enregistrez comment les fonds de parrainage sont alloués',
+    budgetSelectCompany: 'Entreprise (sponsor)', budgetSave: 'Enregistrer', budgetCancel: 'Annuler',
     certificates: 'Certificats',
     badges: 'Badges',
     friends: 'Amis',
@@ -5119,6 +5300,73 @@ const localTranslations: Record<string, Record<string, string>> = {
     category: 'Categoria',
     status: 'Status',
     missions: 'Missões',
+    investorDashboardLabel: 'KINDWORLD · PAINEL DO INVESTIDOR',
+    investorPlatformOverview: 'Visão Geral da Plataforma',
+    investorSubtitle: 'Métricas em tempo real, dados de impacto voluntário e visão geral de parcerias ONG.',
+    investorLiveData: '✓ Dados ao Vivo',
+    investorPlatformActive: '● Plataforma Ativa',
+    investorLanguages: '🌏 12 Idiomas',
+    investorKpiVolunteers: 'Total de Voluntários',
+    investorKpiNGOs: 'ONGs Parceiras Ativas',
+    investorKpiNGOsSub: 'organizações verificadas',
+    investorKpiMissions: 'Total de Missões',
+    investorKpiHours: 'Horas de Voluntariado',
+    investorKpiHoursSub: 'horas contribuídas no total',
+    investorKpiRegistrations: 'Inscrições',
+    investorKpiRegistrationsSub: 'inscrições em missões',
+    investorKpiCerts: 'Certificados Emitidos',
+    investorKpiCertsSub: 'aprovados pelas ONGs',
+    investorMissionCategories: '📊 Categorias de Missões',
+    investorNoMissionData: 'Sem dados de missões ainda',
+    investorMissionsCount: 'missões',
+    investorNGOPartners: '🏢 Parceiros ONG',
+    investorNoNGOs: 'Sem parceiros ONG ainda',
+    investorVerified: '✓ Verificado',
+    investorRegistrations: 'inscrições',
+    investorRecentMissions: '🌍 Missões Recentes',
+    investorColMission: 'Missão',
+    investorColNGO: 'ONG',
+    investorColDate: 'Data',
+    investorColLocation: 'Localização',
+    investorColRegistered: 'Inscritos',
+    investorColStatus: 'Status',
+    investorStatusCompleted: 'Concluído',
+    investorStatusActive: 'Ativo',
+    investorNoMissions: 'Sem missões ainda',
+    investorWhyPartner: '💛 Por Que Parceirizar Conosco',
+    investorBrandVisibility: 'Visibilidade de Marca',
+    investorBrandVisibilityDesc: 'Seu logo em certificados, missões e 12 mercados de idiomas',
+    investorImpactReports: 'Relatórios de Impacto',
+    investorImpactReportsDesc: 'Relatórios trimestrais de RSC com horas, voluntários e comunidades alcançadas',
+    investorGlobalReach: 'Alcance Global',
+    investorGlobalReachDesc: 'voluntários no Sudeste Asiático e além',
+    investorMissionCobranding: 'Co-branding de Missão',
+    investorMissionCobrandingDesc: 'Co-organize eventos de voluntariado com o nome da sua empresa',
+    investorSponsorTiers: '🏅 Níveis de Patrocínio',
+    investorBronze: 'Parceiro Bronze', investorBronzeAmount: 'USD 1.000 / ano',
+    investorSilver: 'Parceiro Prata', investorSilverAmount: 'USD 5.000 / ano',
+    investorGold: 'Parceiro Ouro', investorGoldAmount: 'USD 15.000 / ano',
+    investorPerk1: 'Logo na plataforma', investorPerk2: 'Relatório mensal', investorPerk3: '1 missão co-organizada',
+    investorPerk4: 'Tudo Bronze +', investorPerk5: 'Marca em certificados', investorPerk6: 'Relatório RSC trimestral', investorPerk7: '3 missões co-organizadas',
+    investorPerk8: 'Tudo Prata +', investorPerk9: 'Destaque ONG', investorPerk10: 'Categorias personalizadas', investorPerk11: 'Missões ilimitadas', investorPerk12: 'Acesso direto ao painel',
+    investorImpactSummary: '📈 Resumo de Impacto da Plataforma',
+    investorVolHoursLogged: 'Horas de Voluntariado',
+    investorCommunitiesReached: 'Comunidades Alcançadas',
+    investorVolRegistrations: 'Inscrições de Voluntários',
+    investorCertsService: 'Certificados de Serviço',
+    investorAvgHours: 'Média de Horas / Voluntário',
+    investorCompletionRate: 'Taxa de Conclusão de Missões',
+    investorInterestedTitle: 'Interessado em Parceria?',
+    investorInterestedDesc: 'Entre em contato para discutir oportunidades de patrocínio, parcerias de RSC ou investimento no KindWorld.',
+    investorContactBtn: '📧 Contatar KindWorld',
+    budgetAllocated: '💰 Alocação de Orçamento',
+    budgetAllocatedDesc: 'Veja como os fundos de patrocínio são utilizados',
+    budgetCategory: 'Categoria', budgetAmount: 'Valor', budgetDescription: 'Descrição', budgetDate: 'Data',
+    budgetNoBudget: 'Nenhuma alocação de orçamento registrada ainda',
+    budgetTotalAllocated: 'Total Alocado', budgetByCompany: 'Alocações por Empresa',
+    budgetAddEntry: '+ Adicionar Entrada', budgetManagement: '💰 Gestão de Orçamento',
+    budgetManagementDesc: 'Registre como os fundos de patrocínio são alocados',
+    budgetSelectCompany: 'Empresa (patrocinador)', budgetSave: 'Salvar', budgetCancel: 'Cancelar',
     certificates: 'Certificados',
     badges: 'Distintivos',
     friends: 'Amigos',
@@ -5808,6 +6056,73 @@ const localTranslations: Record<string, Record<string, string>> = {
     category: 'カテゴリ',
     status: 'ステータス',
     missions: 'ミッション',
+    investorDashboardLabel: 'KINDWORLD · 投資家ダッシュボード',
+    investorPlatformOverview: 'プラットフォーム概要',
+    investorSubtitle: 'リアルタイム指標、ボランティア影響データ、NGOパートナーシップの概要。',
+    investorLiveData: '✓ ライブデータ',
+    investorPlatformActive: '● プラットフォーム稼働中',
+    investorLanguages: '🌏 12言語',
+    investorKpiVolunteers: '総ボランティア数',
+    investorKpiNGOs: 'アクティブNGOパートナー',
+    investorKpiNGOsSub: '認証済み組織',
+    investorKpiMissions: '総ミッション数',
+    investorKpiHours: 'ボランティア時間',
+    investorKpiHoursSub: '累計貢献時間',
+    investorKpiRegistrations: '登録数',
+    investorKpiRegistrationsSub: 'ミッション申込み総数',
+    investorKpiCerts: '発行証明書数',
+    investorKpiCertsSub: 'NGO承認済み',
+    investorMissionCategories: '📊 ミッションカテゴリ',
+    investorNoMissionData: 'ミッションデータなし',
+    investorMissionsCount: 'ミッション',
+    investorNGOPartners: '🏢 NGOパートナー',
+    investorNoNGOs: 'NGOパートナーなし',
+    investorVerified: '✓ 認証済み',
+    investorRegistrations: '登録',
+    investorRecentMissions: '🌍 最近のミッション',
+    investorColMission: 'ミッション',
+    investorColNGO: 'NGO',
+    investorColDate: '日付',
+    investorColLocation: '場所',
+    investorColRegistered: '登録者数',
+    investorColStatus: 'ステータス',
+    investorStatusCompleted: '完了',
+    investorStatusActive: '進行中',
+    investorNoMissions: 'ミッションなし',
+    investorWhyPartner: '💛 パートナーシップのメリット',
+    investorBrandVisibility: 'ブランド認知度',
+    investorBrandVisibilityDesc: '証明書、ミッション、12言語市場にロゴを掲載',
+    investorImpactReports: 'インパクトレポート',
+    investorImpactReportsDesc: '時間・ボランティア・コミュニティを示す四半期CSRレポート',
+    investorGlobalReach: 'グローバルリーチ',
+    investorGlobalReachDesc: '東南アジアを中心としたボランティア',
+    investorMissionCobranding: 'ミッション共同ブランディング',
+    investorMissionCobrandingDesc: '御社名を冠したボランティアイベントを共同開催',
+    investorSponsorTiers: '🏅 スポンサーティア',
+    investorBronze: 'ブロンズパートナー', investorBronzeAmount: '年間$1,000',
+    investorSilver: 'シルバーパートナー', investorSilverAmount: '年間$5,000',
+    investorGold: 'ゴールドパートナー', investorGoldAmount: '年間$15,000',
+    investorPerk1: 'プラットフォームにロゴ掲載', investorPerk2: '月次レポート', investorPerk3: '共同開催1回',
+    investorPerk4: 'ブロンズ全特典 +', investorPerk5: '証明書ブランディング', investorPerk6: '四半期CSRレポート', investorPerk7: '共同開催3回',
+    investorPerk8: 'シルバー全特典 +', investorPerk9: 'NGOスポットライト', investorPerk10: 'カスタムカテゴリ', investorPerk11: '無制限共同開催', investorPerk12: '直接ダッシュボードアクセス',
+    investorImpactSummary: '📈 プラットフォームインパクトサマリー',
+    investorVolHoursLogged: 'ボランティア時間',
+    investorCommunitiesReached: '到達コミュニティ',
+    investorVolRegistrations: 'ボランティア登録数',
+    investorCertsService: 'サービス証明書',
+    investorAvgHours: '平均時間 / ボランティア',
+    investorCompletionRate: 'ミッション完了率',
+    investorInterestedTitle: 'パートナーシップに興味がありますか？',
+    investorInterestedDesc: 'スポンサーシップ、CSRパートナーシップ、またはKindWorldへの投資についてお問い合わせください。',
+    investorContactBtn: '📧 KindWorldに連絡',
+    budgetAllocated: '💰 予算配分',
+    budgetAllocatedDesc: 'スポンサー資金の使途を確認',
+    budgetCategory: 'カテゴリ', budgetAmount: '金額', budgetDescription: '説明', budgetDate: '日付',
+    budgetNoBudget: '予算配分がまだ記録されていません',
+    budgetTotalAllocated: '総配分額', budgetByCompany: '企業別配分',
+    budgetAddEntry: '+ 予算エントリを追加', budgetManagement: '💰 予算管理',
+    budgetManagementDesc: 'スポンサー資金の配分を記録',
+    budgetSelectCompany: '企業（スポンサー）', budgetSave: '保存', budgetCancel: 'キャンセル',
     certificates: '証明書',
     badges: 'バッジ',
     friends: '友達',
@@ -9663,11 +9978,11 @@ export default function KindWorldApp() {
   const [user, setUser] = useState<User | null>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_user') || 'null') } catch { return null }
   })
-  const [currentPage, setCurrentPage] = useState<'landing' | 'learnmore' | 'signin' | 'dashboard' | 'missions' | 'badges' | 'certificates' | 'profile' | 'friends' | 'leaderboard' | 'badgeManagement' | 'reports' | 'settings' | 'investor' | 'sponsorImpact' | 'whyPartner' | 'contact' | 'terms' | 'privacy'>(() => {
+  const [currentPage, setCurrentPage] = useState<'landing' | 'learnmore' | 'signin' | 'dashboard' | 'missions' | 'badges' | 'certificates' | 'profile' | 'friends' | 'leaderboard' | 'badgeManagement' | 'reports' | 'settings' | 'investor' | 'sponsorImpact' | 'whyPartner' | 'contact' | 'terms' | 'privacy' | 'ngoFinance'>(() => {
     try {
       const savedUser = localStorage.getItem('kindworld_user')
       const savedPage = localStorage.getItem('kindworld_page')
-      const authenticatedPages = ['dashboard', 'missions', 'badges', 'certificates', 'profile', 'friends', 'leaderboard', 'badgeManagement', 'reports', 'settings', 'contact', 'investor', 'sponsorImpact', 'whyPartner']
+      const authenticatedPages = ['dashboard', 'missions', 'badges', 'certificates', 'profile', 'friends', 'leaderboard', 'badgeManagement', 'reports', 'settings', 'contact', 'investor', 'sponsorImpact', 'whyPartner', 'ngoFinance']
       if (savedUser && savedPage && authenticatedPages.includes(savedPage)) return savedPage as any
     } catch {}
     return 'landing'
@@ -10036,6 +10351,11 @@ export default function KindWorldApp() {
   const [adminEmails, setAdminEmails] = useState<AdminEmail[]>(() => {
     try { return JSON.parse(localStorage.getItem('kindworld_admin_emails') || '[]') } catch { return [] }
   })
+  const [budgetEntries, setBudgetEntries] = useState<{id:string,companyEmail:string,companyName:string,category:string,amount:number,currency:string,description:string,date:string}[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_budget_entries') || '[]') } catch { return [] }
+  })
+  const [showBudgetModal, setShowBudgetModal] = useState(false)
+  const [budgetForm, setBudgetForm] = useState({ companyEmail: '', companyName: '', category: 'Operations', amount: '', currency: 'USD', description: '', date: new Date().toISOString().split('T')[0] })
   const [showCelebration, setShowCelebration] = useState<{type: 'hours'|'badge'|'milestone'|'certificate', title: string, subtitle: string, icon: string} | null>(null)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   const [showLineModal, setShowLineModal] = useState<{mission: any, participants: any[]} | null>(null)
@@ -15101,13 +15421,13 @@ export default function KindWorldApp() {
                     const ngoData = allUsers.find((u: any) => u.email === user?.email)
                     const isApproved = !ngoData || ngoData.status === 'verified' || ngoData.status === 'active'
                     if (!isApproved) return []
-                    return ['dashboard', 'missions', 'contact', 'certificates', 'profile', 'settings']
+                    return ['dashboard', 'missions', 'ngoFinance', 'contact', 'certificates', 'profile', 'settings']
                   }
                   if (user?.role === 'admin') return ['dashboard', 'missions', 'reports', 'investor', 'contact', 'profile', 'settings']
                   if (user?.role === 'sponsor') return ['dashboard', 'whyPartner', 'sponsorImpact', 'contact', 'profile', 'settings']
                   return ['dashboard', 'missions', 'badges', 'certificates', 'leaderboard', 'friends', 'profile', 'settings']
                 })().map((page) => {
-                  const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', badgeManagement:'🛡️', investor:'💼', sponsorImpact:'📈', whyPartner:'🤝', contact:'💬' }
+                  const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', badgeManagement:'🛡️', investor:'💼', sponsorImpact:'📈', whyPartner:'🤝', contact:'💬', ngoFinance:'💰' }
                   const isActive = currentPage === page
                   return (
                     <button key={page} onClick={() => setCurrentPage(page as any)} title={t(page)}
@@ -15115,7 +15435,7 @@ export default function KindWorldApp() {
                       onMouseOver={(e) => { if (!isActive) { e.currentTarget.style.background = 'rgba(var(--tp-rgb),0.1)'; e.currentTarget.style.color = 'var(--tp)' } }}
                       onMouseOut={(e) => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280' } }}>
                       <span style={{ fontSize: '18px', lineHeight: '1' }}>{navIcons[page] || '•'}</span>
-                      {isActive && <span style={{ textTransform: 'capitalize' }}>{t(page)}</span>}
+                      <span style={{ textTransform: 'capitalize', fontSize: isActive ? '14px' : '12px', opacity: isActive ? 1 : 0.75 }}>{t(page)}</span>
                       {page === 'friends' && friendRequests.length > 0 && (
                         <span style={{ position: 'absolute', top: '4px', right: '4px', minWidth: '16px', height: '16px', background: '#ef4444', color: 'white', borderRadius: '8px', fontSize: '10px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', lineHeight: 1 }}>
                           {friendRequests.length}
@@ -15238,12 +15558,12 @@ export default function KindWorldApp() {
               {/* Nav items */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '12px 12px' }}>
                 {(() => {
-                  const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', investor:'💼', sponsorImpact:'📈', whyPartner:'🤝', contact:'💬' }
+                  const navIcons: Record<string,string> = { dashboard:'🏠', missions:'🌍', badges:'🏅', certificates:'🎓', leaderboard:'🏆', friends:'👥', profile:'👤', settings:'⚙️', reports:'📊', investor:'💼', sponsorImpact:'📈', whyPartner:'🤝', contact:'💬', ngoFinance:'💰' }
                   let pages: string[] = []
                   if (user?.role === 'ngo') {
                     const ngoData = allUsers.find((u: any) => u.email === user?.email)
                     const isApproved = !ngoData || ngoData.status === 'verified' || ngoData.status === 'active'
-                    pages = isApproved ? ['dashboard', 'missions', 'contact', 'certificates', 'profile', 'settings'] : []
+                    pages = isApproved ? ['dashboard', 'missions', 'ngoFinance', 'contact', 'certificates', 'profile', 'settings'] : []
                   } else if (user?.role === 'admin') {
                     pages = ['dashboard', 'missions', 'reports', 'investor', 'contact', 'profile', 'settings']
                   } else if (user?.role === 'sponsor') {
@@ -16307,6 +16627,22 @@ export default function KindWorldApp() {
                         {t('openBadgeManager')} →
                       </div>
                     </div>
+                    {/* Investor Dashboard */}
+                    <div
+                      onClick={() => setCurrentPage('investor')}
+                      style={{ background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', padding: '36px', borderRadius: '24px', border: '1px solid rgba(201,168,76,0.3)', boxShadow: '0 10px 40px rgba(0,0,0,0.2)', transition: 'all 0.3s ease', cursor: 'pointer' }}
+                      onMouseOver={(e) => { e.currentTarget.style.boxShadow='0 20px 50px rgba(0,0,0,0.3)'; e.currentTarget.style.transform='translateY(-4px)' }}
+                      onMouseOut={(e) => { e.currentTarget.style.boxShadow='0 10px 40px rgba(0,0,0,0.2)'; e.currentTarget.style.transform='translateY(0)' }}
+                    >
+                      <div style={{ width:'72px', height:'72px', background:'linear-gradient(135deg,#c9a84c,#f0c040)', borderRadius:'20px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'36px', marginBottom:'20px' }}>💼</div>
+                      <h3 style={{ fontSize:'22px', fontWeight:'700', color:'white', marginBottom:'12px' }}>{t('investorPlatformOverview')}</h3>
+                      <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'15px', marginBottom:'24px', lineHeight:'1.6' }}>{t('investorSubtitle')}</p>
+                      <div style={{ fontSize:'13px', color:'rgba(201,168,76,0.9)', marginBottom:'16px' }}>📊 {missions.length} {t('missionsCount')} · 💰 {budgetEntries.length} budget entries</div>
+                      <div style={{ padding:'10px 20px', background:'linear-gradient(135deg,#c9a84c,#f0c040)', color:'#0f172a', borderRadius:'10px', fontSize:'14px', fontWeight:'700', textAlign:'center' }}>
+                        {t('investorDashboardLabel').replace('KINDWORLD · ','')} →
+                      </div>
+                    </div>
+
                     {/* Email Blast */}
                     <div
                       onClick={() => setShowAdminEmailModal(true)}
@@ -17129,7 +17465,7 @@ export default function KindWorldApp() {
                   </div>
 
                   {/* Quick Actions */}
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '16px' : '24px', marginBottom: '48px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: isMobile ? '16px' : '24px', marginBottom: '48px' }}>
                     {/* Create Activity */}
                     <div style={{
                       background: 'white',
@@ -17250,6 +17586,25 @@ export default function KindWorldApp() {
                       onClick={() => { try { const r = localStorage.getItem('kindworld_cert_requests'); if (r) setCertRequests(JSON.parse(r)); const p = localStorage.getItem('kindworld_cert_programs'); if (p) setCertPrograms(JSON.parse(p)) } catch {} setCurrentPage('certificates') }}
                       >
                         {t('manageCertificatesTitle')}
+                      </button>
+                    </div>
+
+                    {/* Finances */}
+                    <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a5f)', padding: '36px', borderRadius: '24px', border: '1px solid rgba(201,168,76,0.3)', boxShadow: '0 10px 40px rgba(15,23,42,0.25)', transition: 'all 0.3s ease', cursor: 'pointer' }}
+                      onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(15,23,42,0.35)' }}
+                      onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(15,23,42,0.25)' }}
+                      onClick={() => setCurrentPage('ngoFinance' as any)}>
+                      <div style={{ width: '72px', height: '72px', background: 'linear-gradient(135deg,#c9a84c,#f0c040)', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '36px', marginBottom: '20px' }}>
+                        💰
+                      </div>
+                      <h3 style={{ fontSize: '22px', fontWeight: '700', color: 'white', marginBottom: '12px' }}>
+                        {t('ngoFinanceTitle')}
+                      </h3>
+                      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px', marginBottom: '24px', lineHeight: '1.6' }}>
+                        {t('ngoFinanceSubtitle')}
+                      </p>
+                      <button style={{ width: '100%', padding: '14px 24px', background: 'linear-gradient(135deg,#c9a84c,#f0c040)', color: '#0f172a', border: 'none', borderRadius: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
+                        💰 {t('ngoFinance')}
                       </button>
                     </div>
                   </div>
@@ -19394,6 +19749,69 @@ export default function KindWorldApp() {
                         )
                       })()}
                     </div>
+
+                    {/* Budget Allocation Section (company view) */}
+                    {(() => {
+                      const myEmail = user.email.toLowerCase()
+                      const myBudget = budgetEntries.filter(e => e.companyEmail.toLowerCase() === myEmail)
+                      const totalBudget = myBudget.reduce((s, e) => s + e.amount, 0)
+                      const byCat = myBudget.reduce((acc: Record<string,number>, e) => { acc[e.category] = (acc[e.category] || 0) + e.amount; return acc }, {})
+                      return (
+                        <div style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '28px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                            <div>
+                              <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>{t('budgetAllocated')}</h3>
+                              <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>{t('budgetAllocatedDesc')}</p>
+                            </div>
+                            {totalBudget > 0 && (
+                              <div style={{ padding: '8px 18px', background: 'linear-gradient(135deg,#ecfdf5,#d1fae5)', border: '1px solid #a7f3d0', borderRadius: '12px', fontWeight: '800', color: '#065f46', fontSize: '18px' }}>
+                                {myBudget[0]?.currency || 'USD'} {totalBudget.toLocaleString()} {t('budgetTotalAllocated')}
+                              </div>
+                            )}
+                          </div>
+                          {myBudget.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '32px', color: '#9ca3af' }}>
+                              <div style={{ fontSize: '36px', marginBottom: '8px' }}>💰</div>
+                              <p style={{ margin: 0, fontSize: '14px' }}>{t('budgetNoBudget')}</p>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                              {/* By category */}
+                              {Object.entries(byCat).map(([cat, amt]) => {
+                                const pct = Math.round((amt / totalBudget) * 100)
+                                return (
+                                  <div key={cat}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>{cat}</span>
+                                      <span style={{ fontSize: '14px', fontWeight: '700', color: '#1e40af' }}>{myBudget[0]?.currency || 'USD'} {amt.toLocaleString()} · {pct}%</span>
+                                    </div>
+                                    <div style={{ background: '#f3f4f6', borderRadius: '8px', height: '10px', overflow: 'hidden' }}>
+                                      <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg,#3b82f6,#1e40af)', borderRadius: '8px', transition: 'width 0.6s ease' }} />
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                              {/* Recent entries */}
+                              <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {myBudget.slice(-5).reverse().map(entry => (
+                                  <div key={entry.id} style={{ display: 'flex', gap: '12px', padding: '10px 14px', background: '#f9fafb', borderRadius: '10px', border: '1px solid #e5e7eb', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '18px' }}>💰</span>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ fontWeight: '600', fontSize: '13px', color: '#1f2937' }}>{entry.category}</div>
+                                      <div style={{ fontSize: '12px', color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.description || '—'}</div>
+                                    </div>
+                                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                      <div style={{ fontWeight: '700', color: '#059669', fontSize: '14px' }}>{entry.currency} {entry.amount.toLocaleString()}</div>
+                                      <div style={{ fontSize: '11px', color: '#9ca3af' }}>{entry.date}</div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
 
                     {/* Why Partner promo */}
                     <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)', borderRadius: '20px', padding: '28px', color: 'white', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
@@ -27234,6 +27652,200 @@ export default function KindWorldApp() {
             )
           })()}
 
+          {/* ── NGO FINANCE PAGE ── */}
+          {currentPage === 'ngoFinance' && user?.role === 'ngo' && (() => {
+            const myEmail = user.email.toLowerCase()
+            const myCampaigns = sponsorCampaigns.filter(c => c.ngoEmail.toLowerCase() === myEmail)
+            const totalReceived = myCampaigns
+              .filter(c => c.status === 'active' || c.status === 'completed')
+              .reduce((s, c) => s + Number(c.amount), 0)
+            const pendingAmount = myCampaigns
+              .filter(c => c.status === 'pendingVerification')
+              .reduce((s, c) => s + Number(c.amount), 0)
+            const myBudget = budgetEntries.filter(e => {
+              // match by ngo email if stored, or by company campaigns related to this NGO
+              return myCampaigns.some(c => c.ngoEmail.toLowerCase() === myEmail)
+            })
+            const statusColor: Record<string,string> = { draft:'#6b7280', pendingPayment:'#d97706', pendingVerification:'#7c3aed', active:'#059669', completed:'#1e40af', rejected:'#dc2626' }
+            const statusBg: Record<string,string> = { draft:'#f9fafb', pendingPayment:'#fffbeb', pendingVerification:'#f5f3ff', active:'#ecfdf5', completed:'#eff6ff', rejected:'#fef2f2' }
+            const statusIcon: Record<string,string> = { draft:'📝', pendingPayment:'⏳', pendingVerification:'🔍', active:'✅', completed:'🏁', rejected:'❌' }
+            return (
+              <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
+                {/* Header */}
+                <div style={{ marginBottom: '32px' }}>
+                  <h2 style={{ fontSize: isMobile ? '24px' : '36px', fontWeight: '800', color: '#1f2937', margin: '0 0 8px' }}>{t('ngoFinanceTitle')}</h2>
+                  <p style={{ color: '#6b7280', fontSize: '15px', margin: 0 }}>{t('ngoFinanceSubtitle')}</p>
+                </div>
+
+                {/* KPI summary */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px,1fr))', gap: '16px', marginBottom: '32px' }}>
+                  {[
+                    { icon: '💵', label: t('ngoFinanceTotalReceived'), value: `${myCampaigns.find(c=>c.status==='active'||c.status==='completed')?.currency||'USD'} ${totalReceived.toLocaleString()}`, color: '#059669', bg: 'linear-gradient(135deg,#ecfdf5,#d1fae5)' },
+                    { icon: '🔍', label: t('ngoFinancePending'), value: `${myCampaigns.find(c=>c.status==='pendingVerification')?.currency||'USD'} ${pendingAmount.toLocaleString()}`, color: '#7c3aed', bg: 'linear-gradient(135deg,#f5f3ff,#ede9fe)' },
+                    { icon: '✅', label: t('ngoFinanceActive'), value: myCampaigns.filter(c=>c.status==='active').length, color: '#1e40af', bg: 'linear-gradient(135deg,#eff6ff,#dbeafe)' },
+                    { icon: '🏁', label: t('ngoFinanceCompleted'), value: myCampaigns.filter(c=>c.status==='completed').length, color: '#d97706', bg: 'linear-gradient(135deg,#fffbeb,#fef3c7)' },
+                  ].map((k, i) => (
+                    <div key={i} style={{ background: 'white', borderRadius: '18px', padding: '22px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', textAlign: 'center' }}>
+                      <div style={{ fontSize: '32px', marginBottom: '8px' }}>{k.icon}</div>
+                      <div style={{ fontSize: '22px', fontWeight: '800', color: k.color, lineHeight: 1 }}>{k.value}</div>
+                      <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '6px', fontWeight: '500' }}>{k.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Campaigns list */}
+                <div style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '28px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', margin: '0 0 20px' }}>🏢 {t('ngoFinanceAllCampaigns')}</h3>
+                  {myCampaigns.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
+                      <div style={{ fontSize: '40px', marginBottom: '12px' }}>💼</div>
+                      <p style={{ margin: 0 }}>{t('ngoFinanceNoCampaigns')}</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {myCampaigns.map(c => (
+                        <div key={c.id} style={{ border: '1px solid #e5e7eb', borderRadius: '14px', overflow: 'hidden' }}>
+                          {/* Campaign header */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px', background: '#f9fafb', flexWrap: 'wrap' }}>
+                            <div style={{ fontSize: '22px' }}>{statusIcon[c.status] || '💼'}</div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '15px' }}>{c.title}</div>
+                              <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>{c.companyName} · {c.createdAt?.split('T')[0] || '—'}</div>
+                              {c.missionTitle && <div style={{ fontSize: '12px', color: '#3b82f6', marginTop: '2px' }}>🔗 {c.missionTitle}</div>}
+                            </div>
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                              <div style={{ fontWeight: '800', fontSize: '18px', color: '#059669' }}>{c.currency} {Number(c.amount).toLocaleString()}</div>
+                              <span style={{ display: 'inline-block', marginTop: '4px', fontSize: '11px', padding: '3px 10px', borderRadius: '20px', background: statusBg[c.status], color: statusColor[c.status], fontWeight: '700' }}>
+                                {t(`campaignStatus_${c.status}`)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Payment proof section */}
+                          <div style={{ padding: '16px 20px' }}>
+                            {c.status === 'pendingVerification' && (
+                              <div style={{ marginBottom: '14px', padding: '14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px' }}>
+                                <div style={{ fontWeight: '600', color: '#92400e', fontSize: '13px', marginBottom: '8px' }}>📎 {t('paymentProofReceived')}</div>
+                                {c.paymentProofUrl ? (
+                                  <a href={c.paymentProofUrl} target="_blank" rel="noreferrer" style={{ fontSize: '13px', color: '#1e40af', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                    🔗 {t('viewProof')}
+                                  </a>
+                                ) : (
+                                  <span style={{ fontSize: '13px', color: '#9ca3af' }}>{t('ngoFinanceNoProof')}</span>
+                                )}
+                                {c.paymentProofNote && <div style={{ fontSize: '12px', color: '#78350f', marginTop: '6px', fontStyle: 'italic' }}>"{c.paymentProofNote}"</div>}
+                              </div>
+                            )}
+
+                            {/* Verify / Reject buttons */}
+                            {c.status === 'pendingVerification' && (
+                              <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                                <button onClick={() => {
+                                  if (!window.confirm(t('ngoFinanceConfirmNote'))) return
+                                  setSponsorCampaigns(prev => prev.map(x => x.id === c.id ? {
+                                    ...x, status: 'active',
+                                    ngoConfirmedAt: new Date().toISOString(), ngoConfirmedBy: myEmail,
+                                    updatedAt: new Date().toISOString(),
+                                    auditLog: [...(x.auditLog||[]), { at: new Date().toISOString(), by: myEmail, action: 'Payment confirmed — campaign activated' }]
+                                  } : x))
+                                  setNotifications(prev => [...prev, `✅ Payment from ${c.companyName} confirmed!`])
+                                }} style={{ flex: 1, minWidth: '140px', padding: '10px', background: 'linear-gradient(135deg,#059669,#10b981)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+                                  ✅ {t('ngoFinanceVerifyPayment')}
+                                </button>
+                                <button onClick={() => {
+                                  if (!window.confirm('Reject this campaign?')) return
+                                  setSponsorCampaigns(prev => prev.map(x => x.id === c.id ? {
+                                    ...x, status: 'rejected', updatedAt: new Date().toISOString(),
+                                    auditLog: [...(x.auditLog||[]), { at: new Date().toISOString(), by: myEmail, action: 'Payment rejected by NGO' }]
+                                  } : x))
+                                  setNotifications(prev => [...prev, `❌ Campaign from ${c.companyName} rejected.`])
+                                }} style={{ padding: '10px 18px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '10px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+                                  ✕ {t('ngoFinanceRejectPayment')}
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Mark completed for active campaigns */}
+                            {c.status === 'active' && (
+                              <button onClick={() => {
+                                setSponsorCampaigns(prev => prev.map(x => x.id === c.id ? {
+                                  ...x, status: 'completed', updatedAt: new Date().toISOString(),
+                                  auditLog: [...(x.auditLog||[]), { at: new Date().toISOString(), by: myEmail, action: 'Marked as completed by NGO' }]
+                                } : x))
+                                setNotifications(prev => [...prev, `🏁 Campaign "${c.title}" marked as completed.`])
+                              }} style={{ padding: '8px 18px', background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe', borderRadius: '10px', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
+                                🏁 {t('ngoFinanceMarkComplete')}
+                              </button>
+                            )}
+
+                            {/* Audit log */}
+                            {c.auditLog && c.auditLog.length > 0 && (
+                              <details style={{ marginTop: '10px' }}>
+                                <summary style={{ fontSize: '12px', color: '#6b7280', cursor: 'pointer', fontWeight: '600', userSelect: 'none' }}>📋 {t('ngoFinanceAuditLog')} ({c.auditLog.length})</summary>
+                                <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                  {c.auditLog.map((log, i) => (
+                                    <div key={i} style={{ fontSize: '11px', color: '#9ca3af', padding: '4px 8px', background: '#f9fafb', borderRadius: '6px' }}>
+                                      {log.at?.split('T')[0]} — {log.action}
+                                    </div>
+                                  ))}
+                                </div>
+                              </details>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Budget allocated to us (from admin entries) */}
+                {(() => {
+                  const ngoName = allUsers.find((u:any) => u.email === myEmail)?.ngoOrgName || user.name
+                  // Show all budget entries (admin records them for transparency)
+                  const allBudget = budgetEntries
+                  if (allBudget.length === 0) return null
+                  return (
+                    <div style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '28px' }}>
+                      <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', margin: '0 0 20px' }}>💰 {t('ngoFinanceBudgetAllocated')}</h3>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                          <thead>
+                            <tr style={{ background: '#f8fafc' }}>
+                              {['Company', t('budgetCategory'), t('budgetAmount'), t('budgetDescription'), t('budgetDate')].map(h => (
+                                <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: '700', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '2px solid #e2e8f0', whiteSpace: 'nowrap' }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {allBudget.map((entry, idx) => (
+                              <tr key={entry.id} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#fafafa' }}>
+                                <td style={{ padding: '10px 14px', fontWeight: '600', color: '#1e293b' }}>{entry.companyName}</td>
+                                <td style={{ padding: '10px 14px' }}><span style={{ padding: '2px 8px', background: '#eff6ff', color: '#1e40af', borderRadius: '6px', fontSize: '11px', fontWeight: '500' }}>{entry.category}</span></td>
+                                <td style={{ padding: '10px 14px', fontWeight: '700', color: '#059669' }}>{entry.currency} {entry.amount.toLocaleString()}</td>
+                                <td style={{ padding: '10px 14px', color: '#64748b', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.description || '—'}</td>
+                                <td style={{ padding: '10px 14px', color: '#94a3b8', whiteSpace: 'nowrap' }}>{entry.date}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Contact admin CTA */}
+                <div style={{ background: 'linear-gradient(135deg,#0f172a,#1e3a5f)', borderRadius: '20px', padding: '28px', color: 'white', textAlign: 'center' }}>
+                  <div style={{ fontSize: '36px', marginBottom: '12px' }}>📬</div>
+                  <h3 style={{ margin: '0 0 8px', fontWeight: '700', fontSize: '18px' }}>{t('contactUs')}</h3>
+                  <p style={{ margin: '0 0 20px', opacity: 0.8, fontSize: '14px' }}>{t('adminMessagesDesc')}</p>
+                  <button onClick={() => setCurrentPage('contact' as any)} style={{ padding: '10px 24px', background: 'linear-gradient(135deg,#c9a84c,#f0c040)', color: '#0f172a', border: 'none', borderRadius: '10px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+                    ✉️ {t('contactUs')}
+                  </button>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* ── INVESTOR / COMPANY DASHBOARD ── */}
           {currentPage === 'investor' && user?.role === 'admin' && (() => {
             const totalVols = allUsers.filter((u: any) => u.role === 'student').length
@@ -27451,15 +28063,15 @@ export default function KindWorldApp() {
 
                 {/* Platform Growth Story */}
                 <div style={{ background:'linear-gradient(135deg,#f0fdf4,#ecfdf5)', border:'1px solid #bbf7d0', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', marginBottom:'32px' }}>
-                  <h2 style={{ margin:'0 0 24px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#065f46' }}>📈 Platform Impact Summary</h2>
+                  <h2 style={{ margin:'0 0 24px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#065f46' }}>{t('investorImpactSummary')}</h2>
                   <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:'clamp(16px,2vw,28px)' }}>
                     {[
-                      { label:'Volunteer Hours Logged', value: totalHours.toLocaleString() + 'h', icon:'⏱' },
-                      { label:'Communities Reached', value: totalNGOs.toString() + '+', icon:'🏘' },
-                      { label:'Volunteer Registrations', value: totalRegistrations.toLocaleString(), icon:'📝' },
-                      { label:'Certificates of Service', value: totalCertIssued.toLocaleString(), icon:'🎓' },
-                      { label:'Avg Hours / Volunteer', value: avgHoursPerVol + 'h', icon:'👤' },
-                      { label:'Mission Completion Rate', value: totalMissions > 0 ? Math.round((completedMissions/totalMissions)*100)+'%' : '—', icon:'✅' },
+                      { label: t('investorVolHoursLogged'), value: totalHours.toLocaleString() + 'h', icon:'⏱' },
+                      { label: t('investorCommunitiesReached'), value: totalNGOs.toString() + '+', icon:'🏘' },
+                      { label: t('investorVolRegistrations'), value: totalRegistrations.toLocaleString(), icon:'📝' },
+                      { label: t('investorCertsService'), value: totalCertIssued.toLocaleString(), icon:'🎓' },
+                      { label: t('investorAvgHours'), value: avgHoursPerVol + 'h', icon:'👤' },
+                      { label: t('investorCompletionRate'), value: totalMissions > 0 ? Math.round((completedMissions/totalMissions)*100)+'%' : '—', icon:'✅' },
                     ].map(item => (
                       <div key={item.label} style={{ textAlign:'center', background:'white', borderRadius:'16px', padding:'clamp(18px,2vw,28px)', boxShadow:'0 2px 12px rgba(0,0,0,0.05)' }}>
                         <div style={{ fontSize:'clamp(28px,3vw,40px)', marginBottom:'8px' }}>{item.icon}</div>
@@ -27470,21 +28082,165 @@ export default function KindWorldApp() {
                   </div>
                 </div>
 
+                {/* Budget Management Section */}
+                <div style={{ background:'white', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9', marginBottom:'32px' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px', flexWrap:'wrap', gap:'12px' }}>
+                    <div>
+                      <h2 style={{ margin:0, fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a' }}>{t('budgetManagement')}</h2>
+                      <p style={{ margin:'4px 0 0', fontSize:'clamp(12px,1vw,14px)', color:'#64748b' }}>{t('budgetManagementDesc')}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const sponsors = allUsers.filter((u: any) => u.role === 'sponsor')
+                        setBudgetForm(f => ({ ...f, companyEmail: sponsors[0]?.email || '', companyName: sponsors[0]?.companyName || sponsors[0]?.name || '' }))
+                        setShowBudgetModal(true)
+                      }}
+                      style={{ padding:'10px 20px', background:'linear-gradient(135deg,#1a2744,#253860)', color:'white', border:'none', borderRadius:'12px', fontWeight:'700', fontSize:'clamp(12px,1vw,14px)', cursor:'pointer', whiteSpace:'nowrap' }}
+                    >
+                      {t('budgetAddEntry')}
+                    </button>
+                  </div>
+
+                  {budgetEntries.length === 0 ? (
+                    <div style={{ textAlign:'center', padding:'40px', color:'#94a3b8' }}>
+                      <div style={{ fontSize:'40px', marginBottom:'12px' }}>💰</div>
+                      <p style={{ margin:0, fontSize:'clamp(13px,1.1vw,16px)' }}>{t('budgetNoBudget')}</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Summary by company */}
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px,1fr))', gap:'16px', marginBottom:'24px' }}>
+                        {Object.entries(
+                          budgetEntries.reduce((acc: Record<string,{name:string,total:number,currency:string}>, e) => {
+                            if (!acc[e.companyEmail]) acc[e.companyEmail] = { name: e.companyName, total: 0, currency: e.currency }
+                            acc[e.companyEmail].total += e.amount
+                            return acc
+                          }, {})
+                        ).map(([email, info]) => (
+                          <div key={email} style={{ background:'linear-gradient(135deg,#f0f9ff,#e0f2fe)', border:'1px solid #bae6fd', borderRadius:'14px', padding:'16px 20px' }}>
+                            <div style={{ fontWeight:'700', color:'#0c4a6e', fontSize:'clamp(12px,1vw,14px)', marginBottom:'4px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{info.name}</div>
+                            <div style={{ fontSize:'clamp(20px,2vw,28px)', fontWeight:'800', color:'#0369a1' }}>{info.currency} {info.total.toLocaleString()}</div>
+                            <div style={{ fontSize:'clamp(11px,0.9vw,13px)', color:'#0284c7', marginTop:'2px' }}>{t('budgetTotalAllocated')}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {/* Entries table */}
+                      <div style={{ overflowX:'auto' }}>
+                        <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'clamp(12px,1vw,14px)' }}>
+                          <thead>
+                            <tr style={{ background:'#f8fafc' }}>
+                              {['Company', t('budgetCategory'), t('budgetAmount'), t('budgetDescription'), t('budgetDate'), ''].map(h => (
+                                <th key={h} style={{ padding:'10px 14px', textAlign:'left', fontWeight:'700', color:'#475569', fontSize:'clamp(10px,0.85vw,12px)', textTransform:'uppercase', letterSpacing:'0.5px', borderBottom:'2px solid #e2e8f0', whiteSpace:'nowrap' }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {budgetEntries.map((entry, idx) => (
+                              <tr key={entry.id} style={{ borderBottom:'1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#fafafa' }}>
+                                <td style={{ padding:'10px 14px', fontWeight:'600', color:'#1e293b' }}>{entry.companyName}</td>
+                                <td style={{ padding:'10px 14px' }}><span style={{ padding:'2px 10px', background:'#eff6ff', color:'#1e40af', borderRadius:'8px', fontWeight:'500', fontSize:'clamp(10px,0.85vw,12px)' }}>{entry.category}</span></td>
+                                <td style={{ padding:'10px 14px', fontWeight:'700', color:'#059669' }}>{entry.currency} {entry.amount.toLocaleString()}</td>
+                                <td style={{ padding:'10px 14px', color:'#64748b', maxWidth:'220px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{entry.description}</td>
+                                <td style={{ padding:'10px 14px', color:'#94a3b8', whiteSpace:'nowrap' }}>{entry.date}</td>
+                                <td style={{ padding:'10px 14px' }}>
+                                  <button onClick={() => {
+                                    const updated = budgetEntries.filter(e => e.id !== entry.id)
+                                    setBudgetEntries(updated)
+                                    localStorage.setItem('kindworld_budget_entries', JSON.stringify(updated))
+                                  }} style={{ background:'none', border:'none', color:'#ef4444', cursor:'pointer', fontSize:'16px', padding:'2px' }}>🗑️</button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                </div>
+
                 {/* Footer CTA */}
-                <div style={{ textAlign:'center', padding:'clamp(32px,4vw,56px)', background:'#f8fafc', borderRadius:'24px', border:'1px solid #e2e8f0' }}>
+                <div style={{ textAlign:'center', padding:'clamp(32px,4vw,56px)', background:'linear-gradient(135deg,#0f172a,#1e3a5f)', borderRadius:'24px' }}>
                   <div style={{ fontSize:'clamp(28px,3vw,44px)', marginBottom:'16px' }}>🤝</div>
-                  <h2 style={{ margin:'0 0 12px', fontSize:'clamp(20px,2.5vw,36px)', fontWeight:'800', color:'#0f172a' }}>Interested in Partnering?</h2>
-                  <p style={{ margin:'0 0 28px', fontSize:'clamp(14px,1.2vw,18px)', color:'#64748b', maxWidth:'520px', marginLeft:'auto', marginRight:'auto', lineHeight:1.6 }}>
-                    Reach out to discuss sponsorship opportunities, CSR partnerships, or investment in the KindWorld platform.
+                  <h2 style={{ margin:'0 0 12px', fontSize:'clamp(20px,2.5vw,36px)', fontWeight:'800', color:'white' }}>{t('investorInterestedTitle')}</h2>
+                  <p style={{ margin:'0 0 28px', fontSize:'clamp(14px,1.2vw,18px)', color:'rgba(255,255,255,0.7)', maxWidth:'520px', marginLeft:'auto', marginRight:'auto', lineHeight:1.6 }}>
+                    {t('investorInterestedDesc')}
                   </p>
-                  <a href="mailto:contact@kindworld.app" style={{ display:'inline-block', padding:'clamp(14px,1.5vw,20px) clamp(28px,3vw,48px)', background:'linear-gradient(135deg,#1a2744,#253860)', color:'white', borderRadius:'14px', fontWeight:'700', fontSize:'clamp(14px,1.2vw,18px)', textDecoration:'none', boxShadow:'0 8px 24px rgba(26,39,68,0.25)' }}>
-                    📧 Contact Us
+                  <a href="mailto:contact@kindworld.app" style={{ display:'inline-block', padding:'clamp(14px,1.5vw,20px) clamp(28px,3vw,48px)', background:'linear-gradient(135deg,#c9a84c,#f0c040)', color:'#0f172a', borderRadius:'14px', fontWeight:'800', fontSize:'clamp(14px,1.2vw,18px)', textDecoration:'none', boxShadow:'0 8px 24px rgba(201,168,76,0.35)' }}>
+                    {t('investorContactBtn')}
                   </a>
                 </div>
 
               </div>
             )
           })()}
+
+          {/* Budget Entry Modal */}
+          {showBudgetModal && (
+            <div onClick={() => setShowBudgetModal(false)} style={{ position:'fixed', inset:0, zIndex:9990, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+              <div onClick={e => e.stopPropagation()} style={{ background:'white', borderRadius:'20px', padding:'32px', width:'100%', maxWidth:'520px', boxShadow:'0 24px 64px rgba(0,0,0,0.2)' }}>
+                <h3 style={{ margin:'0 0 24px', fontSize:'20px', fontWeight:'700', color:'#0f172a' }}>{t('budgetManagement')}</h3>
+                <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
+                  <div>
+                    <label style={{ fontSize:'13px', fontWeight:'600', color:'#374151', display:'block', marginBottom:'6px' }}>{t('budgetSelectCompany')}</label>
+                    <select value={budgetForm.companyEmail} onChange={e => {
+                      const sponsor = allUsers.find((u: any) => u.email === e.target.value)
+                      setBudgetForm(f => ({ ...f, companyEmail: e.target.value, companyName: sponsor?.companyName || sponsor?.name || '' }))
+                    }} style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }}>
+                      {allUsers.filter((u: any) => u.role === 'sponsor').map((s: any) => (
+                        <option key={s.email} value={s.email}>{s.companyName || s.name} ({s.email})</option>
+                      ))}
+                      <option value="__other__">Other / Manual Entry</option>
+                    </select>
+                    {budgetForm.companyEmail === '__other__' && (
+                      <input value={budgetForm.companyName} onChange={e => setBudgetForm(f => ({ ...f, companyName: e.target.value }))} placeholder="Company Name" style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, marginTop:'8px' }} />
+                    )}
+                  </div>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                    <div>
+                      <label style={{ fontSize:'13px', fontWeight:'600', color:'#374151', display:'block', marginBottom:'6px' }}>{t('budgetCategory')}</label>
+                      <select value={budgetForm.category} onChange={e => setBudgetForm(f => ({ ...f, category: e.target.value }))} style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }}>
+                        {['Operations','Events','Marketing','Technology','Personnel','NGO Support','Volunteer Programs','Admin'].map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize:'13px', fontWeight:'600', color:'#374151', display:'block', marginBottom:'6px' }}>{t('budgetDate')}</label>
+                      <input type="date" value={budgetForm.date} onChange={e => setBudgetForm(f => ({ ...f, date: e.target.value }))} style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }} />
+                    </div>
+                  </div>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                    <div>
+                      <label style={{ fontSize:'13px', fontWeight:'600', color:'#374151', display:'block', marginBottom:'6px' }}>{t('budgetAmount')}</label>
+                      <input type="number" value={budgetForm.amount} onChange={e => setBudgetForm(f => ({ ...f, amount: e.target.value }))} placeholder="0" style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize:'13px', fontWeight:'600', color:'#374151', display:'block', marginBottom:'6px' }}>Currency</label>
+                      <select value={budgetForm.currency} onChange={e => setBudgetForm(f => ({ ...f, currency: e.target.value }))} style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }}>
+                        {['USD','GBP','EUR','MYR','SGD','TWD (NTD)','IDR','CNY','JPY','THB','VND','KRW','BRL'].map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize:'13px', fontWeight:'600', color:'#374151', display:'block', marginBottom:'6px' }}>{t('budgetDescription')}</label>
+                    <input value={budgetForm.description} onChange={e => setBudgetForm(f => ({ ...f, description: e.target.value }))} placeholder="e.g. Q1 NGO event sponsorship, platform hosting fees..." style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }} />
+                  </div>
+                  <div style={{ display:'flex', gap:'12px', justifyContent:'flex-end', marginTop:'8px' }}>
+                    <button onClick={() => setShowBudgetModal(false)} style={{ padding:'10px 20px', background:'#f3f4f6', border:'none', borderRadius:'10px', fontWeight:'600', fontSize:'14px', cursor:'pointer', color:'#374151' }}>{t('budgetCancel')}</button>
+                    <button onClick={() => {
+                      if (!budgetForm.amount || Number(budgetForm.amount) <= 0) return
+                      const companyName = budgetForm.companyEmail === '__other__' ? budgetForm.companyName : (allUsers.find((u: any) => u.email === budgetForm.companyEmail) as any)?.companyName || budgetForm.companyName
+                      const entry = { id: Date.now().toString(), companyEmail: budgetForm.companyEmail, companyName, category: budgetForm.category, amount: Number(budgetForm.amount), currency: budgetForm.currency, description: budgetForm.description, date: budgetForm.date }
+                      const updated = [...budgetEntries, entry]
+                      setBudgetEntries(updated)
+                      localStorage.setItem('kindworld_budget_entries', JSON.stringify(updated))
+                      setShowBudgetModal(false)
+                      setBudgetForm({ companyEmail: '', companyName: '', category: 'Operations', amount: '', currency: 'USD', description: '', date: new Date().toISOString().split('T')[0] })
+                      setNotifications(prev => [...prev, '💰 Budget entry saved'])
+                    }} style={{ padding:'10px 24px', background:'linear-gradient(135deg,#1a2744,#253860)', color:'white', border:'none', borderRadius:'10px', fontWeight:'700', fontSize:'14px', cursor:'pointer' }}>{t('budgetSave')}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
