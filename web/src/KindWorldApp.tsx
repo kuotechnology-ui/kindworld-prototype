@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useAppSelector, useAppDispatch } from './hooks/redux'
 import { setLanguage as setReduxLanguage } from './store/slices/languageSlice'
 import emailjs from '@emailjs/browser'
-import { subscribeToCollection, saveDocument, deleteDocument, COLLECTIONS } from './firestoreService'
+import { subscribeToCollection, saveDocument, deleteDocument, fetchCollection, COLLECTIONS } from './firestoreService'
 
 interface User {
   id: string
@@ -11367,22 +11367,31 @@ export default function KindWorldApp() {
   useEffect(() => { localStorage.setItem('kindworld_admin_emails', JSON.stringify(adminEmails)) }, [adminEmails])
   useEffect(() => { localStorage.setItem('kindworld_friend_msgs', JSON.stringify(friendMessages)) }, [friendMessages])
 
-  // Firestore real-time subscription: receive friend chat messages addressed to this user
+  // Firestore real-time subscription: sync ALL friend messages for this user
   useEffect(() => {
     if (!user?.email) return
     const myEmail = user.email
     const unsub = subscribeToCollection<any>(COLLECTIONS.FRIEND_MESSAGES, (docs) => {
-      const incoming = docs.filter((d: any) => d.toEmail === myEmail || d.fromEmail === myEmail)
-      if (incoming.length === 0) return
-      setFriendMessages(prev => {
-        const prevIds = new Set(prev.map(m => m.id))
-        const newMsgs = incoming.filter((d: any) => !prevIds.has(d.id))
-        if (newMsgs.length === 0) return prev
-        return [...prev, ...newMsgs.map((d: any) => ({ id: d.id, fromEmail: d.fromEmail, fromName: d.fromName, toEmail: d.toEmail, text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt } as FriendMessage))]
-      })
+      const mine = docs
+        .filter((d: any) => d.toEmail === myEmail || d.fromEmail === myEmail)
+        .map((d: any) => ({ id: d.id, fromEmail: d.fromEmail, fromName: d.fromName, toEmail: d.toEmail, text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt } as FriendMessage))
+      // Full replace — always show exactly what Firestore has, no append logic
+      setFriendMessages(mine)
     })
     return () => unsub()
   }, [user?.email])
+
+  // Fetch friend messages fresh from Firestore whenever the chat modal opens
+  useEffect(() => {
+    if (!showFriendChat || !user?.email) return
+    const myEmail = user.email
+    fetchCollection<any>(COLLECTIONS.FRIEND_MESSAGES).then(docs => {
+      const mine = docs
+        .filter((d: any) => d.toEmail === myEmail || d.fromEmail === myEmail)
+        .map((d: any) => ({ id: d.id, fromEmail: d.fromEmail, fromName: d.fromName, toEmail: d.toEmail, text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt } as FriendMessage))
+      setFriendMessages(mine)
+    }).catch(() => {})
+  }, [showFriendChat])
 
   // Re-read directMessages from localStorage whenever the user changes (sign in/out)
   // so a newly signed-in user always sees up-to-date messages
@@ -11409,7 +11418,8 @@ export default function KindWorldApp() {
   useEffect(() => {
     setFriends([])
     setFriendRequests([])
-    setFriendMessages([])
+    // Note: friendMessages is NOT cleared here — the subscription does a full replace
+    // on user change, so clearing here causes a race condition where messages flash empty.
     processedFriendRequestIds.current.clear()
     if (!user?.email) {
       // Clear friend-related localStorage on logout so the next account starts clean
