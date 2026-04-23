@@ -9464,8 +9464,10 @@ export default function KindWorldApp() {
     return () => window.removeEventListener('storage', sync)
   }, [currentPage])
 
-  // Load saved region and country from localStorage on mount
+  // Load saved language, region and country from localStorage on mount
   useEffect(() => {
+    const savedLanguage = localStorage.getItem('kindworld_language')
+    if (savedLanguage) setLanguage(savedLanguage)
     const savedRegion = localStorage.getItem('kindworld_user_region')
     const savedCountry = localStorage.getItem('kindworld_user_country')
     if (savedRegion) {
@@ -10530,6 +10532,7 @@ export default function KindWorldApp() {
       if (!savedLanguage) {
         setShowRegionSetup(true)
       } else {
+        setLanguage(savedLanguage)
         const savedRegion = localStorage.getItem('kindworld_user_region')
         if (savedRegion) setUserRegion(savedRegion)
       }
@@ -10643,6 +10646,7 @@ export default function KindWorldApp() {
       // Show region+language setup for new LINE users (or returning users with no language set)
       const savedLanguage = localStorage.getItem('kindworld_language')
       if (!savedLanguage) setShowRegionSetup(true)
+      else setLanguage(savedLanguage)
     } catch (err: any) {
       const msg = err?.message || 'LINE sign-in failed'
       setNotifications(prev => [...prev, `❌ LINE sign-in failed: ${msg}`])
@@ -10773,6 +10777,7 @@ export default function KindWorldApp() {
         if (!savedLanguage) {
           setShowRegionSetup(true)
         } else {
+          setLanguage(savedLanguage)
           const savedRegion = localStorage.getItem('kindworld_user_region')
           if (savedRegion) setUserRegion(savedRegion)
         }
@@ -11371,12 +11376,16 @@ export default function KindWorldApp() {
   useEffect(() => {
     if (!user?.email) return
     const myEmail = user.email.toLowerCase()
-    const unsub = subscribeToCollection<any>(COLLECTIONS.FRIEND_MESSAGES, (docs) => {
-      const mine = docs
-        .filter((d: any) => d.toEmail?.toLowerCase() === myEmail || d.fromEmail?.toLowerCase() === myEmail)
-        .map((d: any) => ({ id: d.id, fromEmail: d.fromEmail || '', fromName: d.fromName || '', toEmail: d.toEmail || '', text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt || '' } as FriendMessage))
-      setFriendMessages(mine)
-    })
+    const unsub = subscribeToCollection<any>(
+      COLLECTIONS.FRIEND_MESSAGES,
+      (docs) => {
+        const mine = docs
+          .filter((d: any) => d.toEmail?.toLowerCase() === myEmail || d.fromEmail?.toLowerCase() === myEmail)
+          .map((d: any) => ({ id: d.id, fromEmail: d.fromEmail || '', fromName: d.fromName || '', toEmail: d.toEmail || '', text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt || '' } as FriendMessage))
+        setFriendMessages(mine)
+      },
+      (err) => setNotifications(prev => [...prev, `⚠️ Chat sync error: ${err.message}`])
+    )
     return () => unsub()
   }, [user?.email])
 
@@ -14924,7 +14933,10 @@ export default function KindWorldApp() {
             if (!txt && !img) return
             const msg: FriendMessage = { id: Date.now().toString(), fromEmail: myEmail.toLowerCase(), fromName: user?.name || '', toEmail: chatPartner.email.toLowerCase(), text: txt, imageUrl: img || undefined, sentAt: new Date().toISOString() }
             setFriendMessages(prev => [...prev, msg])
-            saveDocument(COLLECTIONS.FRIEND_MESSAGES, msg.id, msg).catch(console.error)
+            saveDocument(COLLECTIONS.FRIEND_MESSAGES, msg.id, msg).catch(err => {
+              console.error('Failed to save message:', err)
+              setNotifications(prev => [...prev, `⚠️ Message failed to send: ${err.message}`])
+            })
             setFriendChatInput('')
             setFriendChatImageUrl('')
             setShowEmojiPicker(false)

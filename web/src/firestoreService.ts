@@ -3,7 +3,6 @@ import {
   doc,
   getDocs,
   setDoc,
-  updateDoc,
   deleteDoc,
   onSnapshot,
   writeBatch,
@@ -58,10 +57,18 @@ export async function syncArrayToFirestore(col: string, items: any[], idField: s
 
 export function subscribeToCollection<T>(
   col: string,
-  onChange: (items: T[]) => void
+  onChange: (items: T[]) => void,
+  onError?: (err: Error) => void
 ): Unsubscribe {
-  return onSnapshot(query(collection(db, col)), snap => {
-    const items = snap.docs.map(d => ({ ...d.data(), _docId: d.id } as unknown as T))
-    onChange(items)
-  })
+  return onSnapshot(
+    query(collection(db, col)),
+    snap => {
+      const items = snap.docs.map(d => ({ ...d.data(), _docId: d.id } as unknown as T))
+      onChange(items)
+    },
+    err => {
+      console.error(`Firestore subscription error [${col}]:`, err)
+      onError?.(err)
+    }
+  )
 }
