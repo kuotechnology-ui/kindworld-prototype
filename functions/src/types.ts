@@ -25,7 +25,7 @@ export interface Mission {
   location: {
     address: string;
     city: string;
-    coordinates: admin.firestore.GeoPoint;
+    coordinates?: unknown;
   };
   pointsReward: number;
   category: 'volunteer' | 'donation' | 'charity' | 'blood_drive' | 'other';

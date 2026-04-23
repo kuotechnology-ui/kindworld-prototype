@@ -10934,30 +10934,27 @@ export default function KindWorldApp() {
   }, [])
 
   // ── LINE Messaging API ───────────────────────────────────────────────────────
-  const LINE_TOKEN = import.meta.env.VITE_LINE_CHANNEL_TOKEN as string | undefined
+  // Calls the Express backend on Railway — token lives server-side only.
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || ''
 
   const sendLineMessages = async (
     userIds: string[],
     messages: { type: string; text?: string; altText?: string; contents?: any }[]
   ): Promise<{ ok: boolean; failed: string[] }> => {
-    const token = LINE_TOKEN
-    if (!token || userIds.length === 0) return { ok: false, failed: userIds }
-    const failed: string[] = []
-    // LINE multicast supports up to 500 recipients at once
-    for (let i = 0; i < userIds.length; i += 500) {
-      const batch = userIds.slice(i, i + 500)
-      try {
-        const res = await fetch('/api/line-multicast', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ to: batch, messages })
-        })
-        if (!res.ok) failed.push(...batch)
-      } catch {
-        failed.push(...batch)
-      }
+    if (userIds.length === 0) return { ok: false, failed: [] }
+    // Flatten messages to a single text string for the server endpoint
+    const text = messages.map(m => m.text || '').filter(Boolean).join('\n')
+    try {
+      const res = await fetch(`${SERVER_URL}/send-line`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds, message: text, callerEmail: user?.email || '' }),
+      })
+      const data = await res.json()
+      return { ok: data.ok ?? false, failed: data.failed ?? userIds }
+    } catch {
+      return { ok: false, failed: userIds }
     }
-    return { ok: failed.length === 0, failed }
   }
 
   const syncCertRequestToFirestore = useCallback((r: any) => {
