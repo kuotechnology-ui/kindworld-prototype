@@ -15455,7 +15455,7 @@ export default function KindWorldApp() {
                       onMouseOver={(e) => { if (!isActive) { e.currentTarget.style.background = 'rgba(var(--tp-rgb),0.1)'; e.currentTarget.style.color = 'var(--tp)' } }}
                       onMouseOut={(e) => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280' } }}>
                       <span style={{ fontSize: '18px', lineHeight: '1' }}>{navIcons[page] || '•'}</span>
-                      <span style={{ textTransform: 'capitalize', fontSize: isActive ? '14px' : '12px', opacity: isActive ? 1 : 0.75 }}>{t(page)}</span>
+                      {isActive && <span style={{ textTransform: 'capitalize' }}>{t(page)}</span>}
                       {page === 'friends' && friendRequests.length > 0 && (
                         <span style={{ position: 'absolute', top: '4px', right: '4px', minWidth: '16px', height: '16px', background: '#ef4444', color: 'white', borderRadius: '8px', fontSize: '10px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', lineHeight: 1 }}>
                           {friendRequests.length}
@@ -27772,6 +27772,37 @@ export default function KindWorldApp() {
 
                           {/* Payment proof section */}
                           <div style={{ padding: '16px 20px' }}>
+                            {/* Pending Payment — NGO can confirm they received payment directly */}
+                            {c.status === 'pendingPayment' && (
+                              <div style={{ marginBottom: '14px', padding: '14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px' }}>
+                                <div style={{ fontWeight: '600', color: '#92400e', fontSize: '13px', marginBottom: '10px' }}>⏳ Awaiting payment from {c.companyName}</div>
+                                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                  <button onClick={() => {
+                                    if (!window.confirm(t('ngoFinanceConfirmNote'))) return
+                                    setSponsorCampaigns(prev => prev.map(x => x.id === c.id ? {
+                                      ...x, status: 'active',
+                                      ngoConfirmedAt: new Date().toISOString(), ngoConfirmedBy: myEmail,
+                                      updatedAt: new Date().toISOString(),
+                                      auditLog: [...(x.auditLog||[]), { at: new Date().toISOString(), by: myEmail, action: 'Payment received & confirmed by NGO — campaign activated' }]
+                                    } : x))
+                                    setNotifications(prev => [...prev, `✅ Payment from ${c.companyName} confirmed!`])
+                                  }} style={{ flex: 1, minWidth: '160px', padding: '10px 16px', background: 'linear-gradient(135deg,#059669,#10b981)', color: 'white', border: 'none', borderRadius: '10px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+                                    ✅ I Received Payment
+                                  </button>
+                                  <button onClick={() => {
+                                    if (!window.confirm('Reject this campaign?')) return
+                                    setSponsorCampaigns(prev => prev.map(x => x.id === c.id ? {
+                                      ...x, status: 'rejected', updatedAt: new Date().toISOString(),
+                                      auditLog: [...(x.auditLog||[]), { at: new Date().toISOString(), by: myEmail, action: 'Rejected by NGO' }]
+                                    } : x))
+                                    setNotifications(prev => [...prev, `❌ Campaign from ${c.companyName} rejected.`])
+                                  }} style={{ padding: '10px 18px', background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: '10px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+                                    ✕ Reject
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
                             {c.status === 'pendingVerification' && (
                               <div style={{ marginBottom: '14px', padding: '14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '10px' }}>
                                 <div style={{ fontWeight: '600', color: '#92400e', fontSize: '13px', marginBottom: '8px' }}>📎 {t('paymentProofReceived')}</div>
@@ -27786,7 +27817,7 @@ export default function KindWorldApp() {
                               </div>
                             )}
 
-                            {/* Verify / Reject buttons */}
+                            {/* Verify / Reject buttons for pendingVerification */}
                             {c.status === 'pendingVerification' && (
                               <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
                                 <button onClick={() => {
