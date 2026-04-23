@@ -26431,7 +26431,7 @@ export default function KindWorldApp() {
                       <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '14px', color: '#374151' }}>{t('currency')}</label>
                       <select value={newCampaign.currency} onChange={e => setNewCampaign(p => ({ ...p, currency: e.target.value as any }))}
                         style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: 'white' }}>
-                        <option>USD</option><option>THB</option><option>SGD</option><option>MYR</option>
+                        {['USD','GBP','EUR','SGD','MYR','TWD (NTD)','IDR','CNY','JPY','THB','KRW','VND','BRL'].map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
                   </div>
