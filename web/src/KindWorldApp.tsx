@@ -20,6 +20,7 @@ interface User {
   // Contact info
   phone?: string
   lineId?: string
+  lineUserId?: string   // LINE User ID (Uxxxxxxx) used for Messaging API push
   whatsapp?: string
   // Emergency contact
   emergencyContactName?: string
@@ -9547,6 +9548,10 @@ export default function KindWorldApp() {
   })
   const [showCelebration, setShowCelebration] = useState<{type: 'hours'|'badge'|'milestone'|'certificate', title: string, subtitle: string, icon: string} | null>(null)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
+  const [showLineModal, setShowLineModal] = useState<{mission: any, participants: any[]} | null>(null)
+  const [lineTemplate, setLineTemplate] = useState<'reminder'|'update'|'custom'>('reminder')
+  const [lineCustomMsg, setLineCustomMsg] = useState('')
+  const [lineSending, setLineSending] = useState(false)
   const [rejectionReasonInput, setRejectionReasonInput] = useState('')
   const [showRejectModal, setShowRejectModal] = useState<any>(null)
   const [showReviewModal, setShowReviewModal] = useState<{type:'vol'|'ngo', missionId:number, missionTitle:string, targetEmail:string, targetName:string} | null>(null)
@@ -9664,6 +9669,7 @@ export default function KindWorldApp() {
     phone: '',
     city: '',
     lineId: '',
+    lineUserId: '',
     whatsapp: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
@@ -10926,6 +10932,33 @@ export default function KindWorldApp() {
   const syncMessageToFirestore = useCallback((m: any) => {
     saveDocument(COLLECTIONS.DIRECT_MESSAGES, String(m.id), m).catch(console.error)
   }, [])
+
+  // ── LINE Messaging API ───────────────────────────────────────────────────────
+  const LINE_TOKEN = import.meta.env.VITE_LINE_CHANNEL_TOKEN as string | undefined
+
+  const sendLineMessages = async (
+    userIds: string[],
+    messages: { type: string; text?: string; altText?: string; contents?: any }[]
+  ): Promise<{ ok: boolean; failed: string[] }> => {
+    const token = LINE_TOKEN
+    if (!token || userIds.length === 0) return { ok: false, failed: userIds }
+    const failed: string[] = []
+    // LINE multicast supports up to 500 recipients at once
+    for (let i = 0; i < userIds.length; i += 500) {
+      const batch = userIds.slice(i, i + 500)
+      try {
+        const res = await fetch('/api/line-multicast', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: batch, messages })
+        })
+        if (!res.ok) failed.push(...batch)
+      } catch {
+        failed.push(...batch)
+      }
+    }
+    return { ok: failed.length === 0, failed }
+  }
 
   const syncCertRequestToFirestore = useCallback((r: any) => {
     saveDocument(COLLECTIONS.CERT_REQUESTS, String(r.id), r).catch(console.error)
@@ -14730,6 +14763,128 @@ export default function KindWorldApp() {
             </div>
           </>
         )}
+
+        {/* ── LINE Notification Modal ── */}
+        {showLineModal && (() => {
+          const { mission, participants } = showLineModal
+          const withLine = participants.filter(p => p.lineUserId)
+          const noLine   = participants.filter(p => !p.lineUserId)
+
+          const buildMessage = (): string => {
+            const date = new Date(mission.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+            if (lineTemplate === 'reminder') {
+              return `📢 Mission Reminder!\n\nHi! Just a reminder that "${mission.title}" is happening on ${date} at ${mission.location}.\n\nWe're looking forward to seeing you there! 🌍\n\n— ${user?.name || 'KindWorld'}`
+            }
+            if (lineTemplate === 'update') {
+              return `⚠️ Mission Update — "${mission.title}"\n\n${lineCustomMsg || '(Enter your update above)'}\n\nDate: ${date} · ${mission.location}\n\n— ${user?.name || 'KindWorld'}`
+            }
+            return lineCustomMsg || ''
+          }
+
+          const previewMsg = buildMessage()
+
+          const handleSend = async () => {
+            const ids = withLine.map(p => p.lineUserId).filter(Boolean)
+            if (ids.length === 0) return
+            setLineSending(true)
+            const { ok, failed } = await sendLineMessages(ids, [{ type: 'text', text: previewMsg }])
+            setLineSending(false)
+            setShowLineModal(null)
+            if (ok) {
+              setNotifications(prev => [...prev, `✅ LINE message sent to ${ids.length} participant(s)!`])
+            } else {
+              setNotifications(prev => [...prev, `⚠️ Sent to ${ids.length - failed.length}/${ids.length}. Some deliveries failed.`])
+            }
+          }
+
+          return (
+            <div onClick={() => setShowLineModal(null)} style={{ position: 'fixed', inset: 0, zIndex: 9990, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+              <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '20px', width: '100%', maxWidth: '540px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.25)' }}>
+                {/* Header */}
+                <div style={{ padding: '20px 24px', background: '#00b900', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ fontSize: '28px' }}>💬</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '700', color: 'white', fontSize: '16px' }}>Send LINE Notification</div>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', marginTop: '2px' }}>{mission.title}</div>
+                  </div>
+                  <button onClick={() => setShowLineModal(null)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '8px', width: '30px', height: '30px', color: 'white', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                </div>
+
+                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                  {/* Recipients summary */}
+                  <div style={{ background: withLine.length > 0 ? '#f0fdf4' : '#fef2f2', borderRadius: '12px', padding: '14px 16px', border: `1px solid ${withLine.length > 0 ? '#bbf7d0' : '#fecaca'}` }}>
+                    <div style={{ fontWeight: '700', fontSize: '13px', color: withLine.length > 0 ? '#15803d' : '#dc2626', marginBottom: '6px' }}>
+                      {withLine.length > 0 ? `✅ ${withLine.length} recipient(s) with LINE connected` : '❌ No participants have connected LINE'}
+                    </div>
+                    {withLine.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        {withLine.map((p, i) => (
+                          <span key={i} style={{ fontSize: '12px', background: 'white', border: '1px solid #bbf7d0', borderRadius: '20px', padding: '2px 10px', color: '#15803d', fontWeight: '500' }}>
+                            {p.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {noLine.length > 0 && (
+                      <div style={{ marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
+                        {noLine.length} participant(s) haven't connected LINE: {noLine.map(p => p.name).join(', ')}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Template selector */}
+                  <div>
+                    <div style={{ fontWeight: '600', fontSize: '13px', color: '#374151', marginBottom: '10px' }}>Message Template</div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {(['reminder', 'update', 'custom'] as const).map(tpl => (
+                        <button key={tpl} onClick={() => setLineTemplate(tpl)}
+                          style={{ padding: '8px 16px', borderRadius: '20px', border: lineTemplate === tpl ? 'none' : '1.5px solid #e5e7eb', background: lineTemplate === tpl ? '#00b900' : 'white', color: lineTemplate === tpl ? 'white' : '#374151', fontSize: '13px', fontWeight: '600', cursor: 'pointer', textTransform: 'capitalize' }}>
+                          {tpl === 'reminder' ? '⏰ Reminder' : tpl === 'update' ? '📢 Update' : '✏️ Custom'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Custom message input for update/custom templates */}
+                  {(lineTemplate === 'update' || lineTemplate === 'custom') && (
+                    <div>
+                      <label style={{ display: 'block', fontWeight: '600', fontSize: '13px', color: '#374151', marginBottom: '8px' }}>
+                        {lineTemplate === 'update' ? 'Update details' : 'Your message'}
+                      </label>
+                      <textarea
+                        value={lineCustomMsg}
+                        onChange={e => setLineCustomMsg(e.target.value)}
+                        placeholder={lineTemplate === 'update' ? 'e.g. The venue has changed to...' : 'Type your message here...'}
+                        rows={3}
+                        style={{ width: '100%', padding: '12px 14px', border: '2px solid #00b900', borderRadius: '10px', fontSize: '14px', outline: 'none', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Preview */}
+                  <div>
+                    <div style={{ fontWeight: '600', fontSize: '13px', color: '#374151', marginBottom: '8px' }}>Preview</div>
+                    <div style={{ background: '#f0fdf4', borderRadius: '12px', padding: '14px 16px', fontSize: '13px', color: '#1f2937', whiteSpace: 'pre-wrap', lineHeight: '1.6', border: '1px solid #bbf7d0', maxHeight: '160px', overflowY: 'auto' }}>
+                      {previewMsg || <span style={{ color: '#9ca3af' }}>Enter a message above…</span>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div style={{ padding: '16px 24px', borderTop: '1px solid #f3f4f6', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                  <button onClick={() => setShowLineModal(null)} style={{ padding: '10px 20px', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}>Cancel</button>
+                  <button
+                    onClick={handleSend}
+                    disabled={withLine.length === 0 || lineSending || (lineTemplate !== 'reminder' && !lineCustomMsg.trim())}
+                    style={{ padding: '10px 24px', background: withLine.length > 0 ? '#00b900' : '#e5e7eb', color: withLine.length > 0 ? 'white' : '#9ca3af', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: withLine.length > 0 ? 'pointer' : 'default', display: 'flex', alignItems: 'center', gap: '8px', opacity: lineSending ? 0.7 : 1 }}
+                  >
+                    {lineSending ? '⏳ Sending…' : `💬 Send to ${withLine.length} via LINE`}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* ── Friend Chat Modal ── */}
         {showFriendChat && (() => {
@@ -20122,6 +20277,42 @@ export default function KindWorldApp() {
                         >
                           👥 {mission.currentParticipants}/{mission.maxParticipants}
                         </button>
+                        {/* LINE notify button — only for NGO (mission owner) */}
+                        {user?.role === 'ngo' && (() => {
+                          const participants = missionRegistrations
+                            .filter((r: any) => r.missionId === mission.id)
+                            .map((r: any) => {
+                              const u = allUsers.find((u: any) => u.email === r.volunteerEmail)
+                              return { name: r.volunteerName || r.volunteerEmail, email: r.volunteerEmail, lineUserId: u?.lineUserId || '' }
+                            })
+                          const withLine = participants.filter(p => p.lineUserId)
+                          return (
+                            <button
+                              onClick={() => {
+                                setShowLineModal({ mission, participants })
+                                setLineTemplate('reminder')
+                                setLineCustomMsg('')
+                              }}
+                              title={withLine.length === 0 ? 'No participants have connected LINE yet' : `Send LINE message to ${withLine.length} participant(s)`}
+                              style={{
+                                padding: '7px 14px',
+                                background: withLine.length > 0 ? '#00b900' : '#e5e7eb',
+                                color: withLine.length > 0 ? 'white' : '#9ca3af',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: withLine.length > 0 ? 'pointer' : 'default',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                whiteSpace: 'nowrap',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              💬 LINE {withLine.length > 0 ? `(${withLine.length})` : '(0)'}
+                            </button>
+                          )
+                        })()}
                       </div>
                     ) : (
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: isMobile ? '10px' : '0', flexWrap: isMobile ? 'wrap' : 'nowrap', width: isMobile ? '100%' : 'auto' }}>
@@ -22986,6 +23177,7 @@ export default function KindWorldApp() {
                           phone: savedUser?.phone || '',
                           city: savedUser?.residency || '',
                           lineId: savedUser?.lineId || '',
+                          lineUserId: savedUser?.lineUserId || '',
                           whatsapp: savedUser?.whatsapp || '',
                           emergencyContactName: savedUser?.emergencyContactName || '',
                           emergencyContactPhone: savedUser?.emergencyContactPhone || '',
@@ -23272,29 +23464,40 @@ export default function KindWorldApp() {
                     <div style={{ gridColumn: '1/-1', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
                       <p style={{ fontSize: '13px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 16px' }}>{t('profileContactChannels')}</p>
                       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
-                        {/* LINE ID field */}
-                        {(() => {
-                          const savedUser = allUsers.find((u: any) => u.email === user?.email)
-                          const isLineAccount = !!(savedUser?.lineUserId) || user?.email?.endsWith('@kindworld.line')
-                          // lineId is the user's human-readable LINE handle, entered manually
-                          const lineIdValue = isEditingProfile ? profileForm.lineId : (savedUser?.lineId || '')
-                          return (
-                            <div>
-                              <label style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>
-                                {t('profileLineId')}
-                                {isLineAccount && <span style={{ fontSize:'11px', background:'#00b900', color:'white', padding:'2px 8px', borderRadius:'20px', fontWeight:'600' }}>✓ Connected</span>}
-                              </label>
-                              <input
-                                type="text"
-                                value={lineIdValue}
-                                onChange={e => setProfileForm({...profileForm, lineId: e.target.value})}
-                                disabled={!isEditingProfile}
-                                placeholder={isLineAccount ? 'Enter your LINE ID (e.g. johndoe123)' : 'Your LINE ID'}
-                                style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }}
-                              />
-                            </div>
-                          )
-                        })()}
+                        {/* LINE ID (human-readable handle) */}
+                        <div>
+                          <label style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>
+                            {t('profileLineId')}
+                          </label>
+                          <input
+                            type="text"
+                            value={(isEditingProfile ? profileForm.lineId : (allUsers.find((u: any) => u.email === user?.email) as any)?.lineId) || ''}
+                            onChange={e => setProfileForm({...profileForm, lineId: e.target.value})}
+                            disabled={!isEditingProfile}
+                            placeholder="e.g. johndoe123"
+                            style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid var(--ta)' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box' }}
+                          />
+                        </div>
+                        {/* LINE User ID — needed to receive mission notifications via LINE OA */}
+                        <div>
+                          <label style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>
+                            <span style={{ color:'#00b900' }}>💬</span> LINE Notification ID
+                            {((isEditingProfile ? profileForm.lineUserId : (allUsers.find((u: any) => u.email === user?.email) as any)?.lineUserId) || '') && (
+                              <span style={{ fontSize:'11px', background:'#00b900', color:'white', padding:'2px 8px', borderRadius:'20px', fontWeight:'600' }}>✓ Connected</span>
+                            )}
+                          </label>
+                          <input
+                            type="text"
+                            value={(isEditingProfile ? (profileForm as any).lineUserId : (allUsers.find((u: any) => u.email === user?.email) as any)?.lineUserId) || ''}
+                            onChange={e => setProfileForm({...profileForm, lineUserId: e.target.value} as any)}
+                            disabled={!isEditingProfile}
+                            placeholder="Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                            style={{ width:'100%', padding:'12px 14px', border: isEditingProfile ? '2px solid #00b900' : '2px solid #e5e7eb', borderRadius:'10px', fontSize:'13px', outline:'none', background: isEditingProfile ? 'white' : '#f9fafb', cursor: isEditingProfile ? 'text' : 'default', boxSizing:'border-box', fontFamily: 'monospace' }}
+                          />
+                          <p style={{ margin:'6px 0 0', fontSize:'11px', color:'#9ca3af' }}>
+                            Add our LINE OA as a friend → tap your profile in the chat → copy the User ID (starts with U).
+                          </p>
+                        </div>
                         {/* WhatsApp field */}
                         <div>
                           <label style={{ display:'block', marginBottom:'8px', fontWeight:'600', color:'#374151', fontSize:'14px' }}>{t('profileWhatsApp')}</label>
@@ -23510,7 +23713,7 @@ export default function KindWorldApp() {
                   <button
                     onClick={() => {
                       setIsEditingProfile(false)
-                      setProfileForm({ name: '', email: '', phone: '', city: '', lineId: '', whatsapp: '', emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '', allergies: '', medicalConditions: '', dietaryRestrictions: '', tshirtSize: '', ngoOrgName: '', ngoDescription: '', ngoWebsite: '', ngoDocumentUrl: '', ngoPortfolioUrl: '', ngoDocumentNote: '', interests: [] })
+                      setProfileForm({ name: '', email: '', phone: '', city: '', lineId: '', lineUserId: '', whatsapp: '', emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelation: '', allergies: '', medicalConditions: '', dietaryRestrictions: '', tshirtSize: '', ngoOrgName: '', ngoDescription: '', ngoWebsite: '', ngoDocumentUrl: '', ngoPortfolioUrl: '', ngoDocumentNote: '', interests: [] })
                     }}
                     style={{
                       padding: '14px 32px',
@@ -23547,12 +23750,21 @@ export default function KindWorldApp() {
                         setAllUsers((prev: any[]) => {
                           const updated = prev.map((u: any) =>
                             u.id === user?.id || u.email === user?.email
-                              ? { ...u, name: updatedName, email: updatedEmail, residency: profileForm.city, phone: profileForm.phone, lineId: profileForm.lineId, whatsapp: profileForm.whatsapp, emergencyContactName: profileForm.emergencyContactName, emergencyContactPhone: profileForm.emergencyContactPhone, emergencyContactRelation: profileForm.emergencyContactRelation, allergies: profileForm.allergies, medicalConditions: profileForm.medicalConditions, dietaryRestrictions: profileForm.dietaryRestrictions, tshirtSize: profileForm.tshirtSize, ngoDescription: profileForm.ngoDescription, ngoWebsite: profileForm.ngoWebsite, ngoDocumentUrl: profileForm.ngoDocumentUrl, ngoPortfolioUrl: profileForm.ngoPortfolioUrl, ngoDocumentNote: profileForm.ngoDocumentNote, ngoProfileComplete: user?.role === 'ngo' ? !!(profileForm.ngoDescription?.trim() && profileForm.ngoWebsite?.trim()) : undefined, interests: profileForm.interests }
+                              ? { ...u, name: updatedName, email: updatedEmail, residency: profileForm.city, phone: profileForm.phone, lineId: profileForm.lineId, lineUserId: (profileForm as any).lineUserId, whatsapp: profileForm.whatsapp, emergencyContactName: profileForm.emergencyContactName, emergencyContactPhone: profileForm.emergencyContactPhone, emergencyContactRelation: profileForm.emergencyContactRelation, allergies: profileForm.allergies, medicalConditions: profileForm.medicalConditions, dietaryRestrictions: profileForm.dietaryRestrictions, tshirtSize: profileForm.tshirtSize, ngoDescription: profileForm.ngoDescription, ngoWebsite: profileForm.ngoWebsite, ngoDocumentUrl: profileForm.ngoDocumentUrl, ngoPortfolioUrl: profileForm.ngoPortfolioUrl, ngoDocumentNote: profileForm.ngoDocumentNote, ngoProfileComplete: user?.role === 'ngo' ? !!(profileForm.ngoDescription?.trim() && profileForm.ngoWebsite?.trim()) : undefined, interests: profileForm.interests }
                               : u
                           )
                           localStorage.setItem('kindworld_allusers', JSON.stringify(updated))
                           return updated
                         })
+                      }
+                      // Persist lineUserId (and other contact fields) to Firestore so NGO admins can see them
+                      if (user?.id) {
+                        saveDocument(COLLECTIONS.USERS, String(user.id), {
+                          lineId: profileForm.lineId,
+                          lineUserId: (profileForm as any).lineUserId || '',
+                          phone: profileForm.phone,
+                          whatsapp: profileForm.whatsapp,
+                        }).catch(() => {})
                       }
                       setIsEditingProfile(false)
                       setNotifications(prev => [...prev, `✅ ${t('profileUpdatedSuccess')}`])
