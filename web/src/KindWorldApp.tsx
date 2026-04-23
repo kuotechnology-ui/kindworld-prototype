@@ -16668,6 +16668,26 @@ export default function KindWorldApp() {
                       </div>
                     </div>
 
+                    {/* Budget Management */}
+                    <div
+                      onClick={() => {
+                        const sponsors = allUsers.filter((u: any) => u.role === 'sponsor')
+                        setBudgetForm(f => ({ ...f, companyEmail: sponsors[0]?.email || '', companyName: sponsors[0]?.companyName || sponsors[0]?.name || '' }))
+                        setShowBudgetModal(true)
+                      }}
+                      style={{ background: 'linear-gradient(135deg,#ecfdf5,#d1fae5)', padding: '36px', borderRadius: '24px', border: '1px solid #a7f3d0', boxShadow: '0 10px 40px rgba(5,150,105,0.1)', transition: 'all 0.3s ease', cursor: 'pointer' }}
+                      onMouseOver={(e) => { e.currentTarget.style.boxShadow='0 20px 50px rgba(5,150,105,0.2)'; e.currentTarget.style.transform='translateY(-4px)' }}
+                      onMouseOut={(e) => { e.currentTarget.style.boxShadow='0 10px 40px rgba(5,150,105,0.1)'; e.currentTarget.style.transform='translateY(0)' }}
+                    >
+                      <div style={{ width:'72px', height:'72px', background:'linear-gradient(135deg,#059669,#10b981)', borderRadius:'20px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'36px', marginBottom:'20px' }}>💰</div>
+                      <h3 style={{ fontSize:'22px', fontWeight:'700', color:'#065f46', marginBottom:'12px' }}>{t('budgetManagement')}</h3>
+                      <p style={{ color:'#047857', fontSize:'15px', marginBottom:'24px', lineHeight:'1.6' }}>{t('budgetManagementDesc')}</p>
+                      <div style={{ fontSize:'13px', color:'#059669', marginBottom:'16px' }}>📊 {budgetEntries.length} entries recorded</div>
+                      <div style={{ padding:'10px 20px', background:'linear-gradient(135deg,#059669,#10b981)', color:'white', borderRadius:'10px', fontSize:'14px', fontWeight:'700', textAlign:'center' }}>
+                        {t('budgetAddEntry')} →
+                      </div>
+                    </div>
+
                     {/* Email Blast */}
                     <div
                       onClick={() => setShowAdminEmailModal(true)}
