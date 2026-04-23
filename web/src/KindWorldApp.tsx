@@ -10936,10 +10936,12 @@ export default function KindWorldApp() {
   }, [])
 
   // Sync current user state from allUsers whenever allUsers changes
-  // This keeps hours, badges, completedMissions, name, etc. consistent across all UI
+  // This keeps hours, badges, completedMissions, name, etc. consistent across all UI.
+  // Match by ID only — email matching could corrupt demo accounts whose email
+  // happens to match a real registered Firestore user.
   useEffect(() => {
     if (!user || allUsers.length === 0) return
-    const latest = allUsers.find((u: any) => u.id === user.id || u.email === user.email)
+    const latest = allUsers.find((u: any) => u.id === user.id)
     if (!latest) return
     const fields: (keyof User)[] = ['name', 'hours', 'userBadges', 'badges', 'completedMissions', 'organizationsHelped', 'avatar', 'rating']
     const needsUpdate = fields.some(f => JSON.stringify((user as any)[f]) !== JSON.stringify((latest as any)[f]))
@@ -11679,7 +11681,7 @@ export default function KindWorldApp() {
       const savedUsers = localStorage.getItem('kindworld_allusers')
       if (!savedUsers) return
       const parsedUsers = JSON.parse(savedUsers)
-      const latest = parsedUsers.find((u: any) => u.id === user.id || u.email === user.email)
+      const latest = parsedUsers.find((u: any) => u.id === user.id)
       if (!latest) return
       const fields = ['name', 'hours', 'userBadges', 'badges', 'completedMissions', 'organizationsHelped', 'avatar', 'rating']
       const needsUpdate = fields.some(f => JSON.stringify((user as any)[f]) !== JSON.stringify(latest[f]))
