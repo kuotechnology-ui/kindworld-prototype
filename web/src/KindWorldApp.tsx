@@ -14952,9 +14952,12 @@ export default function KindWorldApp() {
                     </div>
                   )}
                   {thread.map(msg => {
-                    const isMine = msg.fromEmail === myEmail
+                    const isMine = msg.fromEmail.toLowerCase() === myEmail
                     return (
                       <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isMine ? 'flex-end' : 'flex-start' }}>
+                        {!isMine && (
+                          <span style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px', paddingLeft: '4px' }}>{msg.fromName || chatPartner.name}</span>
+                        )}
                         {msg.imageUrl && (
                           <img src={msg.imageUrl} alt="" style={{ maxWidth: '200px', maxHeight: '160px', borderRadius: '12px', marginBottom: msg.text ? '4px' : 0, objectFit: 'cover' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                         )}
