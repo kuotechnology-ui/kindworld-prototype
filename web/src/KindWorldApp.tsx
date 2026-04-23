@@ -11361,9 +11361,26 @@ export default function KindWorldApp() {
     return () => window.removeEventListener('storage', handleStorage)
   }, [])
 
+  // When user changes (login / logout / account switch), wipe friend state so the new user
+  // never sees a previous user's friends. Firestore subscriptions repopulate immediately after.
+  useEffect(() => {
+    setFriends([])
+    setFriendRequests([])
+    setFriendMessages([])
+    processedFriendRequestIds.current.clear()
+    if (!user?.email) {
+      // Clear friend-related localStorage on logout so the next account starts clean
+      localStorage.removeItem('kindworld_friends')
+      localStorage.removeItem('kindworld_friend_requests')
+      localStorage.removeItem('kindworld_friend_msgs')
+      localStorage.removeItem('kindworld_friendships')
+      localStorage.removeItem('kindworld_pending_requests')
+    }
+  }, [user?.email])
+
   // Load incoming friend requests from global pending-requests store (keyed by recipient email)
   useEffect(() => {
-    if (!user?.email) { setFriendRequests([]); return }
+    if (!user?.email) return
     try {
       const pending: any[] = JSON.parse(localStorage.getItem('kindworld_pending_requests') || '[]')
       const incoming = pending.filter((r: any) => r.toEmail === user.email)
