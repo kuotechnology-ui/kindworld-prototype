@@ -202,7 +202,7 @@ interface SponsorCampaign {
   missionTitle?: string
   title: string
   amount: number
-  currency: 'USD' | 'THB' | 'SGD' | 'MYR'
+  currency: 'USD' | 'THB' | 'SGD' | 'MYR' | 'TWD' | 'IDR' | 'GBP' | 'EUR' | 'JPY' | 'KRW' | 'CNY' | 'VND' | 'BRL'
   status: 'draft' | 'pendingPayment' | 'pendingVerification' | 'active' | 'completed' | 'rejected'
   paymentProofUrl?: string
   paymentProofNote?: string
@@ -10311,7 +10311,7 @@ export default function KindWorldApp() {
   const [notifications, setNotifications] = useState<string[]>([])
   const [showCreateActivity, setShowCreateActivity] = useState(false)
   const [showCreateCampaign, setShowCreateCampaign] = useState(false)
-  const [newCampaign, setNewCampaign] = useState({ title: '', ngoEmail: '', ngoName: '', missionId: '', amount: '', currency: 'USD' as 'USD'|'THB'|'SGD'|'MYR', paymentNote: '' })
+  const [newCampaign, setNewCampaign] = useState({ title: '', ngoEmail: '', ngoName: '', missionId: '', amount: '', currency: 'USD' as 'USD'|'THB'|'SGD'|'MYR'|'TWD'|'IDR'|'GBP'|'EUR'|'JPY'|'KRW'|'CNY'|'VND'|'BRL', paymentNote: '' })
   const [showCertificateManager, setShowCertificateManager] = useState(false)
   const [selectedSdgNum, setSelectedSdgNum] = useState<number | null>(null)
   const [certPrograms, setCertPrograms] = useState<CertProgram[]>(() => {
@@ -14828,6 +14828,26 @@ export default function KindWorldApp() {
                 </svg>
                 {t('signInWithLINE')}
               </button>
+
+              {/* Demo Credentials */}
+              <div style={{ marginTop: '20px', padding: '16px', background: '#f8fafc', borderRadius: '14px', border: '1px dashed #cbd5e1' }}>
+                <p style={{ margin: '0 0 10px', fontSize: '11px', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center' }}>🔑 Demo Accounts — One Click Sign In</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                  {[
+                    { label: '🙋 Volunteer', email: 'alex.chen@gmail.com', role: 'student' as const },
+                    { label: '🏢 NGO', email: 'admin@redcross.org', role: 'ngo' as const },
+                    { label: '💼 Company', email: 'sponsor@techcorp.com', role: 'sponsor' as const },
+                    { label: '🛡️ Admin', email: 'admin@kindworld.com', role: 'admin' as const },
+                  ].map(d => (
+                    <button key={d.email} onClick={() => { setSignInError(''); performSignIn(d.role) }}
+                      style={{ padding: '8px 10px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', cursor: 'pointer', fontSize: '12px', fontWeight: '600', color: '#374151', textAlign: 'left', transition: 'all 0.15s' }}
+                      onMouseOver={(e) => { e.currentTarget.style.background = 'var(--tpbg)'; e.currentTarget.style.borderColor = 'var(--tp)' }}
+                      onMouseOut={(e) => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = '#e2e8f0' }}>
+                      {d.label}<br/><span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: '400' }}>{d.email}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div style={{ marginBottom: '8px' }} />
 
@@ -26991,6 +27011,35 @@ export default function KindWorldApp() {
                       </button>
                     )})()}
                   </div>
+                </div>
+
+                {/* Region & Language */}
+                <div style={{ background: 'white', borderRadius: '20px', padding: '28px 32px', marginBottom: '16px', boxShadow: '0 2px 16px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
+                  <h2 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: '700', color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>🌍 {t('regionSetup')}</h2>
+                  <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#94a3b8' }}>{t('regionSetupDesc')}</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>🌏 {t('yourRegion')}</label>
+                      <select value={userRegion} onChange={(e) => { setUserRegion(e.target.value); localStorage.setItem('kindworld_user_region', e.target.value) }}
+                        style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', cursor: 'pointer', background: 'white' }}>
+                        <option value="">{t('selectRegion')}</option>
+                        {regions.map(r => <option key={r.code} value={r.code}>{t(`region${r.code}`)}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: '600', color: '#374151' }}>🗣️ {t('selectLanguage') || 'Language'}</label>
+                      <select value={language} onChange={(e) => { setLanguage(e.target.value); localStorage.setItem('kindworld_language', e.target.value) }}
+                        style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', cursor: 'pointer', background: 'white' }}>
+                        {Object.entries(languages).map(([code, lang]) => (
+                          <option key={code} value={code}>{(lang as any).flag} {(lang as any).name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowRegionSetup(true)}
+                    style={{ marginTop: '14px', padding: '9px 18px', background: 'var(--tpbg)', color: 'var(--tp)', border: '1px solid var(--tp)', borderRadius: '10px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                    🔄 {t('regionSetup')}
+                  </button>
                 </div>
 
                 {/* Account */}
