@@ -11370,28 +11370,33 @@ export default function KindWorldApp() {
   // Firestore real-time subscription: sync ALL friend messages for this user
   useEffect(() => {
     if (!user?.email) return
-    const myEmail = user.email
+    const myEmail = user.email.toLowerCase()
     const unsub = subscribeToCollection<any>(COLLECTIONS.FRIEND_MESSAGES, (docs) => {
       const mine = docs
-        .filter((d: any) => d.toEmail === myEmail || d.fromEmail === myEmail)
-        .map((d: any) => ({ id: d.id, fromEmail: d.fromEmail, fromName: d.fromName, toEmail: d.toEmail, text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt } as FriendMessage))
-      // Full replace — always show exactly what Firestore has, no append logic
+        .filter((d: any) => d.toEmail?.toLowerCase() === myEmail || d.fromEmail?.toLowerCase() === myEmail)
+        .map((d: any) => ({ id: d.id, fromEmail: d.fromEmail || '', fromName: d.fromName || '', toEmail: d.toEmail || '', text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt || '' } as FriendMessage))
       setFriendMessages(mine)
     })
     return () => unsub()
   }, [user?.email])
 
-  // Fetch friend messages fresh from Firestore whenever the chat modal opens
+  // Poll Firestore for new friend messages every 3s while a chat is open —
+  // guarantees the recipient sees messages even if the subscription lags.
   useEffect(() => {
     if (!showFriendChat || !user?.email) return
-    const myEmail = user.email
-    fetchCollection<any>(COLLECTIONS.FRIEND_MESSAGES).then(docs => {
-      const mine = docs
-        .filter((d: any) => d.toEmail === myEmail || d.fromEmail === myEmail)
-        .map((d: any) => ({ id: d.id, fromEmail: d.fromEmail, fromName: d.fromName, toEmail: d.toEmail, text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt } as FriendMessage))
-      setFriendMessages(mine)
-    }).catch(() => {})
-  }, [showFriendChat])
+    const myEmail = user.email.toLowerCase()
+    const load = () => {
+      fetchCollection<any>(COLLECTIONS.FRIEND_MESSAGES).then(docs => {
+        const mine = docs
+          .filter((d: any) => d.toEmail?.toLowerCase() === myEmail || d.fromEmail?.toLowerCase() === myEmail)
+          .map((d: any) => ({ id: d.id, fromEmail: d.fromEmail || '', fromName: d.fromName || '', toEmail: d.toEmail || '', text: d.text || '', imageUrl: d.imageUrl, sentAt: d.sentAt || '' } as FriendMessage))
+        setFriendMessages(mine)
+      }).catch(console.error)
+    }
+    load() // immediate fetch on open
+    const interval = setInterval(load, 3000) // poll every 3s while chat is open
+    return () => clearInterval(interval)
+  }, [showFriendChat, user?.email])
 
   // Re-read directMessages from localStorage whenever the user changes (sign in/out)
   // so a newly signed-in user always sees up-to-date messages
@@ -14907,19 +14912,20 @@ export default function KindWorldApp() {
         {/* ── Friend Chat Modal ── */}
         {showFriendChat && (() => {
           const chatPartner = showFriendChat
-          const myEmail = user?.email || ''
+          const myEmail = (user?.email || '').toLowerCase()
+          const partnerEmail = chatPartner.email.toLowerCase()
           const thread = friendMessages.filter(m =>
-            (m.fromEmail === myEmail && m.toEmail === chatPartner.email) ||
-            (m.fromEmail === chatPartner.email && m.toEmail === myEmail)
+            (m.fromEmail.toLowerCase() === myEmail && m.toEmail.toLowerCase() === partnerEmail) ||
+            (m.fromEmail.toLowerCase() === partnerEmail && m.toEmail.toLowerCase() === myEmail)
           ).sort((a, b) => a.sentAt.localeCompare(b.sentAt))
           const commonEmojis = ['😊','😂','❤️','👍','🙏','🎉','😍','🔥','💪','🌟','😭','😅','✨','🤝','💬','🌍','🏆','👏','💡','🎯']
           const sendMessage = () => {
             const txt = friendChatInput.trim()
             const img = friendChatImageUrl.trim()
             if (!txt && !img) return
-            const msg: FriendMessage = { id: Date.now().toString(), fromEmail: myEmail, fromName: user?.name || '', toEmail: chatPartner.email, text: txt, imageUrl: img || undefined, sentAt: new Date().toISOString() }
+            const msg: FriendMessage = { id: Date.now().toString(), fromEmail: myEmail.toLowerCase(), fromName: user?.name || '', toEmail: chatPartner.email.toLowerCase(), text: txt, imageUrl: img || undefined, sentAt: new Date().toISOString() }
             setFriendMessages(prev => [...prev, msg])
-            saveDocument(COLLECTIONS.FRIEND_MESSAGES, msg.id, msg).catch(() => {})
+            saveDocument(COLLECTIONS.FRIEND_MESSAGES, msg.id, msg).catch(console.error)
             setFriendChatInput('')
             setFriendChatImageUrl('')
             setShowEmojiPicker(false)
