@@ -10899,7 +10899,18 @@ export default function KindWorldApp() {
     }))
 
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.DIRECT_MESSAGES, (docs) => {
-      if (docs.length > 0) setDirectMessages(docs)
+      if (docs.length > 0) {
+        setDirectMessages(prev => {
+          // Merge Firestore docs with local state — preserve local read status
+          const prevMap = new Map(prev.map((m: any) => [m.id, m]))
+          const merged = docs.map((d: any) => {
+            const local = prevMap.get(d.id)
+            // If we already have it locally and it's been marked read, keep that
+            return local?.read ? { ...d, read: true } : d
+          })
+          return merged
+        })
+      }
     }))
 
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.CERT_REQUESTS, (docs) => {
@@ -15143,6 +15154,8 @@ export default function KindWorldApp() {
                     }
                     const msg: DirectMessage = { id: Date.now().toString(), fromEmail: user!.email, fromName: user!.name, fromRole: user!.role as 'ngo'|'admin'|'sponsor'|'student', toEmail: showDirectMsgModal!.toEmail, toName: showDirectMsgModal!.toName, subject: directMsgForm.subject.trim(), body: directMsgForm.body.trim(), sentAt: new Date().toISOString(), read: false }
                     setDirectMessages(prev=>[...prev, msg])
+                    // Save directly to Firestore so the recipient sees it on any device
+                    saveDocument(COLLECTIONS.DIRECT_MESSAGES, msg.id, msg).catch(() => {})
                     setNotifications(prev=>[...prev, `📨 Message sent to ${showDirectMsgModal!.toName}`])
                     setShowDirectMsgModal(null)
                     setDirectMsgForm({subject:'',body:''})
@@ -25202,6 +25215,8 @@ export default function KindWorldApp() {
                             localStorage.setItem('kindworld_missions', JSON.stringify(updated))
                             return updated
                           })
+                          // Save to Firestore so all users on any device see the new mission immediately
+                          saveDocument(COLLECTIONS.MISSIONS, String(newMission.id), newMission).catch(() => {})
                           setNotifications(prev => [...prev, `✅ Activity "${newActivity.title}" created successfully! Students can now see and join it on the Missions page.`])
                           setNewActivity({ title: '', description: '', location: '', date: '', startTime: '', endTime: '', hours: 1, maxParticipants: 10, minParticipants: 0, category: 'Community', difficulty: 'Easy', region: 'SEA', country: '', imageUrl: '', registrationDeadline: '' })
                           setShowCreateActivity(false)
