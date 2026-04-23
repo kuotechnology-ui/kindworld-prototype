@@ -174,8 +174,8 @@ export default function AdminDashboardPage() {
             <span className="text-green-500 text-sm font-medium">+12%</span>
           </div>
           <div className="text-3xl font-bold text-gray-900 mb-1">{systemStats.totalUsers.toLocaleString()}</div>
-          <div className="text-gray-600">Total Users</div>
-          <div className="text-sm text-gray-500 mt-1">{systemStats.activeUsers.toLocaleString()} active</div>
+          <div className="text-gray-600">{t('admin.overview.totalUsers')}</div>
+          <div className="text-sm text-gray-500 mt-1">{systemStats.activeUsers.toLocaleString()} {t('admin.overview.active')}</div>
         </div>
 
         <div className="card p-6">
@@ -186,8 +186,8 @@ export default function AdminDashboardPage() {
             <span className="text-green-500 text-sm font-medium">+8%</span>
           </div>
           <div className="text-3xl font-bold text-gray-900 mb-1">{systemStats.totalNGOs}</div>
-          <div className="text-gray-600">Registered NGOs</div>
-          <div className="text-sm text-gray-500 mt-1">15 pending approval</div>
+          <div className="text-gray-600">{t('admin.overview.registeredNGOs')}</div>
+          <div className="text-sm text-gray-500 mt-1">15 {t('admin.overview.pendingApproval')}</div>
         </div>
 
         <div className="card p-6">
@@ -198,14 +198,14 @@ export default function AdminDashboardPage() {
             <span className="text-green-500 text-sm font-medium">+25%</span>
           </div>
           <div className="text-3xl font-bold text-gray-900 mb-1">{systemStats.totalHours.toLocaleString()}</div>
-          <div className="text-gray-600">Total Volunteer Hours</div>
-          <div className="text-sm text-gray-500 mt-1">{systemStats.pendingVerifications} pending verification</div>
+          <div className="text-gray-600">{t('admin.overview.totalHours')}</div>
+          <div className="text-sm text-gray-500 mt-1">{systemStats.pendingVerifications} {t('admin.overview.pendingVerification')}</div>
         </div>
       </div>
 
       {/* Growth Chart */}
       <div className="card p-6">
-        <h3 className="text-xl font-semibold mb-4">Platform Growth</h3>
+        <h3 className="text-xl font-semibold mb-4">{t('admin.overview.platformGrowth')}</h3>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={userGrowthData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -220,7 +220,7 @@ export default function AdminDashboardPage() {
 
       {/* System Alerts */}
       <div className="card p-6">
-        <h3 className="text-xl font-semibold mb-4">System Alerts</h3>
+        <h3 className="text-xl font-semibold mb-4">{t('admin.overview.systemAlerts')}</h3>
         <div className="space-y-3">
           {systemAlerts.map((alert) => (
             <div key={alert.id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50">
@@ -242,13 +242,13 @@ export default function AdminDashboardPage() {
   const renderUsers = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-xl font-semibold">User Management</h3>
+        <h3 className="text-xl font-semibold">{t('admin.users.title')}</h3>
         <div className="flex gap-2">
           <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-            Export Users
+            {t('admin.users.export')}
           </button>
           <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
-            Add User
+            {t('admin.users.add')}
           </button>
         </div>
       </div>
@@ -258,12 +258,12 @@ export default function AdminDashboardPage() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left py-3 px-4 font-semibold">Name</th>
-                <th className="text-left py-3 px-4 font-semibold">Email</th>
-                <th className="text-left py-3 px-4 font-semibold">Role</th>
-                <th className="text-left py-3 px-4 font-semibold">Hours</th>
-                <th className="text-left py-3 px-4 font-semibold">Status</th>
-                <th className="text-left py-3 px-4 font-semibold">Actions</th>
+                <th className="text-left py-3 px-4 font-semibold">{t('admin.users.col.name')}</th>
+                <th className="text-left py-3 px-4 font-semibold">{t('admin.users.col.email')}</th>
+                <th className="text-left py-3 px-4 font-semibold">{t('admin.users.col.role')}</th>
+                <th className="text-left py-3 px-4 font-semibold">{t('admin.users.col.hours')}</th>
+                <th className="text-left py-3 px-4 font-semibold">{t('admin.users.col.status')}</th>
+                <th className="text-left py-3 px-4 font-semibold">{t('admin.users.col.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -288,8 +288,8 @@ export default function AdminDashboardPage() {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex gap-2">
-                      <button className="text-blue-600 hover:text-blue-800">Edit</button>
-                      <button className="text-red-600 hover:text-red-800">Delete</button>
+                      <button className="text-blue-600 hover:text-blue-800">{t('admin.users.edit')}</button>
+                      <button className="text-red-600 hover:text-red-800">{t('admin.users.delete')}</button>
                     </div>
                   </td>
                 </tr>
@@ -305,8 +305,8 @@ export default function AdminDashboardPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-        <p className="text-gray-600">System overview and management controls</p>
+        <h1 className="text-3xl font-bold mb-2">{t('admin.title')}</h1>
+        <p className="text-gray-600">{t('admin.subtitle')}</p>
       </div>
 
       {/* Navigation Tabs */}
@@ -314,10 +314,10 @@ export default function AdminDashboardPage() {
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8">
             {[
-              { key: 'overview', label: 'Overview', icon: Activity },
-              { key: 'users', label: 'Users', icon: Users },
-              { key: 'ngos', label: 'NGOs', icon: Building },
-              { key: 'system', label: 'System', icon: Settings }
+              { key: 'overview', label: t('admin.tab.overview'), icon: Activity },
+              { key: 'users', label: t('admin.tab.users'), icon: Users },
+              { key: 'ngos', label: t('admin.tab.ngos'), icon: Building },
+              { key: 'system', label: t('admin.tab.system'), icon: Settings }
             ].map((tab) => {
               const IconComponent = tab.icon
               return (
@@ -351,7 +351,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-2xl font-bold text-yellow-600">{verificationStats.totalPending}</div>
-                    <div className="text-sm text-gray-600">Pending</div>
+                    <div className="text-sm text-gray-600">{t('admin.ngos.pending')}</div>
                   </div>
                   <Clock className="w-8 h-8 text-yellow-500" />
                 </div>
@@ -360,7 +360,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-2xl font-bold text-green-600">{verificationStats.totalApproved}</div>
-                    <div className="text-sm text-gray-600">Approved</div>
+                    <div className="text-sm text-gray-600">{t('admin.ngos.approved')}</div>
                   </div>
                   <CheckCircle className="w-8 h-8 text-green-500" />
                 </div>
@@ -369,7 +369,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-2xl font-bold text-red-600">{verificationStats.totalRejected}</div>
-                    <div className="text-sm text-gray-600">Rejected</div>
+                    <div className="text-sm text-gray-600">{t('admin.ngos.rejected')}</div>
                   </div>
                   <XCircle className="w-8 h-8 text-red-500" />
                 </div>
@@ -378,7 +378,7 @@ export default function AdminDashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-2xl font-bold text-blue-600">{verificationStats.averageProcessingTime}</div>
-                    <div className="text-sm text-gray-600">Avg Days</div>
+                    <div className="text-sm text-gray-600">{t('admin.ngos.avgDays')}</div>
                   </div>
                   <TrendingUp className="w-8 h-8 text-blue-500" />
                 </div>
@@ -394,7 +394,7 @@ export default function AdminDashboardPage() {
                   <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search organizations..."
+                    placeholder={t('admin.ngos.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -405,24 +405,24 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setStatusFilter(e.target.value as VerificationStatus | 'all')}
                   className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
+                  <option value="all">{t('admin.ngos.allStatus')}</option>
+                  <option value="pending">{t('admin.ngos.pending')}</option>
+                  <option value="approved">{t('admin.ngos.approved')}</option>
+                  <option value="rejected">{t('admin.ngos.rejected')}</option>
                 </select>
                 <button
                   onClick={applyFilters}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2"
                 >
                   <Filter className="w-4 h-4" />
-                  Apply Filters
+                  {t('admin.ngos.applyFilters')}
                 </button>
               </div>
               <button
                 onClick={loadVerificationData}
                 className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
               >
-                Refresh
+                {t('admin.ngos.refresh')}
               </button>
             </div>
           </div>
@@ -430,31 +430,31 @@ export default function AdminDashboardPage() {
           {/* Verification Requests Table */}
           <div className="card overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold">Verification Requests</h3>
+              <h3 className="text-lg font-semibold">{t('admin.ngos.verificationRequests')}</h3>
             </div>
             
             {loading ? (
               <div className="p-8 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-                <p className="mt-2 text-gray-600">Loading verification requests...</p>
+                <p className="mt-2 text-gray-600">{t('admin.ngos.loading')}</p>
               </div>
             ) : verificationRequests.length === 0 ? (
               <div className="p-8 text-center">
                 <Building className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No verification requests found</p>
+                <p className="text-gray-600">{t('admin.ngos.noRequests')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="text-left py-3 px-6 font-semibold">Organization</th>
-                      <th className="text-left py-3 px-6 font-semibold">Type</th>
-                      <th className="text-left py-3 px-6 font-semibold">Contact</th>
-                      <th className="text-left py-3 px-6 font-semibold">Submitted</th>
-                      <th className="text-left py-3 px-6 font-semibold">Status</th>
-                      <th className="text-left py-3 px-6 font-semibold">Documents</th>
-                      <th className="text-left py-3 px-6 font-semibold">Actions</th>
+                      <th className="text-left py-3 px-6 font-semibold">{t('admin.ngos.col.organization')}</th>
+                      <th className="text-left py-3 px-6 font-semibold">{t('admin.ngos.col.type')}</th>
+                      <th className="text-left py-3 px-6 font-semibold">{t('admin.ngos.col.contact')}</th>
+                      <th className="text-left py-3 px-6 font-semibold">{t('admin.ngos.col.submitted')}</th>
+                      <th className="text-left py-3 px-6 font-semibold">{t('admin.ngos.col.status')}</th>
+                      <th className="text-left py-3 px-6 font-semibold">{t('admin.ngos.col.documents')}</th>
+                      <th className="text-left py-3 px-6 font-semibold">{t('admin.ngos.col.actions')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -499,7 +499,7 @@ export default function AdminDashboardPage() {
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-1 text-sm text-gray-600">
                             <FileText className="w-4 h-4" />
-                            {request.documents.length} files
+                            {request.documents.length} {t('admin.ngos.files')}
                           </div>
                         </td>
                         <td className="py-4 px-6">
@@ -508,7 +508,7 @@ export default function AdminDashboardPage() {
                             className="flex items-center gap-1 px-3 py-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
                           >
                             <Eye className="w-4 h-4" />
-                            Review
+                            {t('admin.ngos.review')}
                           </button>
                         </td>
                       </tr>
@@ -523,8 +523,8 @@ export default function AdminDashboardPage() {
       {activeTab === 'system' && (
         <div className="text-center py-12">
           <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">System Settings</h3>
-          <p className="text-gray-600">System configuration and maintenance tools coming soon.</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('admin.system.title')}</h3>
+          <p className="text-gray-600">{t('admin.system.subtitle')}</p>
         </div>
       )}
 

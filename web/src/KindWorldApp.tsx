@@ -10871,17 +10871,31 @@ export default function KindWorldApp() {
   // empty we seed it from localStorage so existing data is preserved.
   // After that, all writes go to Firestore and subscriptions update local state.
   const firestoreReady = useRef(false)
+  const chatBottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const unsubs: (() => void)[] = []
 
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.USERS, (docs) => {
-      if (docs.length > 0) {
-        setAllUsers(docs)
-      } else if (!firestoreReady.current) {
-        // Firestore empty — seed from localStorage
-        const local = localStorage.getItem('kindworld_allusers')
-        if (local) { try { const arr = JSON.parse(local); arr.forEach((u: any) => saveDocument(COLLECTIONS.USERS, String(u.id || u.email), u).catch(() => {})) } catch {} }
+      // Load localStorage users so accounts registered before Firestore rules were
+      // fixed (and never synced) are not lost when Firestore has fewer users.
+      let localArr: any[] = []
+      try { localArr = JSON.parse(localStorage.getItem('kindworld_allusers') || '[]') } catch {}
+
+      if (docs.length > 0 || localArr.length > 0) {
+        // Merge: localStorage users as base, Firestore overrides (more up-to-date)
+        const merged = new Map<string, any>()
+        localArr.forEach((u: any) => merged.set(String(u.id || u.email), u))
+        docs.forEach((u: any) => merged.set(String(u.id || u.email), u))
+        setAllUsers(Array.from(merged.values()))
+
+        // Upload any localStorage-only users to Firestore so future sessions see them
+        localArr.forEach((u: any) => {
+          const key = String(u.id || u.email)
+          if (!docs.find((d: any) => String(d.id || d.email) === key)) {
+            saveDocument(COLLECTIONS.USERS, key, u).catch(() => {})
+          }
+        })
       }
       firestoreReady.current = true
     }))
@@ -11406,6 +11420,13 @@ export default function KindWorldApp() {
     const interval = setInterval(load, 3000) // poll every 3s while chat is open
     return () => clearInterval(interval)
   }, [showFriendChat, user?.email])
+
+  // Auto-scroll chat to bottom when new messages arrive
+  useEffect(() => {
+    if (showFriendChat && chatBottomRef.current) {
+      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [friendMessages, showFriendChat])
 
   // Re-read directMessages from localStorage whenever the user changes (sign in/out)
   // so a newly signed-in user always sees up-to-date messages
@@ -14984,6 +15005,7 @@ export default function KindWorldApp() {
                       </div>
                     )
                   })}
+                  <div ref={chatBottomRef} />
                 </div>
                 {/* Image URL preview */}
                 {friendChatImageUrl && (
@@ -16237,23 +16259,24 @@ export default function KindWorldApp() {
                     {/* Table Header */}
                     <div style={{
                       display: 'grid',
-                      gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr',
-                      gap: '16px',
-                      padding: '16px 20px',
-                      background: 'rgba(var(--ta-rgb), 0.1)',
-                      borderRadius: '12px',
-                      marginBottom: '16px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#2d3748'
+                      gridTemplateColumns: '2fr 0.8fr 0.5fr 0.5fr 0.5fr 0.8fr',
+                      gap: '12px',
+                      padding: '12px 20px',
+                      background: 'rgba(var(--ta-rgb), 0.08)',
+                      borderRadius: '10px',
+                      marginBottom: '10px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      color: '#6b7280',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
                     }}>
                       <div>{t('tableHeaderUser')}</div>
                       <div>{t('tableHeaderRole')}</div>
-                      <div>{t('tableHeaderHours')}</div>
-                      <div>{t('tableHeaderMissions')}</div>
-                      <div>{t('tableHeaderBadges')}</div>
+                      <div style={{ textAlign: 'center' }}>{t('tableHeaderHours')}</div>
+                      <div style={{ textAlign: 'center' }}>{t('tableHeaderMissions')}</div>
+                      <div style={{ textAlign: 'center' }}>{t('tableHeaderBadges')}</div>
                       <div>{t('tableHeaderStatus')}</div>
-                      <div>{t('tableHeaderActions')}</div>
                     </div>
 
                     {/* Table Rows */}
@@ -16261,99 +16284,67 @@ export default function KindWorldApp() {
                       <div
                         key={userData.id}
                         style={{
-                          display: 'grid',
-                          gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr 1fr',
-                          gap: '16px',
-                          padding: '20px',
-                          background: 'rgba(255, 255, 255, 0.5)',
+                          background: 'rgba(255,255,255,0.6)',
                           borderRadius: '12px',
-                          marginBottom: '12px',
-                          alignItems: 'center',
-                          transition: 'all 0.3s ease',
-                          border: '1px solid rgba(0, 0, 0, 0.05)'
+                          marginBottom: '10px',
+                          border: '1px solid rgba(0,0,0,0.06)',
+                          overflow: 'hidden',
+                          transition: 'box-shadow 0.2s ease'
                         }}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.8)'
-                          e.currentTarget.style.transform = 'translateY(-2px)'
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)'
-                          e.currentTarget.style.transform = 'translateY(0)'
-                          e.currentTarget.style.boxShadow = 'none'
-                        }}
+                        onMouseOver={(e) => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)' }}
+                        onMouseOut={(e) => { e.currentTarget.style.boxShadow = 'none' }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {/* Info row */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 0.8fr 0.5fr 0.5fr 0.5fr 0.8fr', gap: '12px', padding: '14px 20px', alignItems: 'center' }}>
+                          {/* User info */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                            <div style={{
+                              width: '36px', height: '36px', flexShrink: 0,
+                              background: userData.role === 'student' ? 'linear-gradient(135deg, var(--ta), var(--tb))' :
+                                         userData.role === 'ngo' ? 'linear-gradient(135deg, #28a745, #20c997)' :
+                                         'linear-gradient(135deg, #e74c3c, #c0392b)',
+                              borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              color: 'white', fontSize: '13px', fontWeight: '700'
+                            }}>
+                              {userData.name.charAt(0)}
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {userData.name}
+                              </div>
+                              <div style={{ fontSize: '11px', color: '#9ca3af', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={userData.email}>
+                                {userData.lineUserId ? `LINE: ${userData.name}` : userData.email}
+                              </div>
+                            </div>
+                          </div>
+                          {/* Role */}
                           <div style={{
-                            width: '40px',
-                            height: '40px',
-                            background: userData.role === 'student' ? 'linear-gradient(135deg, var(--ta) 0%, var(--tb) 100%)' :
-                                       userData.role === 'ngo' ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' :
-                                       'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontSize: '14px',
-                            fontWeight: 'bold'
+                            display: 'inline-flex', alignItems: 'center', padding: '3px 10px',
+                            borderRadius: '20px', fontSize: '11px', fontWeight: '600',
+                            background: userData.role === 'student' ? 'rgba(var(--ta-rgb),0.1)' : userData.role === 'ngo' ? 'rgba(40,167,69,0.1)' : 'rgba(231,76,60,0.1)',
+                            color: userData.role === 'student' ? 'var(--ta)' : userData.role === 'ngo' ? '#28a745' : '#e74c3c',
+                            whiteSpace: 'nowrap'
                           }}>
-                            {userData.name.charAt(0)}
+                            {userData.role === 'student' ? `🎓 ${t('roleStudentLabel')}` : userData.role === 'ngo' ? `🏢 NGO` : `👑 Admin`}
                           </div>
-                          <div>
-                            <div style={{ fontSize: '14px', fontWeight: '600', color: '#2d3748' }}>
-                              {userData.name}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#718096' }}>
-                              {userData.email}
-                            </div>
+                          {/* Hours */}
+                          <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151', textAlign: 'center' }}>{userData.hours}h</div>
+                          {/* Missions */}
+                          <div style={{ fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>{userData.completedMissions || 0}</div>
+                          {/* Badges */}
+                          <div style={{ fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>{Array.isArray(userData.userBadges) ? userData.userBadges.length : (userData.badges || 0)}</div>
+                          {/* Status */}
+                          <div style={{
+                            display: 'inline-flex', alignItems: 'center', padding: '3px 8px',
+                            borderRadius: '6px', fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap',
+                            background: userData.status === 'suspended' ? 'rgba(239,68,68,0.1)' : userData.status === 'active' ? 'rgba(40,167,69,0.1)' : 'rgba(255,193,7,0.1)',
+                            color: userData.status === 'suspended' ? '#ef4444' : userData.status === 'active' ? '#16a34a' : '#d97706'
+                          }}>
+                            {userData.status === 'suspended' ? `🚫 ${t('statusSuspended')}` : userData.status === 'active' ? `✅ ${t('statusActive')}` : `⚡ ${t('statusVerified')}`}
                           </div>
                         </div>
-                        
-                        <div style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          padding: '4px 12px',
-                          borderRadius: '12px',
-                          fontSize: '12px',
-                          fontWeight: '600',
-                          background: userData.role === 'student' ? 'rgba(var(--ta-rgb), 0.1)' :
-                                     userData.role === 'ngo' ? 'rgba(40, 167, 69, 0.1)' :
-                                     'rgba(231, 76, 60, 0.1)',
-                          color: userData.role === 'student' ? 'var(--ta)' :
-                                userData.role === 'ngo' ? '#28a745' :
-                                '#e74c3c'
-                        }}>
-                          {userData.role === 'student' ? `🎓 ${t('roleStudentLabel')}` :
-                           userData.role === 'ngo' ? `🏢 ${t('roleNGOLabel')}` : `👑 ${t('roleAdminLabel')}`}
-                        </div>
-                        
-                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#2d3748' }}>
-                          {userData.hours}h
-                        </div>
-                        
-                        <div style={{ fontSize: '14px', color: '#718096' }}>
-                          {userData.completedMissions}
-                        </div>
-                        
-                        <div style={{ fontSize: '14px', color: '#718096' }}>
-                          {userData.badges}
-                        </div>
-                        
-                        <div style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          padding: '4px 8px',
-                          borderRadius: '8px',
-                          fontSize: '11px',
-                          fontWeight: '600',
-                          background: userData.status === 'suspended' ? 'rgba(239,68,68,0.1)' : userData.status === 'active' ? 'rgba(40, 167, 69, 0.1)' : 'rgba(255, 193, 7, 0.1)',
-                          color: userData.status === 'suspended' ? '#ef4444' : userData.status === 'active' ? '#28a745' : '#ffc107'
-                        }}>
-                          {userData.status === 'suspended' ? `🚫 ${t('statusSuspended')}` : userData.status === 'active' ? `✅ ${t('statusActive')}` : `⚡ ${t('statusVerified')}`}
-                        </div>
-                        
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        {/* Action buttons row */}
+                        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', padding: '0 20px 12px', alignItems: 'center' }}>
                           <button
                             onClick={() => {
                               setSelectedUserDetail(userData)
