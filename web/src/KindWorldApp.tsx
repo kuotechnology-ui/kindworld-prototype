@@ -865,6 +865,70 @@ const localTranslations: Record<string, Record<string, string>> = {
     closeLabel: 'Close',
     contactLabel: 'Contact',
     emergencyLabel: 'Emergency',
+    // Investor Dashboard translations
+    investorDashboardLabel: 'KINDWORLD · INVESTOR DASHBOARD',
+    investorPlatformOverview: 'Platform Overview',
+    investorSubtitle: 'Real-time metrics, volunteer impact data, and NGO partnership overview for KindWorld.',
+    investorLiveData: '✓ Live Data',
+    investorPlatformActive: '● Platform Active',
+    investorLanguages: '🌏 12 Languages',
+    investorKpiVolunteers: 'Total Volunteers',
+    investorKpiVolunteersSub: 'avg {avg}h each',
+    investorKpiNGOs: 'Active NGO Partners',
+    investorKpiNGOsSub: 'verified organizations',
+    investorKpiMissions: 'Total Missions',
+    investorKpiMissionsSub: '{active} upcoming · {completed} done',
+    investorKpiHours: 'Volunteer Hours',
+    investorKpiHoursSub: 'hours contributed total',
+    investorKpiRegistrations: 'Registrations',
+    investorKpiRegistrationsSub: 'mission sign-ups total',
+    investorKpiCerts: 'Certificates Issued',
+    investorKpiCertsSub: 'approved by NGOs',
+    investorMissionCategories: '📊 Mission Categories',
+    investorNoMissionData: 'No mission data yet',
+    investorMissionsCount: 'missions',
+    investorNGOPartners: '🏢 NGO Partners',
+    investorNoNGOs: 'No NGO partners yet',
+    investorVerified: '✓ Verified',
+    investorRegistrations: 'registrations',
+    investorRecentMissions: '🌍 Recent Missions',
+    investorColMission: 'Mission',
+    investorColNGO: 'NGO',
+    investorColDate: 'Date',
+    investorColLocation: 'Location',
+    investorColRegistered: 'Registered',
+    investorColStatus: 'Status',
+    investorStatusCompleted: 'Completed',
+    investorStatusActive: 'Active',
+    investorNoMissions: 'No missions yet',
+    investorWhyPartner: '💛 Why Partner With Us',
+    investorBrandVisibility: 'Brand Visibility',
+    investorBrandVisibilityDesc: 'Your logo on volunteer certificates, missions, and across 12 language markets',
+    investorImpactReports: 'Impact Reports',
+    investorImpactReportsDesc: 'Quarterly CSR-ready reports showing hours, volunteers, and communities reached',
+    investorGlobalReach: 'Global Reach',
+    investorGlobalReachDesc: '{count} volunteers across Southeast Asia and beyond',
+    investorMissionCobranding: 'Mission Co-branding',
+    investorMissionCobrandingDesc: 'Co-host volunteer events with your company name attached to real community impact',
+    investorSponsorTiers: '🏅 Sponsorship Tiers',
+    investorBronze: 'Bronze Partner',
+    investorBronzeAmount: '$1,000 / yr',
+    investorSilver: 'Silver Partner',
+    investorSilverAmount: '$5,000 / yr',
+    investorGold: 'Gold Partner',
+    investorGoldAmount: '$15,000 / yr',
+    investorPerk1: 'Logo on platform',
+    investorPerk2: 'Monthly report',
+    investorPerk3: '1 co-hosted mission',
+    investorPerk4: 'All Bronze +',
+    investorPerk5: 'Certificate branding',
+    investorPerk6: 'Quarterly CSR report',
+    investorPerk7: '3 co-hosted missions',
+    investorPerk8: 'All Silver +',
+    investorPerk9: 'Featured NGO spotlight',
+    investorPerk10: 'Custom mission categories',
+    investorPerk11: 'Unlimited co-hosted missions',
+    investorPerk12: 'Direct dashboard access',
     // Admin Dashboard specific translations
     adminDashboardTitle: 'Admin Dashboard',
     adminDashboardSubtitle: 'Manage users, monitor platform activity, and oversee volunteer programs',
@@ -1706,6 +1770,70 @@ const localTranslations: Record<string, Record<string, string>> = {
     closeLabel: 'Tutup',
     contactLabel: 'Kontak',
     emergencyLabel: 'Darurat',
+    // Investor Dashboard translations
+    investorDashboardLabel: 'KINDWORLD · DASBOR INVESTOR',
+    investorPlatformOverview: 'Ikhtisar Platform',
+    investorSubtitle: 'Metrik real-time, data dampak relawan, dan ikhtisar kemitraan NGO untuk KindWorld.',
+    investorLiveData: '✓ Data Langsung',
+    investorPlatformActive: '● Platform Aktif',
+    investorLanguages: '🌏 12 Bahasa',
+    investorKpiVolunteers: 'Total Relawan',
+    investorKpiVolunteersSub: 'rata-rata {avg} jam per orang',
+    investorKpiNGOs: 'Mitra NGO Aktif',
+    investorKpiNGOsSub: 'organisasi terverifikasi',
+    investorKpiMissions: 'Total Kegiatan',
+    investorKpiMissionsSub: '{active} mendatang · {completed} selesai',
+    investorKpiHours: 'Jam Relawan',
+    investorKpiHoursSub: 'total jam yang dikontribusikan',
+    investorKpiRegistrations: 'Pendaftaran',
+    investorKpiRegistrationsSub: 'total pendaftaran kegiatan',
+    investorKpiCerts: 'Sertifikat Diterbitkan',
+    investorKpiCertsSub: 'disetujui oleh NGO',
+    investorMissionCategories: '📊 Kategori Kegiatan',
+    investorNoMissionData: 'Belum ada data kegiatan',
+    investorMissionsCount: 'kegiatan',
+    investorNGOPartners: '🏢 Mitra NGO',
+    investorNoNGOs: 'Belum ada mitra NGO',
+    investorVerified: '✓ Terverifikasi',
+    investorRegistrations: 'pendaftaran',
+    investorRecentMissions: '🌍 Kegiatan Terbaru',
+    investorColMission: 'Kegiatan',
+    investorColNGO: 'NGO',
+    investorColDate: 'Tanggal',
+    investorColLocation: 'Lokasi',
+    investorColRegistered: 'Terdaftar',
+    investorColStatus: 'Status',
+    investorStatusCompleted: 'Selesai',
+    investorStatusActive: 'Aktif',
+    investorNoMissions: 'Belum ada kegiatan',
+    investorWhyPartner: '💛 Mengapa Bermitra dengan Kami',
+    investorBrandVisibility: 'Visibilitas Merek',
+    investorBrandVisibilityDesc: 'Logo Anda di sertifikat relawan, kegiatan, dan 12 pasar bahasa',
+    investorImpactReports: 'Laporan Dampak',
+    investorImpactReportsDesc: 'Laporan CSR triwulanan yang menampilkan jam, relawan, dan komunitas yang dijangkau',
+    investorGlobalReach: 'Jangkauan Global',
+    investorGlobalReachDesc: '{count} relawan di Asia Tenggara dan sekitarnya',
+    investorMissionCobranding: 'Co-branding Kegiatan',
+    investorMissionCobrandingDesc: 'Selenggarakan acara relawan bersama nama perusahaan Anda',
+    investorSponsorTiers: '🏅 Tingkatan Sponsor',
+    investorBronze: 'Mitra Perunggu',
+    investorBronzeAmount: '$1.000 / thn',
+    investorSilver: 'Mitra Perak',
+    investorSilverAmount: '$5.000 / thn',
+    investorGold: 'Mitra Emas',
+    investorGoldAmount: '$15.000 / thn',
+    investorPerk1: 'Logo di platform',
+    investorPerk2: 'Laporan bulanan',
+    investorPerk3: '1 kegiatan co-host',
+    investorPerk4: 'Semua Perunggu +',
+    investorPerk5: 'Branding sertifikat',
+    investorPerk6: 'Laporan CSR triwulanan',
+    investorPerk7: '3 kegiatan co-host',
+    investorPerk8: 'Semua Perak +',
+    investorPerk9: 'Sorotan NGO unggulan',
+    investorPerk10: 'Kategori kegiatan kustom',
+    investorPerk11: 'Kegiatan co-host tak terbatas',
+    investorPerk12: 'Akses dasbor langsung',
     // Admin Dashboard specific translations
     adminDashboardTitle: 'Dasbor Admin',
     adminDashboardSubtitle: 'Kelola pengguna, pantau aktivitas platform, dan awasi program relawan',
@@ -2417,6 +2545,70 @@ const localTranslations: Record<string, Record<string, string>> = {
     closeLabel: '关闭',
     contactLabel: '联系方式',
     emergencyLabel: '紧急联系人',
+    // Investor Dashboard translations
+    investorDashboardLabel: 'KINDWORLD · 投资者仪表板',
+    investorPlatformOverview: '平台概览',
+    investorSubtitle: 'KindWorld 的实时指标、志愿者影响数据与 NGO 合作伙伴概览。',
+    investorLiveData: '✓ 实时数据',
+    investorPlatformActive: '● 平台运行中',
+    investorLanguages: '🌏 12 种语言',
+    investorKpiVolunteers: '志愿者总数',
+    investorKpiVolunteersSub: '平均每人 {avg} 小时',
+    investorKpiNGOs: '活跃 NGO 伙伴',
+    investorKpiNGOsSub: '已认证组织',
+    investorKpiMissions: '任务总数',
+    investorKpiMissionsSub: '{active} 即将到来 · {completed} 已完成',
+    investorKpiHours: '志愿服务小时',
+    investorKpiHoursSub: '累计贡献小时数',
+    investorKpiRegistrations: '报名人次',
+    investorKpiRegistrationsSub: '任务报名总计',
+    investorKpiCerts: '已颁发证书',
+    investorKpiCertsSub: '由 NGO 批准',
+    investorMissionCategories: '📊 任务类别',
+    investorNoMissionData: '暂无任务数据',
+    investorMissionsCount: '个任务',
+    investorNGOPartners: '🏢 NGO 伙伴',
+    investorNoNGOs: '暂无 NGO 伙伴',
+    investorVerified: '✓ 已认证',
+    investorRegistrations: '次报名',
+    investorRecentMissions: '🌍 近期任务',
+    investorColMission: '任务',
+    investorColNGO: 'NGO',
+    investorColDate: '日期',
+    investorColLocation: '地点',
+    investorColRegistered: '报名人数',
+    investorColStatus: '状态',
+    investorStatusCompleted: '已完成',
+    investorStatusActive: '进行中',
+    investorNoMissions: '暂无任务',
+    investorWhyPartner: '💛 为何与我们合作',
+    investorBrandVisibility: '品牌曝光',
+    investorBrandVisibilityDesc: '您的标志出现在志愿者证书、任务页面及 12 个语言市场',
+    investorImpactReports: '影响力报告',
+    investorImpactReportsDesc: '每季 CSR 报告，呈现小时数、志愿者人数与触及社区',
+    investorGlobalReach: '全球触及',
+    investorGlobalReachDesc: '{count} 名志愿者遍布东南亚及更多地区',
+    investorMissionCobranding: '任务联名',
+    investorMissionCobrandingDesc: '与贵公司名称共同主办志愿活动，创造真实社区影响',
+    investorSponsorTiers: '🏅 赞助方案',
+    investorBronze: '铜牌伙伴',
+    investorBronzeAmount: '$1,000 / 年',
+    investorSilver: '银牌伙伴',
+    investorSilverAmount: '$5,000 / 年',
+    investorGold: '金牌伙伴',
+    investorGoldAmount: '$15,000 / 年',
+    investorPerk1: '平台标志展示',
+    investorPerk2: '每月报告',
+    investorPerk3: '1 场联名任务',
+    investorPerk4: '铜牌全部 +',
+    investorPerk5: '证书品牌标示',
+    investorPerk6: '每季 CSR 报告',
+    investorPerk7: '3 场联名任务',
+    investorPerk8: '银牌全部 +',
+    investorPerk9: 'NGO 精选推荐',
+    investorPerk10: '自定义任务类别',
+    investorPerk11: '无限联名任务',
+    investorPerk12: '专属仪表板访问',
     // Admin Dashboard specific translations
     adminDashboardTitle: '管理员仪表板',
     adminDashboardSubtitle: '管理用户、监控平台活动并监督志愿者项目',
@@ -3127,6 +3319,70 @@ const localTranslations: Record<string, Record<string, string>> = {
     closeLabel: '關閉',
     contactLabel: '聯絡方式',
     emergencyLabel: '緊急聯絡人',
+    // Investor Dashboard translations
+    investorDashboardLabel: 'KINDWORLD · 投資者儀表板',
+    investorPlatformOverview: '平台概覽',
+    investorSubtitle: 'KindWorld 的即時指標、志工影響數據與 NGO 合作夥伴概覽。',
+    investorLiveData: '✓ 即時數據',
+    investorPlatformActive: '● 平台運行中',
+    investorLanguages: '🌏 12 種語言',
+    investorKpiVolunteers: '志工總數',
+    investorKpiVolunteersSub: '平均每人 {avg} 小時',
+    investorKpiNGOs: '活躍 NGO 夥伴',
+    investorKpiNGOsSub: '已驗證組織',
+    investorKpiMissions: '任務總數',
+    investorKpiMissionsSub: '{active} 即將到來 · {completed} 已完成',
+    investorKpiHours: '志工服務小時',
+    investorKpiHoursSub: '累計貢獻小時數',
+    investorKpiRegistrations: '報名人次',
+    investorKpiRegistrationsSub: '任務報名總計',
+    investorKpiCerts: '已頒發證書',
+    investorKpiCertsSub: '由 NGO 核准',
+    investorMissionCategories: '📊 任務類別',
+    investorNoMissionData: '尚無任務數據',
+    investorMissionsCount: '個任務',
+    investorNGOPartners: '🏢 NGO 夥伴',
+    investorNoNGOs: '尚無 NGO 夥伴',
+    investorVerified: '✓ 已驗證',
+    investorRegistrations: '次報名',
+    investorRecentMissions: '🌍 近期任務',
+    investorColMission: '任務',
+    investorColNGO: 'NGO',
+    investorColDate: '日期',
+    investorColLocation: '地點',
+    investorColRegistered: '報名人數',
+    investorColStatus: '狀態',
+    investorStatusCompleted: '已完成',
+    investorStatusActive: '進行中',
+    investorNoMissions: '尚無任務',
+    investorWhyPartner: '💛 為何與我們合作',
+    investorBrandVisibility: '品牌曝光',
+    investorBrandVisibilityDesc: '您的標誌出現在志工證書、任務頁面及 12 個語言市場',
+    investorImpactReports: '影響力報告',
+    investorImpactReportsDesc: '每季 CSR 報告，呈現小時數、志工人數與觸及社區',
+    investorGlobalReach: '全球觸及',
+    investorGlobalReachDesc: '{count} 名志工遍佈東南亞及更多地區',
+    investorMissionCobranding: '任務聯名',
+    investorMissionCobrandingDesc: '與貴公司名稱共同主辦志工活動，創造真實社區影響',
+    investorSponsorTiers: '🏅 贊助方案',
+    investorBronze: '銅牌夥伴',
+    investorBronzeAmount: '$1,000 / 年',
+    investorSilver: '銀牌夥伴',
+    investorSilverAmount: '$5,000 / 年',
+    investorGold: '金牌夥伴',
+    investorGoldAmount: '$15,000 / 年',
+    investorPerk1: '平台標誌展示',
+    investorPerk2: '每月報告',
+    investorPerk3: '1 場聯名任務',
+    investorPerk4: '銅牌全部 +',
+    investorPerk5: '證書品牌標示',
+    investorPerk6: '每季 CSR 報告',
+    investorPerk7: '3 場聯名任務',
+    investorPerk8: '銀牌全部 +',
+    investorPerk9: 'NGO 精選推薦',
+    investorPerk10: '自訂任務類別',
+    investorPerk11: '無限聯名任務',
+    investorPerk12: '專屬儀表板存取',
     // Admin Dashboard specific translations
     adminDashboardTitle: '管理員儀表板',
     adminDashboardSubtitle: '管理使用者、監控平台活動並監督志工專案',
@@ -6582,6 +6838,64 @@ const localTranslations: Record<string, Record<string, string>> = {
     closeLabel: 'ปิด',
     contactLabel: 'ติดต่อ',
     emergencyLabel: 'ฉุกเฉิน',
+    // Investor Dashboard translations
+    investorDashboardLabel: 'KINDWORLD · แดชบอร์ดนักลงทุน',
+    investorPlatformOverview: 'ภาพรวมแพลตฟอร์ม',
+    investorSubtitle: 'ตัวชี้วัดแบบเรียลไทม์ ข้อมูลผลกระทบของอาสาสมัคร และภาพรวมความร่วมมือ NGO สำหรับ KindWorld',
+    investorLiveData: '✓ ข้อมูลสด',
+    investorPlatformActive: '● แพลตฟอร์มทำงานอยู่',
+    investorLanguages: '🌏 12 ภาษา',
+    investorKpiVolunteers: 'อาสาสมัครทั้งหมด',
+    investorKpiNGOs: 'พาร์ทเนอร์ NGO ที่ใช้งาน',
+    investorKpiMissions: 'ภารกิจทั้งหมด',
+    investorKpiHours: 'ชั่วโมงอาสาสมัคร',
+    investorKpiRegistrations: 'การลงทะเบียน',
+    investorKpiCerts: 'ใบรับรองที่ออก',
+    investorMissionCategories: '📊 หมวดหมู่ภารกิจ',
+    investorNoMissionData: 'ยังไม่มีข้อมูลภารกิจ',
+    investorMissionsCount: 'ภารกิจ',
+    investorNGOPartners: '🏢 พาร์ทเนอร์ NGO',
+    investorNoNGOs: 'ยังไม่มีพาร์ทเนอร์ NGO',
+    investorVerified: '✓ ผ่านการตรวจสอบ',
+    investorRegistrations: 'การลงทะเบียน',
+    investorRecentMissions: '🌍 ภารกิจล่าสุด',
+    investorColMission: 'ภารกิจ',
+    investorColNGO: 'NGO',
+    investorColDate: 'วันที่',
+    investorColLocation: 'สถานที่',
+    investorColRegistered: 'ลงทะเบียน',
+    investorColStatus: 'สถานะ',
+    investorStatusCompleted: 'เสร็จสิ้น',
+    investorStatusActive: 'กำลังดำเนินการ',
+    investorNoMissions: 'ยังไม่มีภารกิจ',
+    investorWhyPartner: '💛 ทำไมต้องร่วมมือกับเรา',
+    investorBrandVisibility: 'การมองเห็นแบรนด์',
+    investorBrandVisibilityDesc: 'โลโก้ของคุณบนใบรับรองอาสาสมัคร ภารกิจ และ 12 ตลาดภาษา',
+    investorImpactReports: 'รายงานผลกระทบ',
+    investorImpactReportsDesc: 'รายงาน CSR รายไตรมาสแสดงชั่วโมง อาสาสมัคร และชุมชนที่เข้าถึง',
+    investorGlobalReach: 'การเข้าถึงทั่วโลก',
+    investorGlobalReachDesc: 'อาสาสมัครทั่วเอเชียตะวันออกเฉียงใต้และอื่นๆ',
+    investorMissionCobranding: 'การร่วมแบรนด์ภารกิจ',
+    investorMissionCobrandingDesc: 'ร่วมจัดกิจกรรมอาสาสมัครพร้อมชื่อบริษัทของคุณ',
+    investorSponsorTiers: '🏅 ระดับการสนับสนุน',
+    investorBronze: 'พาร์ทเนอร์ทองแดง',
+    investorBronzeAmount: '$1,000 / ปี',
+    investorSilver: 'พาร์ทเนอร์เงิน',
+    investorSilverAmount: '$5,000 / ปี',
+    investorGold: 'พาร์ทเนอร์ทอง',
+    investorGoldAmount: '$15,000 / ปี',
+    investorPerk1: 'โลโก้บนแพลตฟอร์ม',
+    investorPerk2: 'รายงานรายเดือน',
+    investorPerk3: '1 ภารกิจร่วมจัด',
+    investorPerk4: 'ทองแดงทั้งหมด +',
+    investorPerk5: 'แบรนด์บนใบรับรอง',
+    investorPerk6: 'รายงาน CSR รายไตรมาส',
+    investorPerk7: '3 ภารกิจร่วมจัด',
+    investorPerk8: 'เงินทั้งหมด +',
+    investorPerk9: 'NGO แนะนำพิเศษ',
+    investorPerk10: 'หมวดหมู่ภารกิจกำหนดเอง',
+    investorPerk11: 'ภารกิจร่วมจัดไม่จำกัด',
+    investorPerk12: 'เข้าถึงแดชบอร์ดโดยตรง',
     adminDashboardTitle: 'แดชบอร์ดผู้ดูแล',
     adminDashboardSubtitle: 'จัดการผู้ใช้ ตรวจสอบกิจกรรมแพลตฟอร์ม และดูแลโปรแกรมอาสาสมัคร',
     totalUsersLabel: 'ผู้ใช้ทั้งหมด',
@@ -7271,6 +7585,63 @@ const localTranslations: Record<string, Record<string, string>> = {
     closeLabel: 'Đóng',
     contactLabel: 'Liên hệ',
     emergencyLabel: 'Khẩn cấp',
+    investorDashboardLabel: 'KINDWORLD · BẢNG ĐIỀU KHIỂN NHÀ ĐẦU TƯ',
+    investorPlatformOverview: 'Tổng quan nền tảng',
+    investorSubtitle: 'Số liệu thời gian thực, dữ liệu tác động tình nguyện và tổng quan đối tác NGO cho KindWorld.',
+    investorLiveData: '✓ Dữ liệu trực tiếp',
+    investorPlatformActive: '● Nền tảng đang hoạt động',
+    investorLanguages: '🌏 12 ngôn ngữ',
+    investorKpiVolunteers: 'Tổng tình nguyện viên',
+    investorKpiNGOs: 'Đối tác NGO hoạt động',
+    investorKpiMissions: 'Tổng nhiệm vụ',
+    investorKpiHours: 'Giờ tình nguyện',
+    investorKpiRegistrations: 'Đăng ký',
+    investorKpiCerts: 'Chứng chỉ đã cấp',
+    investorMissionCategories: '📊 Danh mục nhiệm vụ',
+    investorNoMissionData: 'Chưa có dữ liệu nhiệm vụ',
+    investorMissionsCount: 'nhiệm vụ',
+    investorNGOPartners: '🏢 Đối tác NGO',
+    investorNoNGOs: 'Chưa có đối tác NGO',
+    investorVerified: '✓ Đã xác minh',
+    investorRegistrations: 'đăng ký',
+    investorRecentMissions: '🌍 Nhiệm vụ gần đây',
+    investorColMission: 'Nhiệm vụ',
+    investorColNGO: 'NGO',
+    investorColDate: 'Ngày',
+    investorColLocation: 'Địa điểm',
+    investorColRegistered: 'Đã đăng ký',
+    investorColStatus: 'Trạng thái',
+    investorStatusCompleted: 'Hoàn thành',
+    investorStatusActive: 'Đang diễn ra',
+    investorNoMissions: 'Chưa có nhiệm vụ',
+    investorWhyPartner: '💛 Tại sao hợp tác với chúng tôi',
+    investorBrandVisibility: 'Hiển thị thương hiệu',
+    investorBrandVisibilityDesc: 'Logo của bạn trên chứng chỉ tình nguyện, nhiệm vụ và 12 thị trường ngôn ngữ',
+    investorImpactReports: 'Báo cáo tác động',
+    investorImpactReportsDesc: 'Báo cáo CSR hàng quý hiển thị giờ, tình nguyện viên và cộng đồng tiếp cận',
+    investorGlobalReach: 'Tầm với toàn cầu',
+    investorGlobalReachDesc: 'Tình nguyện viên khắp Đông Nam Á và hơn thế nữa',
+    investorMissionCobranding: 'Đồng thương hiệu nhiệm vụ',
+    investorMissionCobrandingDesc: 'Đồng tổ chức sự kiện tình nguyện với tên công ty của bạn',
+    investorSponsorTiers: '🏅 Cấp độ tài trợ',
+    investorBronze: 'Đối tác Đồng',
+    investorBronzeAmount: '$1.000 / năm',
+    investorSilver: 'Đối tác Bạc',
+    investorSilverAmount: '$5.000 / năm',
+    investorGold: 'Đối tác Vàng',
+    investorGoldAmount: '$15.000 / năm',
+    investorPerk1: 'Logo trên nền tảng',
+    investorPerk2: 'Báo cáo hàng tháng',
+    investorPerk3: '1 nhiệm vụ đồng tổ chức',
+    investorPerk4: 'Tất cả Đồng +',
+    investorPerk5: 'Thương hiệu chứng chỉ',
+    investorPerk6: 'Báo cáo CSR hàng quý',
+    investorPerk7: '3 nhiệm vụ đồng tổ chức',
+    investorPerk8: 'Tất cả Bạc +',
+    investorPerk9: 'NGO nổi bật',
+    investorPerk10: 'Danh mục nhiệm vụ tùy chỉnh',
+    investorPerk11: 'Nhiệm vụ đồng tổ chức không giới hạn',
+    investorPerk12: 'Truy cập bảng điều khiển trực tiếp',
     adminDashboardTitle: 'Bảng điều khiển quản trị',
     adminDashboardSubtitle: 'Quản lý người dùng, giám sát hoạt động nền tảng và giám sát các chương trình tình nguyện',
     totalUsersLabel: 'Tổng người dùng',
@@ -7960,6 +8331,63 @@ const localTranslations: Record<string, Record<string, string>> = {
     closeLabel: '닫기',
     contactLabel: '연락처',
     emergencyLabel: '비상',
+    investorDashboardLabel: 'KINDWORLD · 투자자 대시보드',
+    investorPlatformOverview: '플랫폼 개요',
+    investorSubtitle: 'KindWorld의 실시간 지표, 봉사 영향 데이터 및 NGO 파트너십 개요.',
+    investorLiveData: '✓ 실시간 데이터',
+    investorPlatformActive: '● 플랫폼 활성',
+    investorLanguages: '🌏 12개 언어',
+    investorKpiVolunteers: '총 봉사자',
+    investorKpiNGOs: '활성 NGO 파트너',
+    investorKpiMissions: '총 미션',
+    investorKpiHours: '봉사 시간',
+    investorKpiRegistrations: '등록',
+    investorKpiCerts: '발급된 인증서',
+    investorMissionCategories: '📊 미션 카테고리',
+    investorNoMissionData: '미션 데이터 없음',
+    investorMissionsCount: '미션',
+    investorNGOPartners: '🏢 NGO 파트너',
+    investorNoNGOs: 'NGO 파트너 없음',
+    investorVerified: '✓ 인증됨',
+    investorRegistrations: '등록',
+    investorRecentMissions: '🌍 최근 미션',
+    investorColMission: '미션',
+    investorColNGO: 'NGO',
+    investorColDate: '날짜',
+    investorColLocation: '위치',
+    investorColRegistered: '등록됨',
+    investorColStatus: '상태',
+    investorStatusCompleted: '완료',
+    investorStatusActive: '진행 중',
+    investorNoMissions: '미션 없음',
+    investorWhyPartner: '💛 왜 우리와 파트너가 되어야 하나요',
+    investorBrandVisibility: '브랜드 가시성',
+    investorBrandVisibilityDesc: '봉사 인증서, 미션 및 12개 언어 시장에 귀사 로고 게재',
+    investorImpactReports: '영향 보고서',
+    investorImpactReportsDesc: '시간, 봉사자, 도달한 커뮤니티를 보여주는 분기별 CSR 보고서',
+    investorGlobalReach: '글로벌 도달',
+    investorGlobalReachDesc: '동남아시아 및 그 이상의 봉사자들',
+    investorMissionCobranding: '미션 공동 브랜딩',
+    investorMissionCobrandingDesc: '귀사 이름으로 봉사 행사를 공동 주최하세요',
+    investorSponsorTiers: '🏅 후원 등급',
+    investorBronze: '브론즈 파트너',
+    investorBronzeAmount: '$1,000 / 년',
+    investorSilver: '실버 파트너',
+    investorSilverAmount: '$5,000 / 년',
+    investorGold: '골드 파트너',
+    investorGoldAmount: '$15,000 / 년',
+    investorPerk1: '플랫폼 로고',
+    investorPerk2: '월간 보고서',
+    investorPerk3: '1회 공동 주최 미션',
+    investorPerk4: '브론즈 전체 +',
+    investorPerk5: '인증서 브랜딩',
+    investorPerk6: '분기별 CSR 보고서',
+    investorPerk7: '3회 공동 주최 미션',
+    investorPerk8: '실버 전체 +',
+    investorPerk9: 'NGO 특별 소개',
+    investorPerk10: '맞춤 미션 카테고리',
+    investorPerk11: '무제한 공동 주최 미션',
+    investorPerk12: '직접 대시보드 접근',
     adminDashboardTitle: '관리자 대시보드',
     adminDashboardSubtitle: '사용자 관리, 플랫폼 활동 모니터링, 봉사 프로그램 감독',
     totalUsersLabel: '총 사용자',
@@ -8649,6 +9077,63 @@ const localTranslations: Record<string, Record<string, string>> = {
     closeLabel: 'Schließen',
     contactLabel: 'Kontakt',
     emergencyLabel: 'Notfall',
+    investorDashboardLabel: 'KINDWORLD · INVESTOR-DASHBOARD',
+    investorPlatformOverview: 'Plattformübersicht',
+    investorSubtitle: 'Echtzeit-Kennzahlen, Freiwilligen-Wirkungsdaten und NGO-Partnerschaftsübersicht für KindWorld.',
+    investorLiveData: '✓ Live-Daten',
+    investorPlatformActive: '● Plattform aktiv',
+    investorLanguages: '🌏 12 Sprachen',
+    investorKpiVolunteers: 'Freiwillige gesamt',
+    investorKpiNGOs: 'Aktive NGO-Partner',
+    investorKpiMissions: 'Missionen gesamt',
+    investorKpiHours: 'Freiwilligenstunden',
+    investorKpiRegistrations: 'Anmeldungen',
+    investorKpiCerts: 'Ausgestellte Zertifikate',
+    investorMissionCategories: '📊 Missionskategorien',
+    investorNoMissionData: 'Noch keine Missionsdaten',
+    investorMissionsCount: 'Missionen',
+    investorNGOPartners: '🏢 NGO-Partner',
+    investorNoNGOs: 'Noch keine NGO-Partner',
+    investorVerified: '✓ Verifiziert',
+    investorRegistrations: 'Anmeldungen',
+    investorRecentMissions: '🌍 Aktuelle Missionen',
+    investorColMission: 'Mission',
+    investorColNGO: 'NGO',
+    investorColDate: 'Datum',
+    investorColLocation: 'Ort',
+    investorColRegistered: 'Angemeldet',
+    investorColStatus: 'Status',
+    investorStatusCompleted: 'Abgeschlossen',
+    investorStatusActive: 'Aktiv',
+    investorNoMissions: 'Noch keine Missionen',
+    investorWhyPartner: '💛 Warum mit uns zusammenarbeiten',
+    investorBrandVisibility: 'Markensichtbarkeit',
+    investorBrandVisibilityDesc: 'Ihr Logo auf Freiwilligenzertifikaten, Missionen und in 12 Sprachmärkten',
+    investorImpactReports: 'Wirkungsberichte',
+    investorImpactReportsDesc: 'Vierteljährliche CSR-Berichte mit Stunden, Freiwilligen und erreichten Gemeinschaften',
+    investorGlobalReach: 'Globale Reichweite',
+    investorGlobalReachDesc: 'Freiwillige in Südostasien und darüber hinaus',
+    investorMissionCobranding: 'Mission Co-Branding',
+    investorMissionCobrandingDesc: 'Veranstalten Sie Freiwilligeneinsätze gemeinsam mit Ihrem Firmennamen',
+    investorSponsorTiers: '🏅 Sponsoring-Stufen',
+    investorBronze: 'Bronze-Partner',
+    investorBronzeAmount: '$1.000 / Jahr',
+    investorSilver: 'Silber-Partner',
+    investorSilverAmount: '$5.000 / Jahr',
+    investorGold: 'Gold-Partner',
+    investorGoldAmount: '$15.000 / Jahr',
+    investorPerk1: 'Logo auf der Plattform',
+    investorPerk2: 'Monatlicher Bericht',
+    investorPerk3: '1 gemeinsam veranstaltete Mission',
+    investorPerk4: 'Alles Bronze +',
+    investorPerk5: 'Zertifikat-Branding',
+    investorPerk6: 'Vierteljährlicher CSR-Bericht',
+    investorPerk7: '3 gemeinsam veranstaltete Missionen',
+    investorPerk8: 'Alles Silber +',
+    investorPerk9: 'NGO-Spotlight',
+    investorPerk10: 'Benutzerdefinierte Missionskategorien',
+    investorPerk11: 'Unbegrenzte gemeinsame Missionen',
+    investorPerk12: 'Direkter Dashboard-Zugang',
     adminDashboardTitle: 'Admin-Dashboard',
     adminDashboardSubtitle: 'Benutzer verwalten, Plattformaktivität überwachen und Freiwilligenprogramme beaufsichtigen',
     totalUsersLabel: 'Gesamte Benutzer',
@@ -26781,17 +27266,17 @@ export default function KindWorldApp() {
                     <div style={{ display:'flex', alignItems:'center', gap:'16px', marginBottom:'20px' }}>
                       <div style={{ width:'clamp(48px,5vw,72px)', height:'clamp(48px,5vw,72px)', background:'linear-gradient(135deg,#c9a84c,#f0c040)', borderRadius:'18px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'clamp(24px,3vw,40px)', flexShrink:0 }}>💼</div>
                       <div>
-                        <div style={{ fontSize:'clamp(11px,1vw,13px)', letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.8)', fontWeight:'700', marginBottom:'6px' }}>KINDWORLD · INVESTOR DASHBOARD</div>
-                        <h1 style={{ margin:0, fontSize:'clamp(26px,3.5vw,52px)', fontWeight:'800', color:'white', letterSpacing:'-0.02em', lineHeight:1.1 }}>Platform Overview</h1>
+                        <div style={{ fontSize:'clamp(11px,1vw,13px)', letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.8)', fontWeight:'700', marginBottom:'6px' }}>{t('investorDashboardLabel')}</div>
+                        <h1 style={{ margin:0, fontSize:'clamp(26px,3.5vw,52px)', fontWeight:'800', color:'white', letterSpacing:'-0.02em', lineHeight:1.1 }}>{t('investorPlatformOverview')}</h1>
                       </div>
                     </div>
                     <p style={{ margin:0, fontSize:'clamp(14px,1.3vw,20px)', color:'rgba(255,255,255,0.65)', maxWidth:'640px', lineHeight:1.6 }}>
-                      Real-time metrics, volunteer impact data, and NGO partnership overview for KindWorld.
+                      {t('investorSubtitle')}
                     </p>
                     <div style={{ marginTop:'24px', display:'flex', gap:'12px', flexWrap:'wrap' }}>
-                      <span style={{ background:'rgba(201,168,76,0.15)', border:'1px solid rgba(201,168,76,0.35)', color:'#f0c040', padding:'6px 16px', borderRadius:'99px', fontSize:'clamp(12px,1vw,14px)', fontWeight:'600' }}>✓ Live Data</span>
-                      <span style={{ background:'rgba(34,197,94,0.12)', border:'1px solid rgba(34,197,94,0.3)', color:'#4ade80', padding:'6px 16px', borderRadius:'99px', fontSize:'clamp(12px,1vw,14px)', fontWeight:'600' }}>● Platform Active</span>
-                      <span style={{ background:'rgba(99,102,241,0.12)', border:'1px solid rgba(99,102,241,0.3)', color:'#a5b4fc', padding:'6px 16px', borderRadius:'99px', fontSize:'clamp(12px,1vw,14px)', fontWeight:'600' }}>🌏 12 Languages</span>
+                      <span style={{ background:'rgba(201,168,76,0.15)', border:'1px solid rgba(201,168,76,0.35)', color:'#f0c040', padding:'6px 16px', borderRadius:'99px', fontSize:'clamp(12px,1vw,14px)', fontWeight:'600' }}>{t('investorLiveData')}</span>
+                      <span style={{ background:'rgba(34,197,94,0.12)', border:'1px solid rgba(34,197,94,0.3)', color:'#4ade80', padding:'6px 16px', borderRadius:'99px', fontSize:'clamp(12px,1vw,14px)', fontWeight:'600' }}>{t('investorPlatformActive')}</span>
+                      <span style={{ background:'rgba(99,102,241,0.12)', border:'1px solid rgba(99,102,241,0.3)', color:'#a5b4fc', padding:'6px 16px', borderRadius:'99px', fontSize:'clamp(12px,1vw,14px)', fontWeight:'600' }}>{t('investorLanguages')}</span>
                     </div>
                   </div>
                 </div>
@@ -26799,12 +27284,12 @@ export default function KindWorldApp() {
                 {/* KPI Cards Row */}
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(clamp(160px,18vw,240px), 1fr))', gap:'clamp(12px,1.5vw,24px)', marginBottom:'40px' }}>
                   {[
-                    { icon:'👥', label:'Total Volunteers', value: totalVols.toLocaleString(), sub:`avg ${avgHoursPerVol}h each`, color:'#6366f1', bg:'linear-gradient(135deg,#6366f1,#8b5cf6)' },
-                    { icon:'🌍', label:'Active NGO Partners', value: totalNGOs.toLocaleString(), sub:'verified organizations', color:'#059669', bg:'linear-gradient(135deg,#059669,#10b981)' },
-                    { icon:'📋', label:'Total Missions', value: totalMissions.toLocaleString(), sub:`${activeMissions} upcoming · ${completedMissions} done`, color:'#f59e0b', bg:'linear-gradient(135deg,#f59e0b,#f97316)' },
-                    { icon:'⏱', label:'Volunteer Hours', value: totalHours.toLocaleString(), sub:'hours contributed total', color:'#3b82f6', bg:'linear-gradient(135deg,#3b82f6,#6366f1)' },
-                    { icon:'📝', label:'Registrations', value: totalRegistrations.toLocaleString(), sub:'mission sign-ups total', color:'#ec4899', bg:'linear-gradient(135deg,#ec4899,#f43f5e)' },
-                    { icon:'🎓', label:'Certificates Issued', value: totalCertIssued.toLocaleString(), sub:'approved by NGOs', color:'#c9a84c', bg:'linear-gradient(135deg,#c9a84c,#f0c040)' },
+                    { icon:'👥', label:t('investorKpiVolunteers'), value: totalVols.toLocaleString(), sub:`avg ${avgHoursPerVol}h each`, color:'#6366f1', bg:'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+                    { icon:'🌍', label:t('investorKpiNGOs'), value: totalNGOs.toLocaleString(), sub:t('investorKpiNGOsSub'), color:'#059669', bg:'linear-gradient(135deg,#059669,#10b981)' },
+                    { icon:'📋', label:t('investorKpiMissions'), value: totalMissions.toLocaleString(), sub:`${activeMissions} upcoming · ${completedMissions} done`, color:'#f59e0b', bg:'linear-gradient(135deg,#f59e0b,#f97316)' },
+                    { icon:'⏱', label:t('investorKpiHours'), value: totalHours.toLocaleString(), sub:t('investorKpiHoursSub'), color:'#3b82f6', bg:'linear-gradient(135deg,#3b82f6,#6366f1)' },
+                    { icon:'📝', label:t('investorKpiRegistrations'), value: totalRegistrations.toLocaleString(), sub:t('investorKpiRegistrationsSub'), color:'#ec4899', bg:'linear-gradient(135deg,#ec4899,#f43f5e)' },
+                    { icon:'🎓', label:t('investorKpiCerts'), value: totalCertIssued.toLocaleString(), sub:t('investorKpiCertsSub'), color:'#c9a84c', bg:'linear-gradient(135deg,#c9a84c,#f0c040)' },
                   ].map((kpi) => (
                     <div key={kpi.label} style={{ background:'white', borderRadius:'20px', padding:'clamp(20px,2.5vw,32px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9', position:'relative', overflow:'hidden' }}>
                       <div style={{ position:'absolute', top:'-20px', right:'-20px', width:'100px', height:'100px', borderRadius:'50%', background: kpi.bg, opacity:0.08 }} />
@@ -26822,7 +27307,7 @@ export default function KindWorldApp() {
                   {/* Mission Categories */}
                   <div style={{ background:'white', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9' }}>
                     <h2 style={{ margin:'0 0 24px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a', display:'flex', alignItems:'center', gap:'10px' }}>
-                      📊 Mission Categories
+                      {t('investorMissionCategories')}
                     </h2>
                     <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
                       {topCategories.length > 0 ? topCategories.map(([cat, count]) => {
@@ -26833,21 +27318,21 @@ export default function KindWorldApp() {
                           <div key={cat}>
                             <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'6px' }}>
                               <span style={{ fontSize:'clamp(13px,1.1vw,16px)', fontWeight:'600', color:'#374151', textTransform:'capitalize' }}>{cat}</span>
-                              <span style={{ fontSize:'clamp(13px,1.1vw,16px)', fontWeight:'700', color: clr }}>{count} missions · {pct}%</span>
+                              <span style={{ fontSize:'clamp(13px,1.1vw,16px)', fontWeight:'700', color: clr }}>{count} {t('investorMissionsCount')} · {pct}%</span>
                             </div>
                             <div style={{ height:'10px', background:'#f1f5f9', borderRadius:'99px', overflow:'hidden' }}>
                               <div style={{ width:`${pct}%`, height:'100%', background: clr, borderRadius:'99px', transition:'width 0.5s ease' }} />
                             </div>
                           </div>
                         )
-                      }) : <p style={{ color:'#94a3b8', fontSize:'clamp(13px,1.1vw,16px)' }}>No mission data yet</p>}
+                      }) : <p style={{ color:'#94a3b8', fontSize:'clamp(13px,1.1vw,16px)' }}>{t('investorNoMissionData')}</p>}
                     </div>
                   </div>
 
                   {/* NGO Partners */}
                   <div style={{ background:'white', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9' }}>
                     <h2 style={{ margin:'0 0 24px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a', display:'flex', alignItems:'center', gap:'10px' }}>
-                      🏢 NGO Partners
+                      {t('investorNGOPartners')}
                     </h2>
                     <div style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
                       {topNGOs.length > 0 ? topNGOs.map((ngo: any) => {
@@ -26861,12 +27346,12 @@ export default function KindWorldApp() {
                             }
                             <div style={{ flex:1, minWidth:0 }}>
                               <div style={{ fontSize:'clamp(13px,1.1vw,16px)', fontWeight:'700', color:'#1e293b', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{ngo.ngoOrgName || ngo.name}</div>
-                              <div style={{ fontSize:'clamp(11px,0.9vw,13px)', color:'#64748b' }}>{ngoMissionCount} missions · {ngoVolCount} registrations</div>
+                              <div style={{ fontSize:'clamp(11px,0.9vw,13px)', color:'#64748b' }}>{ngoMissionCount} {t('investorMissionsCount')} · {ngoVolCount} {t('investorRegistrations')}</div>
                             </div>
-                            <span style={{ padding:'4px 12px', background:'#d1fae5', color:'#065f46', borderRadius:'99px', fontSize:'clamp(10px,0.85vw,12px)', fontWeight:'700', flexShrink:0 }}>✓ Verified</span>
+                            <span style={{ padding:'4px 12px', background:'#d1fae5', color:'#065f46', borderRadius:'99px', fontSize:'clamp(10px,0.85vw,12px)', fontWeight:'700', flexShrink:0 }}>{t('investorVerified')}</span>
                           </div>
                         )
-                      }) : <p style={{ color:'#94a3b8', fontSize:'clamp(13px,1.1vw,16px)' }}>No NGO partners yet</p>}
+                      }) : <p style={{ color:'#94a3b8', fontSize:'clamp(13px,1.1vw,16px)' }}>{t('investorNoNGOs')}</p>}
                     </div>
                   </div>
                 </div>
@@ -26874,13 +27359,13 @@ export default function KindWorldApp() {
                 {/* Recent Missions */}
                 <div style={{ background:'white', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9', marginBottom:'32px' }}>
                   <h2 style={{ margin:'0 0 24px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a' }}>
-                    🌍 Recent Missions
+                    {t('investorRecentMissions')}
                   </h2>
                   <div style={{ overflowX:'auto' }}>
                     <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'clamp(13px,1.1vw,16px)' }}>
                       <thead>
                         <tr style={{ background:'#f8fafc' }}>
-                          {['Mission', 'NGO', 'Date', 'Location', 'Registered', 'Status'].map(h => (
+                          {[t('investorColMission'), t('investorColNGO'), t('investorColDate'), t('investorColLocation'), t('investorColRegistered'), t('investorColStatus')].map(h => (
                             <th key={h} style={{ padding:'clamp(10px,1.2vw,16px)', textAlign:'left', fontWeight:'700', color:'#475569', fontSize:'clamp(11px,0.9vw,13px)', textTransform:'uppercase', letterSpacing:'0.5px', borderBottom:'2px solid #e2e8f0', whiteSpace:'nowrap' }}>{h}</th>
                           ))}
                         </tr>
@@ -26901,7 +27386,7 @@ export default function KindWorldApp() {
                               <td style={{ padding:'clamp(10px,1.2vw,16px)', fontWeight:'700', color:'#6366f1' }}>{regs}</td>
                               <td style={{ padding:'clamp(10px,1.2vw,16px)' }}>
                                 <span style={{ padding:'4px 12px', borderRadius:'99px', fontSize:'clamp(10px,0.85vw,12px)', fontWeight:'700', background: isPast ? '#f1f5f9' : '#d1fae5', color: isPast ? '#64748b' : '#065f46' }}>
-                                  {isPast ? 'Completed' : 'Active'}
+                                  {isPast ? t('investorStatusCompleted') : t('investorStatusActive')}
                                 </span>
                               </td>
                             </tr>
@@ -26909,7 +27394,7 @@ export default function KindWorldApp() {
                         })}
                       </tbody>
                     </table>
-                    {recentMissions.length === 0 && <p style={{ textAlign:'center', color:'#94a3b8', padding:'32px', fontSize:'clamp(13px,1.1vw,16px)' }}>No missions yet</p>}
+                    {recentMissions.length === 0 && <p style={{ textAlign:'center', color:'#94a3b8', padding:'32px', fontSize:'clamp(13px,1.1vw,16px)' }}>{t('investorNoMissions')}</p>}
                   </div>
                 </div>
 
@@ -26917,13 +27402,13 @@ export default function KindWorldApp() {
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'clamp(16px,2vw,32px)', marginBottom:'32px' }}>
                   {/* Why Sponsor */}
                   <div style={{ background:'linear-gradient(135deg,#0f172a,#1e3a5f)', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', color:'white' }}>
-                    <h2 style={{ margin:'0 0 20px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#f0c040' }}>💛 Why Partner With Us</h2>
+                    <h2 style={{ margin:'0 0 20px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#f0c040' }}>{t('investorWhyPartner')}</h2>
                     <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
                       {[
-                        { icon:'🎯', title:'Brand Visibility', desc:'Your logo on volunteer certificates, missions, and across 12 language markets' },
-                        { icon:'📊', title:'Impact Reports', desc:'Quarterly CSR-ready reports showing hours, volunteers, and communities reached' },
-                        { icon:'🌐', title:'Global Reach', desc:`${totalVols} volunteers across Southeast Asia and beyond` },
-                        { icon:'🤝', title:'Mission Co-branding', desc:'Co-host volunteer events with your company name attached to real community impact' },
+                        { icon:'🎯', title:t('investorBrandVisibility'), desc:t('investorBrandVisibilityDesc') },
+                        { icon:'📊', title:t('investorImpactReports'), desc:t('investorImpactReportsDesc') },
+                        { icon:'🌐', title:t('investorGlobalReach'), desc:`${totalVols} ${t('investorGlobalReachDesc')}` },
+                        { icon:'🤝', title:t('investorMissionCobranding'), desc:t('investorMissionCobrandingDesc') },
                       ].map(item => (
                         <div key={item.title} style={{ display:'flex', gap:'14px', alignItems:'flex-start' }}>
                           <div style={{ fontSize:'clamp(20px,2vw,28px)', flexShrink:0, marginTop:'2px' }}>{item.icon}</div>
@@ -26938,12 +27423,12 @@ export default function KindWorldApp() {
 
                   {/* Sponsorship Tiers */}
                   <div style={{ background:'white', borderRadius:'24px', padding:'clamp(24px,3vw,40px)', boxShadow:'0 4px 24px rgba(0,0,0,0.07)', border:'1px solid #f1f5f9' }}>
-                    <h2 style={{ margin:'0 0 20px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a' }}>🏅 Sponsorship Tiers</h2>
+                    <h2 style={{ margin:'0 0 20px', fontSize:'clamp(16px,1.5vw,22px)', fontWeight:'700', color:'#0f172a' }}>{t('investorSponsorTiers')}</h2>
                     <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
                       {[
-                        { tier:'Bronze Partner', amount:'$1,000 / yr', perks:['Logo on platform', 'Monthly report', '1 co-hosted mission'], color:'#b45309', bg:'#fffbeb', border:'#fde68a' },
-                        { tier:'Silver Partner', amount:'$5,000 / yr', perks:['All Bronze +', 'Certificate branding', 'Quarterly CSR report', '3 co-hosted missions'], color:'#475569', bg:'#f8fafc', border:'#e2e8f0' },
-                        { tier:'Gold Partner', amount:'$15,000 / yr', perks:['All Silver +', 'Featured NGO spotlight', 'Custom mission categories', 'Unlimited co-hosted missions', 'Direct dashboard access'], color:'#92400e', bg:'#fef3c7', border:'#f59e0b' },
+                        { tier:t('investorBronze'), amount:t('investorBronzeAmount'), perks:[t('investorPerk1'), t('investorPerk2'), t('investorPerk3')], color:'#b45309', bg:'#fffbeb', border:'#fde68a' },
+                        { tier:t('investorSilver'), amount:t('investorSilverAmount'), perks:[t('investorPerk4'), t('investorPerk5'), t('investorPerk6'), t('investorPerk7')], color:'#475569', bg:'#f8fafc', border:'#e2e8f0' },
+                        { tier:t('investorGold'), amount:t('investorGoldAmount'), perks:[t('investorPerk8'), t('investorPerk9'), t('investorPerk10'), t('investorPerk11'), t('investorPerk12')], color:'#92400e', bg:'#fef3c7', border:'#f59e0b' },
                       ].map(t => (
                         <div key={t.tier} style={{ background: t.bg, border:`2px solid ${t.border}`, borderRadius:'16px', padding:'clamp(14px,1.5vw,20px)' }}>
                           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'10px' }}>
