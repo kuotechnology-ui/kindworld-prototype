@@ -10356,6 +10356,11 @@ export default function KindWorldApp() {
   })
   const [showBudgetModal, setShowBudgetModal] = useState(false)
   const [budgetForm, setBudgetForm] = useState({ companyEmail: '', companyName: '', category: 'Operations', amount: '', currency: 'USD', description: '', date: new Date().toISOString().split('T')[0] })
+  const [ngoExpenses, setNgoExpenses] = useState<{id:string,ngoEmail:string,campaignId:string,campaignTitle:string,companyName:string,category:string,amount:number,currency:string,description:string,date:string}[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kindworld_ngo_expenses') || '[]') } catch { return [] }
+  })
+  const [showNgoExpenseModal, setShowNgoExpenseModal] = useState(false)
+  const [ngoExpenseForm, setNgoExpenseForm] = useState({ campaignId: '', category: 'Program Delivery', amount: '', currency: 'USD', description: '', date: new Date().toISOString().split('T')[0] })
   const [showCelebration, setShowCelebration] = useState<{type: 'hours'|'badge'|'milestone'|'certificate', title: string, subtitle: string, icon: string} | null>(null)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   const [showLineModal, setShowLineModal] = useState<{mission: any, participants: any[]} | null>(null)
@@ -27908,6 +27913,215 @@ export default function KindWorldApp() {
                             ))}
                           </tbody>
                         </table>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* NGO Expense Ledger */}
+                {(() => {
+                  const myExpenses = ngoExpenses.filter(e => e.ngoEmail === myEmail)
+                  const totalSpent = myExpenses.reduce((s, e) => s + Number(e.amount), 0)
+                  const categories = ['Program Delivery', 'Operations', 'Events', 'Marketing', 'Personnel', 'Technology', 'Admin', 'Other']
+                  const currencies = ['USD','GBP','EUR','SGD','MYR','TWD (NTD)','IDR','CNY','JPY','THB','KRW','VND','BRL']
+                  const catTotals = categories.reduce((acc, cat) => {
+                    acc[cat] = myExpenses.filter(e => e.category === cat).reduce((s, e) => s + Number(e.amount), 0)
+                    return acc
+                  }, {} as Record<string, number>)
+                  return (
+                    <div style={{ background: 'white', borderRadius: '20px', padding: '28px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '28px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                        <div>
+                          <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#1f2937', margin: '0 0 4px' }}>📊 Fund Utilisation Ledger</h3>
+                          <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>Record how sponsorship funds are spent</p>
+                        </div>
+                        <button onClick={() => setShowNgoExpenseModal(true)}
+                          style={{ padding: '10px 20px', background: 'linear-gradient(135deg,#059669,#10b981)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          ＋ Add Expense Entry
+                        </button>
+                      </div>
+
+                      {myExpenses.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '40px', color: '#9ca3af' }}>
+                          <div style={{ fontSize: '40px', marginBottom: '12px' }}>📝</div>
+                          <p style={{ margin: '0 0 6px', fontWeight: '600' }}>No expense entries yet</p>
+                          <p style={{ margin: 0, fontSize: '13px' }}>Start logging how you're using the sponsorship funds</p>
+                        </div>
+                      ) : (
+                        <>
+                          {/* Summary KPIs */}
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px,1fr))', gap: '12px', marginBottom: '20px' }}>
+                            <div style={{ background: '#f0fdf4', borderRadius: '14px', padding: '16px', textAlign: 'center', border: '1px solid #bbf7d0' }}>
+                              <div style={{ fontSize: '20px', fontWeight: '800', color: '#059669' }}>{myExpenses[0]?.currency} {totalSpent.toLocaleString()}</div>
+                              <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', fontWeight: '500' }}>Total Logged</div>
+                            </div>
+                            <div style={{ background: '#eff6ff', borderRadius: '14px', padding: '16px', textAlign: 'center', border: '1px solid #bfdbfe' }}>
+                              <div style={{ fontSize: '20px', fontWeight: '800', color: '#1e40af' }}>{myExpenses.length}</div>
+                              <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', fontWeight: '500' }}>Entries</div>
+                            </div>
+                            <div style={{ background: '#fdf4ff', borderRadius: '14px', padding: '16px', textAlign: 'center', border: '1px solid #e9d5ff' }}>
+                              <div style={{ fontSize: '20px', fontWeight: '800', color: '#7c3aed' }}>{Object.values(catTotals).filter(v => v > 0).length}</div>
+                              <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px', fontWeight: '500' }}>Categories Used</div>
+                            </div>
+                          </div>
+
+                          {/* Category breakdown */}
+                          {Object.entries(catTotals).filter(([, v]) => v > 0).length > 0 && (
+                            <div style={{ marginBottom: '20px' }}>
+                              <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '10px' }}>Breakdown by Category</div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {Object.entries(catTotals).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([cat, amt]) => (
+                                  <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{ fontSize: '12px', color: '#6b7280', width: '120px', flexShrink: 0 }}>{cat}</div>
+                                    <div style={{ flex: 1, height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                                      <div style={{ height: '100%', width: `${Math.round((amt / totalSpent) * 100)}%`, background: 'linear-gradient(90deg,#059669,#10b981)', borderRadius: '4px' }} />
+                                    </div>
+                                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#059669', width: '80px', textAlign: 'right', flexShrink: 0 }}>{Math.round((amt / totalSpent) * 100)}%</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Entries table */}
+                          <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                              <thead>
+                                <tr style={{ background: '#f8fafc' }}>
+                                  {['Date', 'Campaign / Company', 'Category', 'Amount', 'Description', ''].map(h => (
+                                    <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: '700', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '2px solid #e2e8f0', whiteSpace: 'nowrap' }}>{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {myExpenses.slice().reverse().map((e, idx) => (
+                                  <tr key={e.id} style={{ borderBottom: '1px solid #f1f5f9', background: idx % 2 === 0 ? 'white' : '#fafafa' }}>
+                                    <td style={{ padding: '10px 14px', color: '#94a3b8', whiteSpace: 'nowrap' }}>{e.date}</td>
+                                    <td style={{ padding: '10px 14px' }}>
+                                      <div style={{ fontWeight: '600', color: '#1e293b', fontSize: '13px' }}>{e.campaignTitle}</div>
+                                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>{e.companyName}</div>
+                                    </td>
+                                    <td style={{ padding: '10px 14px' }}><span style={{ padding: '2px 8px', background: '#eff6ff', color: '#1e40af', borderRadius: '6px', fontSize: '11px', fontWeight: '500' }}>{e.category}</span></td>
+                                    <td style={{ padding: '10px 14px', fontWeight: '700', color: '#dc2626', whiteSpace: 'nowrap' }}>{e.currency} {Number(e.amount).toLocaleString()}</td>
+                                    <td style={{ padding: '10px 14px', color: '#64748b', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.description || '—'}</td>
+                                    <td style={{ padding: '10px 14px' }}>
+                                      <button onClick={() => {
+                                        const updated = ngoExpenses.filter(x => x.id !== e.id)
+                                        setNgoExpenses(updated)
+                                        localStorage.setItem('kindworld_ngo_expenses', JSON.stringify(updated))
+                                      }} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px', padding: '2px' }} title="Delete">🗑</button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )
+                })()}
+
+                {/* NGO Expense Modal */}
+                {showNgoExpenseModal && (() => {
+                  const myActiveCampaigns = sponsorCampaigns.filter(c => c.ngoEmail.toLowerCase() === myEmail && (c.status === 'active' || c.status === 'completed'))
+                  const selectedCampaign = myActiveCampaigns.find(c => c.id === ngoExpenseForm.campaignId)
+                  return (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '20px' }}>
+                      <div style={{ background: 'white', borderRadius: '20px', padding: '28px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px rgba(0,0,0,0.25)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                          <h3 style={{ margin: 0, fontWeight: '700', color: '#1f2937', fontSize: '18px' }}>📝 Add Expense Entry</h3>
+                          <button onClick={() => setShowNgoExpenseModal(false)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#9ca3af' }}>✕</button>
+                        </div>
+
+                        {/* Campaign selector */}
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>Sponsorship Campaign *</label>
+                          {myActiveCampaigns.length === 0 ? (
+                            <div style={{ padding: '12px', background: '#fef2f2', borderRadius: '10px', fontSize: '13px', color: '#dc2626' }}>No active campaigns yet. Campaigns must be active to log expenses.</div>
+                          ) : (
+                            <select value={ngoExpenseForm.campaignId} onChange={e => setNgoExpenseForm(p => ({ ...p, campaignId: e.target.value, currency: myActiveCampaigns.find(c => c.id === e.target.value)?.currency || p.currency }))}
+                              style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', background: 'white' }}>
+                              <option value="">— Select campaign —</option>
+                              {myActiveCampaigns.map(c => (
+                                <option key={c.id} value={c.id}>{c.title} ({c.companyName}) · {c.currency} {Number(c.amount).toLocaleString()}</option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+
+                        {/* Category */}
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>Category *</label>
+                          <select value={ngoExpenseForm.category} onChange={e => setNgoExpenseForm(p => ({ ...p, category: e.target.value }))}
+                            style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', background: 'white' }}>
+                            {['Program Delivery','Operations','Events','Marketing','Personnel','Technology','Admin','Other'].map(c => <option key={c}>{c}</option>)}
+                          </select>
+                        </div>
+
+                        {/* Amount + Currency */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: '10px', marginBottom: '14px' }}>
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>Amount *</label>
+                            <input type="number" min="1" placeholder="e.g. 5000" value={ngoExpenseForm.amount} onChange={e => setNgoExpenseForm(p => ({ ...p, amount: e.target.value }))}
+                              style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>Currency</label>
+                            <select value={ngoExpenseForm.currency} onChange={e => setNgoExpenseForm(p => ({ ...p, currency: e.target.value }))}
+                              style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', background: 'white' }}>
+                              {['USD','GBP','EUR','SGD','MYR','TWD (NTD)','IDR','CNY','JPY','THB','KRW','VND','BRL'].map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Date */}
+                        <div style={{ marginBottom: '14px' }}>
+                          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>Date *</label>
+                          <input type="date" value={ngoExpenseForm.date} onChange={e => setNgoExpenseForm(p => ({ ...p, date: e.target.value }))}
+                            style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                        </div>
+
+                        {/* Description */}
+                        <div style={{ marginBottom: '20px' }}>
+                          <label style={{ display: 'block', marginBottom: '6px', fontWeight: '600', fontSize: '13px', color: '#374151' }}>Description / Notes</label>
+                          <textarea rows={3} placeholder="e.g. Venue rental for youth program, Apr 2026" value={ngoExpenseForm.description} onChange={e => setNgoExpenseForm(p => ({ ...p, description: e.target.value }))}
+                            style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '10px', fontSize: '13px', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button onClick={() => setShowNgoExpenseModal(false)}
+                            style={{ flex: 1, padding: '12px', background: '#f1f5f9', border: 'none', borderRadius: '12px', fontWeight: '600', fontSize: '14px', cursor: 'pointer', color: '#475569' }}>
+                            Cancel
+                          </button>
+                          <button onClick={() => {
+                            if (!ngoExpenseForm.campaignId || !ngoExpenseForm.amount || !ngoExpenseForm.date) {
+                              alert('Please fill in campaign, amount and date.'); return
+                            }
+                            const camp = sponsorCampaigns.find(c => c.id === ngoExpenseForm.campaignId)!
+                            const entry = {
+                              id: `ngoexp_${Date.now()}`,
+                              ngoEmail: myEmail,
+                              campaignId: ngoExpenseForm.campaignId,
+                              campaignTitle: camp.title,
+                              companyName: camp.companyName,
+                              category: ngoExpenseForm.category,
+                              amount: Number(ngoExpenseForm.amount),
+                              currency: ngoExpenseForm.currency,
+                              description: ngoExpenseForm.description,
+                              date: ngoExpenseForm.date
+                            }
+                            const updated = [...ngoExpenses, entry]
+                            setNgoExpenses(updated)
+                            localStorage.setItem('kindworld_ngo_expenses', JSON.stringify(updated))
+                            setNgoExpenseForm({ campaignId: '', category: 'Program Delivery', amount: '', currency: 'USD', description: '', date: new Date().toISOString().split('T')[0] })
+                            setShowNgoExpenseModal(false)
+                            setNotifications(prev => [...prev, '✅ Expense entry saved!'])
+                          }}
+                            style={{ flex: 2, padding: '12px', background: 'linear-gradient(135deg,#059669,#10b981)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '700', fontSize: '14px', cursor: 'pointer' }}>
+                            ✅ Save Expense
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )
