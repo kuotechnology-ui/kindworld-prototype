@@ -1176,8 +1176,17 @@ const translations: Record<string, Record<string, string>> = {
   }
 }
 
+const getSavedLanguage = (): string => {
+  try {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('kindworld_language') : null
+    return saved || 'en'
+  } catch {
+    return 'en'
+  }
+}
+
 const initialState: LanguageState = {
-  currentLanguage: 'en',
+  currentLanguage: getSavedLanguage(),
   translations
 }
 

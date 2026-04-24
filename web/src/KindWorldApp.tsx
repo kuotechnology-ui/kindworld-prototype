@@ -27273,16 +27273,28 @@ export default function KindWorldApp() {
 
           {/* ── SPONSOR IMPACT REPORT ── */}
           {currentPage === 'sponsorImpact' && user?.role === 'sponsor' && (() => {
-            const sponsoredMissions = missions.filter((m: any) => sponsorProfile.sponsoredMissionIds.includes(m.id))
-            const sponsoredRegs = missionRegistrations.filter((r: any) => sponsorProfile.sponsoredMissionIds.includes(r.missionId))
+            // Combine legacy sponsoredMissionIds + campaign-linked missions
+            const myCampaigns = sponsorCampaigns.filter(c => c.sponsorEmail === user.email)
+            const activeCampaigns = myCampaigns.filter(c => c.status === 'active')
+            const completedCampaigns = myCampaigns.filter(c => c.status === 'completed')
+            const campaignMissionIds = myCampaigns.filter(c => c.missionId && ['active','completed'].includes(c.status)).map(c => c.missionId as number)
+            const allSponsoredIds = [...new Set([...sponsorProfile.sponsoredMissionIds, ...campaignMissionIds])]
+            const sponsoredMissions = missions.filter((m: any) => allSponsoredIds.includes(m.id))
+            const sponsoredRegs = missionRegistrations.filter((r: any) => allSponsoredIds.includes(r.missionId))
             const totalSponsoredHours = sponsoredMissions.reduce((s: number, m: any) => s + (m.hours || 3) * (missionRegistrations.filter((r: any) => r.missionId === m.id).length), 0)
             const uniqueVols = new Set(sponsoredRegs.map((r: any) => r.volunteerId || r.volunteer?.id)).size
-            const completedSponsored = sponsoredMissions.filter((m: any) => m.date < new Date().toISOString().split('T')[0]).length
-            const activeSponsored = sponsoredMissions.filter((m: any) => m.date >= new Date().toISOString().split('T')[0]).length
-            const certEarned = certRequests.filter((r: any) => r.status === 'approved' && sponsorProfile.sponsoredMissionIds.includes(r.missionId)).length
+            const completedSponsored = completedCampaigns.length + sponsoredMissions.filter((m: any) => m.date < new Date().toISOString().split('T')[0] && !campaignMissionIds.includes(m.id)).length
+            const activeSponsored = activeCampaigns.length + sponsoredMissions.filter((m: any) => m.date >= new Date().toISOString().split('T')[0] && !campaignMissionIds.includes(m.id)).length
+            const certEarned = certRequests.filter((r: any) => r.status === 'approved' && allSponsoredIds.includes(r.missionId)).length
             const catBreakdown = sponsoredMissions.reduce((acc: Record<string,number>, m: any) => { acc[m.category] = (acc[m.category] || 0) + 1; return acc }, {} as Record<string,number>)
             const catEntries = Object.entries(catBreakdown).sort((a, b) => b[1] - a[1])
             const maxCat = catEntries[0]?.[1] || 1
+            // Budget data for this company
+            const myEmail = user.email.toLowerCase()
+            const myBudget = budgetEntries.filter(e => e.companyEmail.toLowerCase() === myEmail)
+            const totalBudget = myBudget.reduce((s, e) => s + e.amount, 0)
+            const byCat = myBudget.reduce((acc: Record<string,number>, e) => { acc[e.category] = (acc[e.category] || 0) + e.amount; return acc }, {} as Record<string,number>)
+            const totalPledged = myCampaigns.filter(c => ['active','completed','pendingVerification'].includes(c.status)).reduce((s, c) => s + c.amount, 0)
             const tier = sponsorProfile.tier || 'bronze'
             const tierColors: Record<string,string> = { gold: '#d97706', silver: '#6b7280', bronze: '#b45309' }
             const tierBenefits: Record<string,string[]> = {
@@ -27307,9 +27319,9 @@ export default function KindWorldApp() {
                 </div>
 
                 {/* Top KPI row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px', marginBottom: '32px' }}>
                   {[
-                    { icon: '🌍', val: sponsoredMissions.length, lbl: t('sponsoredMissions'), color: '#3b82f6' },
+                    { icon: '📣', val: myCampaigns.length, lbl: t('campaigns'), color: '#3b82f6' },
                     { icon: '👥', val: uniqueVols, lbl: t('volunteersReached'), color: '#059669' },
                     { icon: '⏱️', val: `${totalSponsoredHours}h`, lbl: t('totalHoursLabel'), color: '#7c3aed' },
                     { icon: '✅', val: completedSponsored, lbl: t('completed'), color: '#059669' },
@@ -27330,7 +27342,7 @@ export default function KindWorldApp() {
                   <div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
                     <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1f2937', margin: '0 0 20px' }}>📊 {t('missionsByCategory')}</h3>
                     {catEntries.length === 0 ? (
-                      <p style={{ color: '#9ca3af', textAlign: 'center', padding: '20px 0' }}>{t('noSponsoredMissions')}</p>
+                      <p style={{ color: '#9ca3af', textAlign: 'center', padding: '20px 0' }}>No linked missions yet</p>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                         {catEntries.map(([cat, count]) => (
@@ -27365,38 +27377,115 @@ export default function KindWorldApp() {
                   </div>
                 </div>
 
-                {/* Full missions table */}
+                {/* Campaigns Section */}
                 <div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '28px' }}>
-                  <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1f2937', margin: '0 0 20px' }}>📋 {t('allSponsoredMissions')}</h3>
-                  {sponsoredMissions.length === 0 ? (
-                    <p style={{ color: '#9ca3af', textAlign: 'center', padding: '24px 0' }}>{t('noSponsoredMissions')}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                    <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1f2937', margin: 0 }}>📣 {t('allSponsoredMissions')}</h3>
+                    {totalPledged > 0 && (
+                      <div style={{ padding: '6px 16px', background: 'linear-gradient(135deg,#ecfdf5,#d1fae5)', border: '1px solid #a7f3d0', borderRadius: '10px', fontWeight: '800', color: '#065f46', fontSize: '15px' }}>
+                        Total Pledged: {myCampaigns[0]?.currency || 'USD'} {totalPledged.toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                  {myCampaigns.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '40px 0', color: '#9ca3af' }}>
+                      <div style={{ fontSize: '40px', marginBottom: '10px' }}>📋</div>
+                      <p style={{ margin: 0, fontSize: '14px' }}>No campaigns yet. Create your first campaign to fund a mission.</p>
+                      <button onClick={() => setCurrentPage('dashboard')} style={{ marginTop: '16px', padding: '10px 24px', background: 'linear-gradient(135deg,#1e40af,#3b82f6)', color: 'white', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>
+                        + {t('newCampaign')}
+                      </button>
+                    </div>
                   ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                        <thead>
-                          <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                            {[t('missionTitle'), t('organizer'), t('date'), t('category'), t('volunteersLabel2'), t('status')].map(h => (
-                              <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontWeight: '600', color: '#6b7280', whiteSpace: 'nowrap' }}>{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sponsoredMissions.map((m: any, idx: number) => {
-                            const regs = missionRegistrations.filter((r: any) => r.missionId === m.id).length
-                            const isPast = m.date < new Date().toISOString().split('T')[0]
-                            return (
-                              <tr key={m.id} style={{ borderBottom: '1px solid #f3f4f6', background: idx % 2 === 0 ? 'white' : '#fafafa' }}>
-                                <td style={{ padding: '12px 14px', fontWeight: '500', color: '#1f2937', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.title}</td>
-                                <td style={{ padding: '12px 14px', color: '#6b7280' }}>{m.organizer}</td>
-                                <td style={{ padding: '12px 14px', color: '#6b7280', whiteSpace: 'nowrap' }}>{m.date}</td>
-                                <td style={{ padding: '12px 14px' }}><span style={{ padding: '2px 10px', background: '#eff6ff', color: '#1e40af', borderRadius: '8px', fontWeight: '500' }}>{m.category}</span></td>
-                                <td style={{ padding: '12px 14px', fontWeight: '700', color: '#3b82f6' }}>{regs}</td>
-                                <td style={{ padding: '12px 14px' }}><span style={{ padding: '2px 10px', borderRadius: '8px', background: isPast ? '#f3f4f6' : '#ecfdf5', color: isPast ? '#6b7280' : '#059669', fontWeight: '600', fontSize: '12px' }}>{isPast ? t('completed') : t('active')}</span></td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {myCampaigns.map(c => {
+                        const statusColor: Record<string,string> = { draft: '#6b7280', pendingPayment: '#d97706', pendingVerification: '#7c3aed', active: '#059669', completed: '#1e40af', rejected: '#dc2626' }
+                        const statusBg: Record<string,string> = { draft: '#f9fafb', pendingPayment: '#fffbeb', pendingVerification: '#f5f3ff', active: '#ecfdf5', completed: '#eff6ff', rejected: '#fef2f2' }
+                        const linkedMission = c.missionId ? missions.find((m: any) => m.id === c.missionId) : null
+                        const linkedRegs = linkedMission ? missionRegistrations.filter((r: any) => r.missionId === c.missionId).length : 0
+                        return (
+                          <div key={c.id} style={{ padding: '16px 20px', background: '#f9fafb', borderRadius: '14px', border: '1px solid #e5e7eb' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+                              <div style={{ flex: 1, minWidth: '200px' }}>
+                                <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '15px' }}>{c.title}</div>
+                                <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '3px' }}>
+                                  🏢 {c.ngoName} · {c.currency} {Number(c.amount).toLocaleString()}
+                                </div>
+                                {linkedMission && (
+                                  <div style={{ fontSize: '12px', color: '#7c3aed', marginTop: '3px' }}>
+                                    🎯 Linked Mission: {linkedMission.title} · {linkedRegs} volunteers
+                                  </div>
+                                )}
+                                <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '3px' }}>
+                                  Created {new Date(c.createdAt).toLocaleDateString()}
+                                </div>
+                              </div>
+                              <span style={{ padding: '4px 12px', borderRadius: '20px', background: statusBg[c.status], color: statusColor[c.status], fontWeight: '700', fontSize: '12px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                {t(`campaignStatus_${c.status}`)}
+                              </span>
+                            </div>
+                            {c.ngoConfirmedAt && (
+                              <div style={{ marginTop: '8px', padding: '6px 10px', background: '#ecfdf5', borderRadius: '8px', fontSize: '12px', color: '#065f46' }}>
+                                ✅ Payment confirmed by NGO on {new Date(c.ngoConfirmedAt).toLocaleDateString()}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Budget Spending Section */}
+                <div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: '28px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1f2937', margin: 0 }}>💰 {t('budgetAllocated')}</h3>
+                      <p style={{ fontSize: '13px', color: '#6b7280', margin: '4px 0 0' }}>{t('budgetAllocatedDesc')}</p>
+                    </div>
+                    {totalBudget > 0 && (
+                      <div style={{ padding: '8px 18px', background: 'linear-gradient(135deg,#ecfdf5,#d1fae5)', border: '1px solid #a7f3d0', borderRadius: '12px', fontWeight: '800', color: '#065f46', fontSize: '16px' }}>
+                        {myBudget[0]?.currency || 'USD'} {totalBudget.toLocaleString()} {t('budgetTotalAllocated')}
+                      </div>
+                    )}
+                  </div>
+                  {myBudget.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '32px 0', color: '#9ca3af' }}>
+                      <div style={{ fontSize: '36px', marginBottom: '8px' }}>💸</div>
+                      <p style={{ margin: 0, fontSize: '14px' }}>{t('budgetNoBudget')}</p>
+                      <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#d1d5db' }}>Budget allocations are recorded by the KindWorld admin team.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {Object.entries(byCat).map(([cat, amt]) => {
+                        const pct = Math.round((amt / totalBudget) * 100)
+                        return (
+                          <div key={cat}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                              <span style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>{cat}</span>
+                              <span style={{ fontSize: '14px', fontWeight: '700', color: '#1e40af' }}>{myBudget[0]?.currency || 'USD'} {amt.toLocaleString()} · {pct}%</span>
+                            </div>
+                            <div style={{ background: '#f3f4f6', borderRadius: '8px', height: '10px', overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg,#3b82f6,#1e40af)', borderRadius: '8px', transition: 'width 0.6s ease' }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                      <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>Recent Entries</div>
+                        {myBudget.slice(-5).reverse().map(entry => (
+                          <div key={entry.id} style={{ display: 'flex', gap: '12px', padding: '10px 14px', background: '#f9fafb', borderRadius: '10px', border: '1px solid #e5e7eb', alignItems: 'center' }}>
+                            <span style={{ fontSize: '18px' }}>💰</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: '600', fontSize: '13px', color: '#1f2937' }}>{entry.category}</div>
+                              <div style={{ fontSize: '12px', color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.description || '—'}</div>
+                            </div>
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                              <div style={{ fontWeight: '700', color: '#059669', fontSize: '14px' }}>{entry.currency} {entry.amount.toLocaleString()}</div>
+                              <div style={{ fontSize: '11px', color: '#9ca3af' }}>{entry.date}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
