@@ -11604,6 +11604,35 @@ export default function KindWorldApp() {
   // Sample user data for admin dashboard
   const defaultAllUsers = [
     {
+      id: 'user_sponsor_001',
+      name: 'TechCorp Solutions',
+      role: 'sponsor' as const,
+      email: 'sponsor@techcorp.com',
+      companyName: 'TechCorp Solutions',
+      companyIndustry: 'Technology',
+      companyWebsite: 'https://techcorp.example.com',
+      sponsorTier: 'gold',
+      joinDate: '2025-08-01',
+      status: 'active',
+      hours: 0,
+      completedMissions: 0,
+      badges: 0,
+      userBadges: []
+    },
+    {
+      id: 'user_ngo_001',
+      name: 'Demo NGO Organization',
+      role: 'ngo' as const,
+      email: 'admin@redcross.org',
+      ngoOrgName: 'Demo NGO Organization',
+      joinDate: '2025-08-01',
+      status: 'verified',
+      hours: 2100,
+      completedMissions: 67,
+      badges: 0,
+      userBadges: []
+    },
+    {
       id: 'user_001',
       name: 'Alex Chen',
       role: 'student' as const,
@@ -28506,7 +28535,10 @@ export default function KindWorldApp() {
                       <option value="__other__">Other / Manual Entry</option>
                     </select>
                     {budgetForm.companyEmail === '__other__' && (
-                      <input value={budgetForm.companyName} onChange={e => setBudgetForm(f => ({ ...f, companyName: e.target.value }))} placeholder="Company Name" style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const, marginTop:'8px' }} />
+                      <div style={{ display:'flex', flexDirection:'column', gap:'8px', marginTop:'8px' }}>
+                        <input value={budgetForm.companyName} onChange={e => setBudgetForm(f => ({ ...f, companyName: e.target.value }))} placeholder="Company Name" style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }} />
+                        <input value={budgetForm.companyEmail === '__other__' ? (budgetForm as any).manualEmail || '' : ''} onChange={e => setBudgetForm(f => ({ ...f, companyEmail: '__other__', ...(f as any), manualEmail: e.target.value } as any))} placeholder="Company email (to show on their dashboard)" style={{ width:'100%', padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' as const }} />
+                      </div>
                     )}
                   </div>
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
@@ -28541,13 +28573,15 @@ export default function KindWorldApp() {
                     <button onClick={() => setShowBudgetModal(false)} style={{ padding:'10px 20px', background:'#f3f4f6', border:'none', borderRadius:'10px', fontWeight:'600', fontSize:'14px', cursor:'pointer', color:'#374151' }}>{t('budgetCancel')}</button>
                     <button onClick={() => {
                       if (!budgetForm.amount || Number(budgetForm.amount) <= 0) return
-                      const companyName = budgetForm.companyEmail === '__other__' ? budgetForm.companyName : (allUsers.find((u: any) => u.email === budgetForm.companyEmail) as any)?.companyName || budgetForm.companyName
-                      const entry = { id: Date.now().toString(), companyEmail: budgetForm.companyEmail, companyName, category: budgetForm.category, amount: Number(budgetForm.amount), currency: budgetForm.currency, description: budgetForm.description, date: budgetForm.date }
+                      const isOther = budgetForm.companyEmail === '__other__'
+                      const companyName = isOther ? budgetForm.companyName : (allUsers.find((u: any) => u.email === budgetForm.companyEmail) as any)?.companyName || budgetForm.companyName
+                      const companyEmail = isOther ? ((budgetForm as any).manualEmail || '').toLowerCase() : budgetForm.companyEmail
+                      const entry = { id: Date.now().toString(), companyEmail, companyName, category: budgetForm.category, amount: Number(budgetForm.amount), currency: budgetForm.currency, description: budgetForm.description, date: budgetForm.date }
                       const updated = [...budgetEntries, entry]
                       setBudgetEntries(updated)
                       localStorage.setItem('kindworld_budget_entries', JSON.stringify(updated))
                       setShowBudgetModal(false)
-                      setBudgetForm({ companyEmail: '', companyName: '', category: 'Operations', amount: '', currency: 'USD', description: '', date: new Date().toISOString().split('T')[0] })
+                      setBudgetForm({ companyEmail: '', companyName: '', category: 'Operations', amount: '', currency: 'USD', description: '', date: new Date().toISOString().split('T')[0] } as any)
                       setNotifications(prev => [...prev, '💰 Budget entry saved'])
                     }} style={{ padding:'10px 24px', background:'linear-gradient(135deg,#1a2744,#253860)', color:'white', border:'none', borderRadius:'10px', fontWeight:'700', fontSize:'14px', cursor:'pointer' }}>{t('budgetSave')}</button>
                   </div>
