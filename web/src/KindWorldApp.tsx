@@ -11807,6 +11807,33 @@ export default function KindWorldApp() {
       if (docs.length > 0) setCertRequests(docs)
     }))
 
+    unsubs.push(subscribeToCollection<any>(COLLECTIONS.CAMPAIGNS, (docs) => {
+      if (docs.length > 0) {
+        setSponsorCampaigns(docs)
+      } else if (!firestoreReady.current) {
+        const local = localStorage.getItem('kindworld_campaigns')
+        if (local) { try { const arr = JSON.parse(local); arr.forEach((c: any) => saveDocument(COLLECTIONS.CAMPAIGNS, String(c.id), c).catch(() => {})) } catch {} }
+      }
+    }))
+
+    unsubs.push(subscribeToCollection<any>(COLLECTIONS.BUDGET_ENTRIES, (docs) => {
+      if (docs.length > 0) {
+        setBudgetEntries(docs)
+      } else if (!firestoreReady.current) {
+        const local = localStorage.getItem('kindworld_budget_entries')
+        if (local) { try { const arr = JSON.parse(local); arr.forEach((e: any) => saveDocument(COLLECTIONS.BUDGET_ENTRIES, String(e.id), e).catch(() => {})) } catch {} }
+      }
+    }))
+
+    unsubs.push(subscribeToCollection<any>(COLLECTIONS.NGO_EXPENSES, (docs) => {
+      if (docs.length > 0) {
+        setNgoExpenses(docs)
+      } else if (!firestoreReady.current) {
+        const local = localStorage.getItem('kindworld_ngo_expenses')
+        if (local) { try { const arr = JSON.parse(local); arr.forEach((e: any) => saveDocument(COLLECTIONS.NGO_EXPENSES, String(e.id), e).catch(() => {})) } catch {} }
+      }
+    }))
+
     return () => unsubs.forEach(u => u())
   }, [])
 
@@ -11832,6 +11859,18 @@ export default function KindWorldApp() {
 
   const syncMessageToFirestore = useCallback((m: any) => {
     saveDocument(COLLECTIONS.DIRECT_MESSAGES, String(m.id), m).catch(console.error)
+  }, [])
+
+  const syncCampaignToFirestore = useCallback((c: any) => {
+    saveDocument(COLLECTIONS.CAMPAIGNS, String(c.id), c).catch(console.error)
+  }, [])
+
+  const syncBudgetEntryToFirestore = useCallback((e: any) => {
+    saveDocument(COLLECTIONS.BUDGET_ENTRIES, String(e.id), e).catch(console.error)
+  }, [])
+
+  const syncNgoExpenseToFirestore = useCallback((e: any) => {
+    saveDocument(COLLECTIONS.NGO_EXPENSES, String(e.id), e).catch(console.error)
   }, [])
 
   // ── LINE Messaging API ───────────────────────────────────────────────────────
@@ -12231,7 +12270,16 @@ export default function KindWorldApp() {
   }, [sponsorProfile])
   useEffect(() => {
     try { localStorage.setItem('kindworld_campaigns', JSON.stringify(sponsorCampaigns)) } catch {}
+    if (firestoreReady.current) sponsorCampaigns.forEach((c: any) => syncCampaignToFirestore(c))
   }, [sponsorCampaigns])
+  useEffect(() => {
+    try { localStorage.setItem('kindworld_budget_entries', JSON.stringify(budgetEntries)) } catch {}
+    if (firestoreReady.current) budgetEntries.forEach((e: any) => syncBudgetEntryToFirestore(e))
+  }, [budgetEntries])
+  useEffect(() => {
+    try { localStorage.setItem('kindworld_ngo_expenses', JSON.stringify(ngoExpenses)) } catch {}
+    if (firestoreReady.current) ngoExpenses.forEach((e: any) => syncNgoExpenseToFirestore(e))
+  }, [ngoExpenses])
 
   // Reload cert programs and requests from localStorage whenever the logged-in user changes
   // or whenever the user navigates to the certificates page — so approved status is always fresh
@@ -28175,7 +28223,7 @@ export default function KindWorldApp() {
                                       <button onClick={() => {
                                         const updated = ngoExpenses.filter(x => x.id !== e.id)
                                         setNgoExpenses(updated)
-                                        localStorage.setItem('kindworld_ngo_expenses', JSON.stringify(updated))
+                                        deleteDocument(COLLECTIONS.NGO_EXPENSES, String(e.id)).catch(() => {})
                                       }} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '16px', padding: '2px' }} title="Delete">🗑</button>
                                     </td>
                                   </tr>
@@ -28607,7 +28655,7 @@ export default function KindWorldApp() {
                                   <button onClick={() => {
                                     const updated = budgetEntries.filter(e => e.id !== entry.id)
                                     setBudgetEntries(updated)
-                                    localStorage.setItem('kindworld_budget_entries', JSON.stringify(updated))
+                                    deleteDocument(COLLECTIONS.BUDGET_ENTRIES, String(entry.id)).catch(() => {})
                                   }} style={{ background:'none', border:'none', color:'#ef4444', cursor:'pointer', fontSize:'16px', padding:'2px' }}>🗑️</button>
                                 </td>
                               </tr>
