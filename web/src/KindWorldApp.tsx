@@ -9994,7 +9994,7 @@ export default function KindWorldApp() {
 
   // Use Redux for language management
   const dispatch = useAppDispatch()
-  const { currentLanguage: language } = useAppSelector((state) => state.language)
+  const language = useAppSelector((state) => state.language.currentLanguage)
   const setLanguage = (lang: string) => {
     dispatch(setReduxLanguage(lang))
     localStorage.setItem('kindworld_language', lang)
