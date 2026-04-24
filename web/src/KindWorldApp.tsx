@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useAppSelector, useAppDispatch } from './hooks/redux'
+import { useAppDispatch } from './hooks/redux'
 import { setLanguage as setReduxLanguage } from './store/slices/languageSlice'
 import emailjs from '@emailjs/browser'
 import { subscribeToCollection, saveDocument, deleteDocument, fetchCollection, COLLECTIONS } from './firestoreService'
@@ -9992,10 +9992,13 @@ export default function KindWorldApp() {
   const [badgeManagementUser, setBadgeManagementUser] = useState<any>(null)
   const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false)
 
-  // Use Redux for language management
+  // Language management — useState guarantees re-renders when language changes
   const dispatch = useAppDispatch()
-  const language = useAppSelector((state) => state.language.currentLanguage)
+  const [language, setLanguageState] = useState<string>(() => {
+    try { return localStorage.getItem('kindworld_language') || 'en' } catch { return 'en' }
+  })
   const setLanguage = (lang: string) => {
+    setLanguageState(lang)
     dispatch(setReduxLanguage(lang))
     localStorage.setItem('kindworld_language', lang)
   }
@@ -11318,6 +11321,32 @@ export default function KindWorldApp() {
           contactName: 'Sarah Johnson',
           contactEmail: 'sponsor@techcorp.com'
         }))
+        // Seed demo campaigns + budget entries for demo sponsor if none exist
+        setSponsorCampaigns(prev => {
+          const existing = prev.filter(c => c.sponsorEmail === 'sponsor@techcorp.com')
+          if (existing.length > 0) return prev
+          const demoCampaigns: SponsorCampaign[] = [
+            { id: 'demo_c1', sponsorEmail: 'sponsor@techcorp.com', sponsorName: 'TechCorp Solutions', companyName: 'TechCorp Solutions', ngoEmail: 'admin@redcross.org', ngoName: 'Red Cross — Demo NGO', missionId: 1, missionTitle: 'Community Clean-Up Drive', title: 'Community Clean-Up Drive Sponsorship', amount: 5000, currency: 'USD', status: 'active', auditLog: [{ at: '2026-01-10T09:00:00Z', by: 'sponsor@techcorp.com', action: 'Campaign created' }, { at: '2026-01-12T14:00:00Z', by: 'admin@redcross.org', action: 'NGO confirmed & activated' }], createdAt: '2026-01-10T09:00:00Z', updatedAt: '2026-01-12T14:00:00Z' },
+            { id: 'demo_c2', sponsorEmail: 'sponsor@techcorp.com', sponsorName: 'TechCorp Solutions', companyName: 'TechCorp Solutions', ngoEmail: 'admin@redcross.org', ngoName: 'Red Cross — Demo NGO', missionId: 2, missionTitle: 'Youth Education Workshop', title: 'Youth Education Workshop Sponsorship', amount: 3000, currency: 'USD', status: 'completed', auditLog: [{ at: '2025-10-05T09:00:00Z', by: 'sponsor@techcorp.com', action: 'Campaign created' }, { at: '2025-12-20T10:00:00Z', by: 'admin@redcross.org', action: 'Campaign marked completed' }], createdAt: '2025-10-05T09:00:00Z', updatedAt: '2025-12-20T10:00:00Z' },
+            { id: 'demo_c3', sponsorEmail: 'sponsor@techcorp.com', sponsorName: 'TechCorp Solutions', companyName: 'TechCorp Solutions', ngoEmail: 'admin@redcross.org', ngoName: 'Red Cross — Demo NGO', missionId: 3, missionTitle: 'Food Bank Support', title: 'Food Bank Support Sponsorship', amount: 2500, currency: 'USD', status: 'active', auditLog: [{ at: '2026-02-01T09:00:00Z', by: 'sponsor@techcorp.com', action: 'Campaign created' }, { at: '2026-02-03T11:00:00Z', by: 'admin@redcross.org', action: 'NGO confirmed & activated' }], createdAt: '2026-02-01T09:00:00Z', updatedAt: '2026-02-03T11:00:00Z' },
+          ]
+          const updated = [...demoCampaigns, ...prev]
+          localStorage.setItem('kindworld_campaigns', JSON.stringify(updated))
+          return updated
+        })
+        setBudgetEntries(prev => {
+          const existing = prev.filter(e => e.companyEmail === 'sponsor@techcorp.com')
+          if (existing.length > 0) return prev
+          const demoBudget = [
+            { id: 'demo_b1', companyEmail: 'sponsor@techcorp.com', companyName: 'TechCorp Solutions', category: 'Program Delivery', amount: 5000, currency: 'USD', description: 'Community Clean-Up Drive Sponsorship', date: '2026-01-12' },
+            { id: 'demo_b2', companyEmail: 'sponsor@techcorp.com', companyName: 'TechCorp Solutions', category: 'Education', amount: 3000, currency: 'USD', description: 'Youth Education Workshop Sponsorship', date: '2025-10-05' },
+            { id: 'demo_b3', companyEmail: 'sponsor@techcorp.com', companyName: 'TechCorp Solutions', category: 'Program Delivery', amount: 2500, currency: 'USD', description: 'Food Bank Support Sponsorship', date: '2026-02-03' },
+            { id: 'demo_b4', companyEmail: 'sponsor@techcorp.com', companyName: 'TechCorp Solutions', category: 'Operations', amount: 1200, currency: 'USD', description: 'Platform management & reporting', date: '2026-01-01' },
+          ]
+          const updated = [...demoBudget, ...prev]
+          localStorage.setItem('kindworld_budget_entries', JSON.stringify(updated))
+          return updated
+        })
       }
       // Sync user hours into allUsers to keep data consistent
       setAllUsers((prev: any[]) => prev.map((u: any) =>
