@@ -16206,12 +16206,14 @@ export default function KindWorldApp() {
                     <p style={{ textAlign: 'center', color: '#9ca3af', padding: '40px 0' }}>No users found.</p>
                   ) : filtered.map((u: any, i: number) => (
                     <div key={u.email || i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px', background: '#f9fafb', border: '1px solid #e5e7eb' }}>
-                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: u.role === 'student' ? 'linear-gradient(135deg,#ecfdf5,#d1fae5)' : u.role === 'ngo' ? 'linear-gradient(135deg,#fffbeb,#fef3c7)' : 'linear-gradient(135deg,var(--tl),var(--tl2))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>
-                        {u.avatar || (u.role === 'student' ? '🎓' : u.role === 'ngo' ? '🏢' : '👤')}
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: u.role === 'student' ? 'linear-gradient(135deg,#ecfdf5,#d1fae5)' : u.role === 'ngo' ? 'linear-gradient(135deg,#fffbeb,#fef3c7)' : 'linear-gradient(135deg,var(--tl),var(--tl2))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0, overflow: 'hidden' }}>
+                        {u.avatar && typeof u.avatar === 'string' && u.avatar.startsWith('http')
+                          ? <img src={u.avatar} alt="" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover' }} />
+                          : (u.avatar || (u.role === 'student' ? '🎓' : u.role === 'ngo' ? '🏢' : '👤'))}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name || u.email}</div>
-                        <div style={{ fontSize: '13px', color: '#6b7280' }}>{u.email}</div>
+                        <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{(u.name && !u.name.startsWith('http') && u.name.length < 60) ? u.name : u.email?.split('@')[0] || 'User'}</div>
+                        <div style={{ fontSize: '13px', color: '#6b7280', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email?.includes('@') ? u.email : '—'}</div>
                         {u.role === 'student' && <div style={{ fontSize: '12px', color: '#059669', marginTop: '2px' }}>{u.hours || 0} hrs · {u.userBadges?.length || 0} badges</div>}
                         {u.role === 'ngo' && <div style={{ fontSize: '12px', color: '#d97706', marginTop: '2px' }}>{u.companyName || u.organization || ''}</div>}
                       </div>
