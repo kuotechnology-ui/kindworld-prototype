@@ -10293,6 +10293,17 @@ export default function KindWorldApp() {
   const [signInForm, setSignInForm] = useState({ email: '', password: '' })
   const [signInError, setSignInError] = useState('')
   const [registerError, setRegisterError] = useState('')
+  // Forgot password state
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
+  const [forgotPwStep, setForgotPwStep] = useState<1|2|3>(1)
+  const [forgotPwEmail, setForgotPwEmail] = useState('')
+  const [forgotPwCode, setForgotPwCode] = useState('')
+  const [forgotPwCodeExpiry, setForgotPwCodeExpiry] = useState(0)
+  const [forgotPwInput, setForgotPwInput] = useState('')
+  const [forgotPwNewPw, setForgotPwNewPw] = useState('')
+  const [forgotPwConfirm, setForgotPwConfirm] = useState('')
+  const [forgotPwError, setForgotPwError] = useState('')
+  const [forgotPwLoading, setForgotPwLoading] = useState(false)
   const [registerForm, setRegisterForm] = useState({
     firstName: '',
     lastName: '',
@@ -11522,6 +11533,63 @@ export default function KindWorldApp() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleSendResetCode = async () => {
+    const emailLower = forgotPwEmail.trim().toLowerCase()
+    if (!emailLower) { setForgotPwError('Please enter your email address'); return }
+    const registeredUser = allUsers.find((u: any) => u.email === emailLower)
+    if (!registeredUser) { setForgotPwError('No account found with this email address'); return }
+    setForgotPwLoading(true)
+    setForgotPwError('')
+    const code = String(Math.floor(100000 + Math.random() * 900000))
+    const expiresAt = Date.now() + 15 * 60 * 1000
+    try {
+      await saveDocument('passwordResets', emailLower.replace(/[@.]/g, '_'), { code, expiresAt, email: emailLower })
+      const svcId = import.meta.env.VITE_EMAILJS_SERVICE_ID
+      const tplId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+      const pubKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      await emailjs.send(svcId, tplId, {
+        to_email: emailLower,
+        to_name: registeredUser.name || emailLower,
+        subject: 'KindWorld - Password Reset Code',
+        message: `Hi ${registeredUser.name || ''},\n\nYour password reset code is:\n\n${code}\n\nThis code expires in 15 minutes. Enter it on the KindWorld app to set a new password.\n\nIf you did not request this, please ignore this email.\n\n— KindWorld Team 🌍`
+      }, pubKey)
+      setForgotPwCode(code)
+      setForgotPwCodeExpiry(expiresAt)
+      setForgotPwStep(2)
+    } catch {
+      setForgotPwError('Failed to send reset code. Please try again.')
+    }
+    setForgotPwLoading(false)
+  }
+
+  const handleVerifyResetCode = () => {
+    if (!forgotPwInput.trim()) { setForgotPwError('Please enter the code from your email'); return }
+    if (Date.now() > forgotPwCodeExpiry) { setForgotPwError('This code has expired. Please request a new one.'); setForgotPwStep(1); return }
+    if (forgotPwInput.trim() !== forgotPwCode) { setForgotPwError('Incorrect code. Please try again.'); return }
+    setForgotPwError('')
+    setForgotPwStep(3)
+  }
+
+  const handleSetNewPassword = async () => {
+    if (!forgotPwNewPw || forgotPwNewPw.length < 8) { setForgotPwError('Password must be at least 8 characters'); return }
+    if (forgotPwNewPw !== forgotPwConfirm) { setForgotPwError('Passwords do not match'); return }
+    setForgotPwLoading(true)
+    const emailLower = forgotPwEmail.trim().toLowerCase()
+    try {
+      const updated = allUsers.map((u: any) => u.email === emailLower ? { ...u, password: forgotPwNewPw } : u)
+      setAllUsers(updated)
+      localStorage.setItem('kindworld_users', JSON.stringify(updated))
+      await saveDocument('users', emailLower, { password: forgotPwNewPw })
+      await deleteDocument('passwordResets', emailLower.replace(/[@.]/g, '_')).catch(() => {})
+      setShowForgotPassword(false)
+      setForgotPwStep(1); setForgotPwEmail(''); setForgotPwCode(''); setForgotPwInput(''); setForgotPwNewPw(''); setForgotPwConfirm(''); setForgotPwError('')
+      setNotifications(prev => [...prev, '✅ Password reset successfully! Please sign in with your new password.'])
+    } catch {
+      setForgotPwError('Failed to update password. Please try again.')
+    }
+    setForgotPwLoading(false)
   }
 
   const handleSignIn = () => {
@@ -14884,7 +14952,7 @@ export default function KindWorldApp() {
                   }}
                 />
                 <div style={{ textAlign: 'right', marginTop: '8px' }}>
-                  <a href="#" style={{ fontSize: '13px', color: 'var(--tp)', textDecoration: 'none', transition: 'color 0.2s ease' }}
+                  <a href="#" onClick={(e) => { e.preventDefault(); setForgotPwEmail(signInForm.email); setForgotPwStep(1); setForgotPwError(''); setShowForgotPassword(true) }} style={{ fontSize: '13px', color: 'var(--tp)', textDecoration: 'none', transition: 'color 0.2s ease' }}
                     onMouseOver={(e) => e.currentTarget.style.color = 'var(--td)'}
                     onMouseOut={(e) => e.currentTarget.style.color = 'var(--tp)'}
                   >{t('forgotPassword')}</a>
@@ -15417,9 +15485,9 @@ export default function KindWorldApp() {
                 />
                 <label htmlFor="terms" style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.6' }}>
                   {t('agreeTerms')}{' '}
-                  <a href="#" onClick={(e) => { e.preventDefault(); setPrevPage(currentPage); setCurrentPage('terms') }} style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('termsOfService')}</a>
+                  <a href="https://docs.google.com/document/d/1ejJAY_HQbG0WHw6DoDxxFvAFWVCxFiUSnqfhFsmx6is/edit?tab=t.0" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('termsOfService')}</a>
                   {' '}{t('and')}{' '}
-                  <a href="#" onClick={(e) => { e.preventDefault(); setPrevPage(currentPage); setCurrentPage('privacy') }} style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('privacyPolicy')}</a>
+                  <a href="https://docs.google.com/document/d/1ejJAY_HQbG0WHw6DoDxxFvAFWVCxFiUSnqfhFsmx6is/edit?tab=t.0" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('privacyPolicy')}</a>
                 </label>
               </div>
 
@@ -29116,6 +29184,145 @@ export default function KindWorldApp() {
           )}
 
         </div>
+
+        {/* ── Forgot Password Modal ─────────────────────────────────────────── */}
+        {showForgotPassword && (
+          <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.55)', backdropFilter:'blur(6px)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}
+            onClick={(e) => { if (e.target === e.currentTarget) { setShowForgotPassword(false); setForgotPwStep(1); setForgotPwError('') } }}>
+            <div style={{ background:'white', borderRadius:'24px', padding:'36px', width:'100%', maxWidth:'440px', boxShadow:'0 24px 80px rgba(0,0,0,0.25)', position:'relative' }}>
+
+              {/* Close */}
+              <button onClick={() => { setShowForgotPassword(false); setForgotPwStep(1); setForgotPwError('') }}
+                style={{ position:'absolute', top:'16px', right:'16px', background:'#f3f4f6', border:'none', borderRadius:'50%', width:'32px', height:'32px', cursor:'pointer', fontSize:'16px', display:'flex', alignItems:'center', justifyContent:'center', color:'#6b7280' }}>✕</button>
+
+              {/* Header */}
+              <div style={{ textAlign:'center', marginBottom:'28px' }}>
+                <div style={{ width:'60px', height:'60px', borderRadius:'18px', background:'linear-gradient(135deg, var(--tp), var(--ts))', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'28px', margin:'0 auto 16px' }}>🔑</div>
+                <h2 style={{ fontSize:'22px', fontWeight:'800', color:'#1f2937', margin:'0 0 6px' }}>
+                  {forgotPwStep === 1 ? 'Forgot Password?' : forgotPwStep === 2 ? 'Check Your Email' : 'Set New Password'}
+                </h2>
+                <p style={{ fontSize:'14px', color:'#6b7280', margin:0 }}>
+                  {forgotPwStep === 1 && "Enter your email and we'll send you a reset code"}
+                  {forgotPwStep === 2 && `We sent a 6-digit code to ${forgotPwEmail}`}
+                  {forgotPwStep === 3 && 'Choose a strong new password'}
+                </p>
+              </div>
+
+              {/* Step indicator */}
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', marginBottom:'28px' }}>
+                {[1,2,3].map(s => (
+                  <div key={s} style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                    <div style={{ width:'28px', height:'28px', borderRadius:'50%', background: s <= forgotPwStep ? 'linear-gradient(135deg, var(--tp), var(--ts))' : '#e5e7eb', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'12px', fontWeight:'700', color: s <= forgotPwStep ? 'white' : '#9ca3af', transition:'all 0.3s' }}>
+                      {s < forgotPwStep ? '✓' : s}
+                    </div>
+                    {s < 3 && <div style={{ width:'32px', height:'2px', background: s < forgotPwStep ? 'var(--tp)' : '#e5e7eb', transition:'all 0.3s', borderRadius:'1px' }} />}
+                  </div>
+                ))}
+              </div>
+
+              {/* Error */}
+              {forgotPwError && (
+                <div style={{ padding:'12px 14px', background:'#fef2f2', border:'1px solid #fecaca', borderRadius:'10px', marginBottom:'16px', display:'flex', alignItems:'center', gap:'8px' }}>
+                  <span style={{ color:'#dc2626', fontSize:'14px' }}>⚠</span>
+                  <span style={{ color:'#dc2626', fontSize:'13px', fontWeight:'500' }}>{forgotPwError}</span>
+                </div>
+              )}
+
+              {/* Step 1: Email */}
+              {forgotPwStep === 1 && (
+                <>
+                  <label style={{ display:'block', fontSize:'14px', fontWeight:'600', color:'#374151', marginBottom:'8px' }}>Email Address</label>
+                  <input
+                    type="email"
+                    value={forgotPwEmail}
+                    onChange={e => { setForgotPwEmail(e.target.value); setForgotPwError('') }}
+                    onKeyDown={e => e.key === 'Enter' && handleSendResetCode()}
+                    placeholder="your@email.com"
+                    style={{ width:'100%', padding:'14px 16px', border:'1.5px solid #e5e7eb', borderRadius:'12px', fontSize:'15px', outline:'none', boxSizing:'border-box', marginBottom:'20px', background:'#f9fafb' }}
+                    onFocus={e => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb),0.1)' }}
+                    onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
+                    autoFocus
+                  />
+                  <button onClick={handleSendResetCode} disabled={forgotPwLoading}
+                    style={{ width:'100%', padding:'14px', background: forgotPwLoading ? 'rgba(var(--tp-rgb),0.5)' : 'linear-gradient(135deg, var(--tp), var(--ts))', color:'white', border:'none', borderRadius:'12px', fontSize:'15px', fontWeight:'700', cursor: forgotPwLoading ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+                    {forgotPwLoading ? <><div style={{ width:'16px', height:'16px', border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'white', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} /> Sending...</> : '📧 Send Reset Code'}
+                  </button>
+                </>
+              )}
+
+              {/* Step 2: Code */}
+              {forgotPwStep === 2 && (
+                <>
+                  <label style={{ display:'block', fontSize:'14px', fontWeight:'600', color:'#374151', marginBottom:'8px' }}>6-Digit Code</label>
+                  <input
+                    type="text"
+                    value={forgotPwInput}
+                    onChange={e => { setForgotPwInput(e.target.value.replace(/\D/g, '').slice(0,6)); setForgotPwError('') }}
+                    onKeyDown={e => e.key === 'Enter' && handleVerifyResetCode()}
+                    placeholder="123456"
+                    maxLength={6}
+                    style={{ width:'100%', padding:'14px 16px', border:'1.5px solid #e5e7eb', borderRadius:'12px', fontSize:'24px', fontWeight:'700', letterSpacing:'8px', textAlign:'center', outline:'none', boxSizing:'border-box', marginBottom:'8px', background:'#f9fafb' }}
+                    onFocus={e => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb),0.1)' }}
+                    onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
+                    autoFocus
+                  />
+                  <p style={{ fontSize:'12px', color:'#9ca3af', textAlign:'center', marginBottom:'20px' }}>
+                    Code expires in 15 minutes ·{' '}
+                    <span onClick={handleSendResetCode} style={{ color:'var(--tp)', cursor:'pointer', fontWeight:'600' }}>Resend</span>
+                  </p>
+                  <button onClick={handleVerifyResetCode}
+                    style={{ width:'100%', padding:'14px', background:'linear-gradient(135deg, var(--tp), var(--ts))', color:'white', border:'none', borderRadius:'12px', fontSize:'15px', fontWeight:'700', cursor:'pointer' }}>
+                    Verify Code →
+                  </button>
+                </>
+              )}
+
+              {/* Step 3: New Password */}
+              {forgotPwStep === 3 && (
+                <>
+                  <label style={{ display:'block', fontSize:'14px', fontWeight:'600', color:'#374151', marginBottom:'8px' }}>New Password</label>
+                  <input
+                    type="password"
+                    value={forgotPwNewPw}
+                    onChange={e => { setForgotPwNewPw(e.target.value); setForgotPwError('') }}
+                    placeholder="At least 8 characters"
+                    style={{ width:'100%', padding:'14px 16px', border:'1.5px solid #e5e7eb', borderRadius:'12px', fontSize:'15px', outline:'none', boxSizing:'border-box', marginBottom:'12px', background:'#f9fafb' }}
+                    onFocus={e => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb),0.1)' }}
+                    onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
+                    autoFocus
+                  />
+                  <label style={{ display:'block', fontSize:'14px', fontWeight:'600', color:'#374151', marginBottom:'8px' }}>Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={forgotPwConfirm}
+                    onChange={e => { setForgotPwConfirm(e.target.value); setForgotPwError('') }}
+                    onKeyDown={e => e.key === 'Enter' && handleSetNewPassword()}
+                    placeholder="Repeat password"
+                    style={{ width:'100%', padding:'14px 16px', border:`1.5px solid ${forgotPwConfirm && forgotPwNewPw !== forgotPwConfirm ? '#fca5a5' : '#e5e7eb'}`, borderRadius:'12px', fontSize:'15px', outline:'none', boxSizing:'border-box', marginBottom:'6px', background:'#f9fafb' }}
+                    onFocus={e => { e.target.style.borderColor = 'var(--tp)'; e.target.style.background = 'white'; e.target.style.boxShadow = '0 0 0 4px rgba(var(--tp-rgb),0.1)' }}
+                    onBlur={e => { e.target.style.borderColor = forgotPwConfirm && forgotPwNewPw !== forgotPwConfirm ? '#fca5a5' : '#e5e7eb'; e.target.style.background = '#f9fafb'; e.target.style.boxShadow = 'none' }}
+                  />
+                  {forgotPwNewPw.length > 0 && forgotPwNewPw.length < 8 && <p style={{ fontSize:'12px', color:'#ef4444', margin:'0 0 12px' }}>Password must be at least 8 characters</p>}
+                  {forgotPwConfirm && forgotPwNewPw === forgotPwConfirm && <p style={{ fontSize:'12px', color:'#10b981', margin:'0 0 12px' }}>✓ Passwords match</p>}
+                  {!forgotPwConfirm && <div style={{ marginBottom:'12px' }} />}
+                  <button onClick={handleSetNewPassword} disabled={forgotPwLoading}
+                    style={{ width:'100%', padding:'14px', background: forgotPwLoading ? 'rgba(var(--tp-rgb),0.5)' : 'linear-gradient(135deg, var(--tp), var(--ts))', color:'white', border:'none', borderRadius:'12px', fontSize:'15px', fontWeight:'700', cursor: forgotPwLoading ? 'not-allowed' : 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+                    {forgotPwLoading ? <><div style={{ width:'16px', height:'16px', border:'2px solid rgba(255,255,255,0.4)', borderTopColor:'white', borderRadius:'50%', animation:'spin 0.8s linear infinite' }} /> Saving...</> : '🔒 Reset Password'}
+                  </button>
+                </>
+              )}
+
+              {/* Back to sign in */}
+              <div style={{ textAlign:'center', marginTop:'20px' }}>
+                <span onClick={() => { setShowForgotPassword(false); setForgotPwStep(1); setForgotPwError('') }}
+                  style={{ fontSize:'13px', color:'var(--tp)', cursor:'pointer', fontWeight:'600' }}>
+                  ← Back to Sign In
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     )
   }
