@@ -15488,9 +15488,9 @@ export default function KindWorldApp() {
                 />
                 <label htmlFor="terms" style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.6' }}>
                   {t('agreeTerms')}{' '}
-                  <a href="https://docs.google.com/document/d/1ejJAY_HQbG0WHw6DoDxxFvAFWVCxFiUSnqfhFsmx6is/edit?tab=t.0" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('termsOfService')}</a>
+                  <a href="https://docs.google.com/document/d/1ejJAY_HQbG0WHw6DoDxxFvAFWVCxFiUSnqfhFsmx6is/export?format=pdf" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('termsOfService')}</a>
                   {' '}{t('and')}{' '}
-                  <a href="https://docs.google.com/document/d/1ejJAY_HQbG0WHw6DoDxxFvAFWVCxFiUSnqfhFsmx6is/edit?tab=t.0" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('privacyPolicy')}</a>
+                  <a href="https://docs.google.com/document/d/1ejJAY_HQbG0WHw6DoDxxFvAFWVCxFiUSnqfhFsmx6is/export?format=pdf" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--tp)', textDecoration: 'none' }}>{t('privacyPolicy')}</a>
                 </label>
               </div>
 
