@@ -11554,7 +11554,7 @@ export default function KindWorldApp() {
         to_email: emailLower,
         to_name: registeredUser.name || emailLower,
         subject: 'KindWorld - Password Reset Code',
-        message: `Hi ${registeredUser.name || ''},\n\nYour password reset code is:\n\n${code}\n\nThis code expires in 15 minutes. Enter it on the KindWorld app to set a new password.\n\nIf you did not request this, please ignore this email.\n\n— KindWorld Team 🌍`
+        message: `Your password reset code is:\n\n${code}\n\nThis code expires in 15 minutes. Enter it on the KindWorld app to set a new password.\n\nIf you did not request this, please ignore this email.`
       }, pubKey)
       setForgotPwCode(code)
       setForgotPwCodeExpiry(expiresAt)
@@ -14644,7 +14644,7 @@ export default function KindWorldApp() {
               to_email: newUserData.email,
               to_name: newUserData.name,
               subject: 'Welcome to KindWorld! 🌍',
-              message: `Hi ${newUserData.name},\n\nWelcome to KindWorld! Your account has been created successfully.\n\nStart exploring volunteer missions, connect with NGOs, and make a difference in your community.\n\nSee you out there! 🎉\n— The KindWorld Team`
+              message: `Welcome to KindWorld! Your account has been created successfully.\n\nStart exploring volunteer missions, connect with NGOs, and make a difference in your community.\n\nSee you out there! 🎉`
             }, pubKey).catch(() => {})
           }
         } catch {}
