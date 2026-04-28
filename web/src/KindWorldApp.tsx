@@ -10379,6 +10379,8 @@ export default function KindWorldApp() {
   const [contactTab, setContactTab] = useState<'inbox' | 'sent'>('inbox')
   const [showInbox, setShowInbox] = useState(false)
   const [showAdminEmailModal, setShowAdminEmailModal] = useState(false)
+  const [showAdminUserListModal, setShowAdminUserListModal] = useState(false)
+  const [adminUserListFilter, setAdminUserListFilter] = useState<'all' | 'student' | 'ngo'>('all')
   const [adminEmailForm, setAdminEmailForm] = useState({ subject: '', body: '', targetGroup: 'all' as 'all'|'volunteers'|'ngos', scheduledAt: '' })
   const [isSendingEmails, setIsSendingEmails] = useState(false)
   const [selectedAdminNgo, setSelectedAdminNgo] = useState<any>(null)
@@ -16176,6 +16178,54 @@ export default function KindWorldApp() {
           </div>
         )}
 
+        {/* ── Admin User List Modal ── */}
+        {showAdminUserListModal && (() => {
+          const filtered = adminUserListFilter === 'all'
+            ? allUsers
+            : allUsers.filter((u: any) => u.role === adminUserListFilter)
+          const roleLabel = adminUserListFilter === 'student' ? t('volunteersLabel2') : adminUserListFilter === 'ngo' ? t('ngosLabel') : t('totalUsersLabel')
+          return (
+            <div onClick={() => setShowAdminUserListModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 9997, background: 'rgba(15,8,5,0.48)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+              <div onClick={e => e.stopPropagation()} style={{ background: 'white', borderRadius: '20px', padding: 'clamp(20px,5vw,36px)', maxWidth: '680px', width: '100%', maxHeight: '85vh', overflow: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1f2937', margin: 0 }}>{roleLabel}</h3>
+                    <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#6b7280' }}>{filtered.length} {t('totalUsersLabel').toLowerCase()}</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {(['all', 'student', 'ngo'] as const).map(f => (
+                      <button key={f} onClick={() => setAdminUserListFilter(f)} style={{ padding: '6px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: '600', background: adminUserListFilter === f ? 'var(--td)' : '#f3f4f6', color: adminUserListFilter === f ? 'white' : '#374151' }}>
+                        {f === 'all' ? '👥 All' : f === 'student' ? '🎓 Volunteers' : '🏢 NGOs'}
+                      </button>
+                    ))}
+                    <button onClick={() => setShowAdminUserListModal(false)} style={{ background: '#f3f4f6', border: 'none', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', color: '#6b7280', marginLeft: '8px' }}>×</button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {filtered.length === 0 ? (
+                    <p style={{ textAlign: 'center', color: '#9ca3af', padding: '40px 0' }}>No users found.</p>
+                  ) : filtered.map((u: any, i: number) => (
+                    <div key={u.email || i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', borderRadius: '12px', background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                      <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: u.role === 'student' ? 'linear-gradient(135deg,#ecfdf5,#d1fae5)' : u.role === 'ngo' ? 'linear-gradient(135deg,#fffbeb,#fef3c7)' : 'linear-gradient(135deg,var(--tl),var(--tl2))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>
+                        {u.avatar || (u.role === 'student' ? '🎓' : u.role === 'ngo' ? '🏢' : '👤')}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: '700', color: '#1f2937', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name || u.email}</div>
+                        <div style={{ fontSize: '13px', color: '#6b7280' }}>{u.email}</div>
+                        {u.role === 'student' && <div style={{ fontSize: '12px', color: '#059669', marginTop: '2px' }}>{u.hours || 0} hrs · {u.userBadges?.length || 0} badges</div>}
+                        {u.role === 'ngo' && <div style={{ fontSize: '12px', color: '#d97706', marginTop: '2px' }}>{u.companyName || u.organization || ''}</div>}
+                      </div>
+                      <div style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '600', background: u.role === 'student' ? '#d1fae5' : u.role === 'ngo' ? '#fef3c7' : '#dbeafe', color: u.role === 'student' ? '#065f46' : u.role === 'ngo' ? '#92400e' : '#1e40af', flexShrink: 0 }}>
+                        {u.role}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
         {/* ── Admin Email Blast Modal ── */}
         {showAdminEmailModal && (
           <div onClick={()=>setShowAdminEmailModal(false)} style={{ position:'fixed', inset:0, zIndex:9997, background:'rgba(15,8,5,0.48)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
@@ -16612,13 +16662,14 @@ export default function KindWorldApp() {
                   {/* Admin Stats */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '48px' }}>
                     {[
-                      { value: allUsers.length, label: t('totalUsersLabel'), icon: '👥', color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))' },
-                      { value: allUsers.filter((u: any) => u.role === 'student').length, label: t('volunteersLabel2'), icon: '🎓', color: '#059669', bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5)' },
-                      { value: allUsers.filter((u: any) => u.role === 'ngo').length, label: t('ngosLabel'), icon: '🏢', color: '#d97706', bg: 'linear-gradient(135deg, #fffbeb, #fef3c7)' },
-                      { value: missions.length, label: t('totalMissionsLabel'), icon: '📋', color: '#dc2626', bg: 'linear-gradient(135deg, #fef2f2, #fecaca)' }
+                      { value: allUsers.length, label: t('totalUsersLabel'), icon: '👥', color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))', onClick: () => { setAdminUserListFilter('all'); setShowAdminUserListModal(true) } },
+                      { value: allUsers.filter((u: any) => u.role === 'student').length, label: t('volunteersLabel2'), icon: '🎓', color: '#059669', bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', onClick: () => { setAdminUserListFilter('student'); setShowAdminUserListModal(true) } },
+                      { value: allUsers.filter((u: any) => u.role === 'ngo').length, label: t('ngosLabel'), icon: '🏢', color: '#d97706', bg: 'linear-gradient(135deg, #fffbeb, #fef3c7)', onClick: () => { setAdminUserListFilter('ngo'); setShowAdminUserListModal(true) } },
+                      { value: missions.length, label: t('totalMissionsLabel'), icon: '📋', color: '#dc2626', bg: 'linear-gradient(135deg, #fef2f2, #fecaca)', onClick: () => setCurrentPage('missions') }
                     ].map((stat, index) => (
                       <div
                         key={index}
+                        onClick={stat.onClick}
                         style={{
                           background: 'white',
                           padding: '36px',
