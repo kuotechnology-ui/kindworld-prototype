@@ -21450,12 +21450,15 @@ export default function KindWorldApp() {
                 )}
                 {missions
                   .filter(m => {
-                    if (user?.role === 'ngo') return m.organizerId === user?.email
-                    if (user?.role === 'admin') return true
+                    // Role-based pre-filter
+                    if (user?.role === 'ngo' && m.organizerId !== user?.email) return false
                     // Students: only upcoming, not already joined
-                    if (joinedMissionIds.has(m.id)) return false
-                    const _n = new Date(); const _tStr = `${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`
-                    if (m.date < _tStr) return false
+                    if (user?.role === 'student') {
+                      if (joinedMissionIds.has(m.id)) return false
+                      const _n = new Date(); const _tStr = `${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`
+                      if (m.date < _tStr) return false
+                    }
+                    // Common filters apply to all roles
                     if (regionFilter !== 'all' && m.region !== regionFilter) return false
                     if (countryFilter !== 'all' && m.country !== countryFilter) return false
                     if (categoryFilter !== 'all' && m.category !== categoryFilter) return false
