@@ -10381,6 +10381,16 @@ export default function KindWorldApp() {
   const [showAdminEmailModal, setShowAdminEmailModal] = useState(false)
   const [showAdminUserListModal, setShowAdminUserListModal] = useState(false)
   const [adminUserListFilter, setAdminUserListFilter] = useState<'all' | 'student' | 'ngo'>('all')
+  // Hour adjustment system
+  const [hourRequests, setHourRequests] = useState<any[]>(() => { try { return JSON.parse(localStorage.getItem('kindworld_hour_requests') || '[]') } catch { return [] } })
+  const [showHourRequestModal, setShowHourRequestModal] = useState(false)
+  const [hourRequestForm, setHourRequestForm] = useState({ hoursToAdd: '', missionSearch: '', selectedMission: null as any, notes: '' })
+  const [hourRequestMissionDropdown, setHourRequestMissionDropdown] = useState(false)
+  const [showHourAdjustModal, setShowHourAdjustModal] = useState(false)
+  const [hourAdjustTarget, setHourAdjustTarget] = useState<any>(null)
+  const [hourAdjustForm, setHourAdjustForm] = useState({ newHours: '', missionSearch: '', selectedMission: null as any, notes: '' })
+  const [hourAdjustMissionDropdown, setHourAdjustMissionDropdown] = useState(false)
+  const [hourAdjustVolSearch, setHourAdjustVolSearch] = useState('')
   const [adminEmailForm, setAdminEmailForm] = useState({ subject: '', body: '', targetGroup: 'all' as 'all'|'volunteers'|'ngos', scheduledAt: '' })
   const [isSendingEmails, setIsSendingEmails] = useState(false)
   const [selectedAdminNgo, setSelectedAdminNgo] = useState<any>(null)
@@ -11472,8 +11482,22 @@ export default function KindWorldApp() {
           ...userData,
           password: '',
           status: 'active',
-          lineUserId: profile.userId   // internal identifier only — NOT shown as LINE ID
+          lineUserId: profile.userId
         }])
+        // Send LINE welcome push message to new LINE users
+        try {
+          const lineToken = localStorage.getItem('kindworld_line_channel_token') || import.meta.env.VITE_LINE_CHANNEL_TOKEN
+          if (lineToken && profile.userId) {
+            fetch('/api/line-push', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${lineToken}` },
+              body: JSON.stringify({
+                to: profile.userId,
+                messages: [{ type: 'text', text: `🌍 Welcome to KindWorld, ${profile.displayName}!\n\nYou're now part of a community making real change. Explore volunteer missions, earn badges, and connect with NGOs near you.\n\nLet's make a difference together! 🎉` }]
+              })
+            }).catch(() => {})
+          }
+        } catch {}
       } else {
         // Ensure lineUserId is stored for returning LINE users
         setAllUsers((prev: any[]) => prev.map((u: any) =>
@@ -12305,6 +12329,7 @@ export default function KindWorldApp() {
     if (firestoreReady.current) directMessages.forEach((m: any) => syncMessageToFirestore(m))
   }, [directMessages])
   useEffect(() => { localStorage.setItem('kindworld_admin_emails', JSON.stringify(adminEmails)) }, [adminEmails])
+  useEffect(() => { localStorage.setItem('kindworld_hour_requests', JSON.stringify(hourRequests)) }, [hourRequests])
   useEffect(() => { localStorage.setItem('kindworld_friend_msgs', JSON.stringify(friendMessages)) }, [friendMessages])
 
   // Firestore real-time subscription: sync ALL friend messages for this user
@@ -14538,6 +14563,20 @@ export default function KindWorldApp() {
             ? 'Welcome to KindWorld! Your company account is ready. Start creating sponsorship campaigns! 💼'
             : 'Welcome to KindWorld! 🎉'
         setNotifications([welcomeMsg, 'Your account has been created successfully.'])
+        // Send welcome email via EmailJS
+        try {
+          const svcId = import.meta.env.VITE_EMAILJS_SERVICE_ID
+          const tplId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
+          const pubKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+          if (svcId && tplId && pubKey && !svcId.startsWith('your_')) {
+            emailjs.send(svcId, tplId, {
+              to_email: newUserData.email,
+              to_name: newUserData.name,
+              subject: 'Welcome to KindWorld! 🌍',
+              message: `Hi ${newUserData.name},\n\nWelcome to KindWorld! Your account has been created successfully.\n\nStart exploring volunteer missions, connect with NGOs, and make a difference in your community.\n\nSee you out there! 🎉\n— The KindWorld Team`
+            }, pubKey).catch(() => {})
+          }
+        } catch {}
         // Show region+language setup for all new users
         const savedLanguage = localStorage.getItem('kindworld_language')
         if (!savedLanguage) setShowRegionSetup(true)
@@ -16178,6 +16217,82 @@ export default function KindWorldApp() {
           </div>
         )}
 
+        {/* ── Volunteer: Request Hour Adjustment Modal ── */}
+        {showHourRequestModal && (
+          <div onClick={() => setShowHourRequestModal(false)} style={{ position:'fixed', inset:0, zIndex:9997, background:'rgba(15,8,5,0.48)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background:'white', borderRadius:'20px', padding:'clamp(20px,5vw,36px)', maxWidth:'520px', width:'100%', maxHeight:'85vh', overflow:'auto', boxShadow:'0 24px 64px rgba(0,0,0,0.18)' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
+                <div>
+                  <h3 style={{ fontSize:'20px', fontWeight:'700', color:'#1f2937', margin:0 }}>⏱ Request Hour Adjustment</h3>
+                  <p style={{ margin:'4px 0 0', fontSize:'13px', color:'#6b7280' }}>Ask an admin to add hours for a mission you completed</p>
+                </div>
+                <button onClick={() => setShowHourRequestModal(false)} style={{ background:'#f3f4f6', border:'none', borderRadius:'8px', width:'32px', height:'32px', cursor:'pointer', fontSize:'16px', color:'#6b7280' }}>×</button>
+              </div>
+              <div style={{ display:'grid', gap:'16px' }}>
+                {/* Mission search */}
+                <div style={{ position:'relative' }}>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Search Mission *</label>
+                  <input
+                    value={hourRequestForm.missionSearch}
+                    onChange={e => { setHourRequestForm(f => ({ ...f, missionSearch: e.target.value, selectedMission: null })); setHourRequestMissionDropdown(true) }}
+                    onFocus={() => setHourRequestMissionDropdown(true)}
+                    placeholder="Type mission name (e.g. J for all J missions)..."
+                    style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' }}
+                  />
+                  {hourRequestMissionDropdown && hourRequestForm.missionSearch && (() => {
+                    const q = hourRequestForm.missionSearch.toLowerCase()
+                    const results = missions.filter((m: any) => m.title?.toLowerCase().startsWith(q) || m.title?.toLowerCase().includes(q)).slice(0, 8)
+                    if (!results.length) return null
+                    return (
+                      <div style={{ position:'absolute', top:'100%', left:0, right:0, background:'white', border:'1px solid #e5e7eb', borderRadius:'10px', boxShadow:'0 8px 24px rgba(0,0,0,0.12)', zIndex:100, maxHeight:'200px', overflow:'auto', marginTop:'4px' }}>
+                        {results.map((m: any) => (
+                          <div key={m.id} onClick={() => { setHourRequestForm(f => ({ ...f, selectedMission: m, missionSearch: m.title })); setHourRequestMissionDropdown(false) }}
+                            style={{ padding:'10px 14px', cursor:'pointer', fontSize:'14px', borderBottom:'1px solid #f3f4f6', display:'flex', gap:'10px', alignItems:'center' }}
+                            onMouseOver={e => (e.currentTarget.style.background = '#f9fafb')}
+                            onMouseOut={e => (e.currentTarget.style.background = 'white')}>
+                            <span style={{ fontSize:'18px' }}>{m.icon || '📋'}</span>
+                            <div>
+                              <div style={{ fontWeight:'600', color:'#1f2937' }}>{m.title}</div>
+                              <div style={{ fontSize:'12px', color:'#6b7280' }}>{m.organization || ''}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })()}
+                  {hourRequestForm.selectedMission && <div style={{ marginTop:'6px', padding:'6px 10px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:'8px', fontSize:'12px', color:'#15803d', fontWeight:'600' }}>✓ {hourRequestForm.selectedMission.title}</div>}
+                </div>
+                {/* Hours to add */}
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Hours to Add *</label>
+                  <input type="number" min="0.5" step="0.5" value={hourRequestForm.hoursToAdd} onChange={e => setHourRequestForm(f => ({ ...f, hoursToAdd: e.target.value }))}
+                    placeholder="e.g. 4" style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
+                </div>
+                {/* Notes */}
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Notes (optional)</label>
+                  <textarea value={hourRequestForm.notes} onChange={e => setHourRequestForm(f => ({ ...f, notes: e.target.value }))}
+                    placeholder="Explain what you did, when, and any relevant details..." rows={3}
+                    style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', resize:'vertical', fontFamily:'inherit', boxSizing:'border-box' }} />
+                </div>
+              </div>
+              <div style={{ display:'flex', gap:'12px', marginTop:'20px' }}>
+                <button onClick={() => setShowHourRequestModal(false)} style={{ flex:1, padding:'12px', background:'#f3f4f6', color:'#374151', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}>Cancel</button>
+                <button onClick={() => {
+                  if (!hourRequestForm.selectedMission || !hourRequestForm.hoursToAdd) { setNotifications(prev => [...prev, '⚠️ Please select a mission and enter hours']); return }
+                  const req = { id: `hr_${Date.now()}`, volunteerEmail: user?.email, volunteerName: user?.name, missionId: hourRequestForm.selectedMission.id, missionTitle: hourRequestForm.selectedMission.title, hoursToAdd: parseFloat(hourRequestForm.hoursToAdd), currentHours: user?.hours || 0, notes: hourRequestForm.notes, status: 'pending', createdAt: new Date().toISOString() }
+                  setHourRequests(prev => [...prev, req])
+                  setNotifications(prev => [...prev, '✅ Hour adjustment request submitted! Admin will review it shortly.'])
+                  setHourRequestForm({ hoursToAdd: '', missionSearch: '', selectedMission: null, notes: '' })
+                  setShowHourRequestModal(false)
+                }} style={{ flex:2, padding:'12px', background:'linear-gradient(135deg,#3b82f6,#2563eb)', color:'white', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'700', cursor:'pointer' }}>
+                  Submit Request
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── Admin User List Modal ── */}
         {showAdminUserListModal && (() => {
           const filtered = adminUserListFilter === 'all'
@@ -16227,6 +16342,148 @@ export default function KindWorldApp() {
             </div>
           )
         })()}
+
+        {/* ── Admin: Adjust Volunteer Hours Modal ── */}
+        {showHourAdjustModal && (
+          <div onClick={() => setShowHourAdjustModal(false)} style={{ position:'fixed', inset:0, zIndex:9997, background:'rgba(15,8,5,0.48)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background:'white', borderRadius:'20px', padding:'clamp(20px,5vw,36px)', maxWidth:'600px', width:'100%', maxHeight:'90vh', overflow:'auto', boxShadow:'0 24px 64px rgba(0,0,0,0.18)' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
+                <div>
+                  <h3 style={{ fontSize:'20px', fontWeight:'700', color:'#1f2937', margin:0 }}>⏱ Adjust Volunteer Hours</h3>
+                  <p style={{ margin:'4px 0 0', fontSize:'13px', color:'#6b7280' }}>Manually set hours and assign missions for a volunteer</p>
+                </div>
+                <button onClick={() => setShowHourAdjustModal(false)} style={{ background:'#f3f4f6', border:'none', borderRadius:'8px', width:'32px', height:'32px', cursor:'pointer', fontSize:'16px', color:'#6b7280' }}>×</button>
+              </div>
+
+              {/* Pending requests from volunteers */}
+              {hourRequests.filter((r: any) => r.status === 'pending').length > 0 && (
+                <div style={{ marginBottom:'24px', padding:'16px', background:'#fffbeb', border:'1px solid #fde68a', borderRadius:'12px' }}>
+                  <h4 style={{ margin:'0 0 12px', fontSize:'14px', fontWeight:'700', color:'#92400e' }}>⏳ Pending Requests ({hourRequests.filter((r: any) => r.status === 'pending').length})</h4>
+                  <div style={{ display:'grid', gap:'8px' }}>
+                    {hourRequests.filter((r: any) => r.status === 'pending').map((r: any) => (
+                      <div key={r.id} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 14px', background:'white', borderRadius:'10px', border:'1px solid #fde68a' }}>
+                        <div style={{ flex:1, minWidth:0 }}>
+                          <div style={{ fontWeight:'700', fontSize:'13px', color:'#1f2937' }}>{r.volunteerName} <span style={{ color:'#6b7280', fontWeight:'400' }}>· +{r.hoursToAdd}h</span></div>
+                          <div style={{ fontSize:'12px', color:'#6b7280', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>📋 {r.missionTitle}{r.notes ? ` — ${r.notes}` : ''}</div>
+                        </div>
+                        <div style={{ display:'flex', gap:'6px' }}>
+                          <button onClick={() => {
+                            setHourRequests((prev: any[]) => prev.map((req: any) => req.id === r.id ? { ...req, status: 'approved' } : req))
+                            setAllUsers((prev: any[]) => prev.map((u: any) => u.email === r.volunteerEmail ? { ...u, hours: (u.hours || 0) + r.hoursToAdd } : u))
+                            setNotifications(prev => [...prev, `✅ Approved ${r.hoursToAdd}h for ${r.volunteerName}`])
+                          }} style={{ padding:'6px 12px', background:'#059669', color:'white', border:'none', borderRadius:'8px', fontSize:'12px', fontWeight:'700', cursor:'pointer' }}>Approve</button>
+                          <button onClick={() => {
+                            setHourRequests(prev => prev.map((req: any) => req.id === r.id ? { ...req, status: 'rejected' } : req))
+                            setNotifications(prev => [...prev, `❌ Rejected request from ${r.volunteerName}`])
+                          }} style={{ padding:'6px 12px', background:'#ef4444', color:'white', border:'none', borderRadius:'8px', fontSize:'12px', fontWeight:'700', cursor:'pointer' }}>Reject</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Manual adjustment form */}
+              <div style={{ display:'grid', gap:'16px' }}>
+                {/* Volunteer search */}
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Select Volunteer *</label>
+                  <input value={hourAdjustVolSearch} onChange={e => { setHourAdjustVolSearch(e.target.value); setHourAdjustTarget(null) }}
+                    placeholder="Search volunteer by name or email..."
+                    style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
+                  {hourAdjustVolSearch && !hourAdjustTarget && (() => {
+                    const q = hourAdjustVolSearch.toLowerCase()
+                    const results = allUsers.filter((u: any) => u.role === 'student' && (u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q))).slice(0, 6)
+                    if (!results.length) return null
+                    return (
+                      <div style={{ border:'1px solid #e5e7eb', borderRadius:'10px', boxShadow:'0 8px 24px rgba(0,0,0,0.1)', marginTop:'4px', overflow:'hidden' }}>
+                        {results.map((u: any) => (
+                          <div key={u.email} onClick={() => { setHourAdjustTarget(u); setHourAdjustVolSearch(u.name || u.email); setHourAdjustForm(f => ({ ...f, newHours: String(u.hours || 0) })) }}
+                            style={{ padding:'10px 14px', cursor:'pointer', borderBottom:'1px solid #f3f4f6', display:'flex', gap:'10px', alignItems:'center' }}
+                            onMouseOver={e => (e.currentTarget.style.background = '#f9fafb')} onMouseOut={e => (e.currentTarget.style.background = 'white')}>
+                            <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:'#ecfdf5', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', flexShrink:0 }}>
+                              {u.avatar && u.avatar.startsWith('http') ? <img src={u.avatar} style={{ width:'32px', height:'32px', borderRadius:'50%', objectFit:'cover' }} alt="" /> : '🎓'}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight:'700', fontSize:'13px', color:'#1f2937' }}>{u.name}</div>
+                              <div style={{ fontSize:'12px', color:'#6b7280' }}>{u.email} · {u.hours || 0}h current</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })()}
+                  {hourAdjustTarget && <div style={{ marginTop:'6px', padding:'8px 12px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:'8px', fontSize:'13px', color:'#15803d', fontWeight:'600' }}>✓ {hourAdjustTarget.name} — currently {hourAdjustTarget.hours || 0}h</div>}
+                </div>
+
+                {/* New hour value */}
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>New Total Hours *</label>
+                  <input type="number" min="0" step="0.5" value={hourAdjustForm.newHours} onChange={e => setHourAdjustForm(f => ({ ...f, newHours: e.target.value }))}
+                    placeholder="Enter new total hours"
+                    style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
+                  {hourAdjustTarget && hourAdjustForm.newHours && (
+                    <div style={{ fontSize:'12px', color: parseFloat(hourAdjustForm.newHours) >= (hourAdjustTarget.hours || 0) ? '#059669' : '#ef4444', marginTop:'4px', fontWeight:'600' }}>
+                      {parseFloat(hourAdjustForm.newHours) >= (hourAdjustTarget.hours || 0) ? '▲' : '▼'} {Math.abs(parseFloat(hourAdjustForm.newHours) - (hourAdjustTarget.hours || 0)).toFixed(1)}h {parseFloat(hourAdjustForm.newHours) >= (hourAdjustTarget.hours || 0) ? 'added' : 'removed'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Mission search */}
+                <div style={{ position:'relative' }}>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Link to Mission (optional)</label>
+                  <input value={hourAdjustForm.missionSearch}
+                    onChange={e => { setHourAdjustForm(f => ({ ...f, missionSearch: e.target.value, selectedMission: null })); setHourAdjustMissionDropdown(true) }}
+                    onFocus={() => setHourAdjustMissionDropdown(true)}
+                    placeholder="Type to search missions (e.g. 'J' for all J missions)..."
+                    style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', boxSizing:'border-box' }} />
+                  {hourAdjustMissionDropdown && hourAdjustForm.missionSearch && (() => {
+                    const q = hourAdjustForm.missionSearch.toLowerCase()
+                    const results = missions.filter((m: any) => m.title?.toLowerCase().startsWith(q) || m.title?.toLowerCase().includes(q)).slice(0, 8)
+                    if (!results.length) return null
+                    return (
+                      <div style={{ position:'absolute', top:'100%', left:0, right:0, background:'white', border:'1px solid #e5e7eb', borderRadius:'10px', boxShadow:'0 8px 24px rgba(0,0,0,0.12)', zIndex:100, maxHeight:'200px', overflow:'auto', marginTop:'4px' }}>
+                        {results.map((m: any) => (
+                          <div key={m.id} onClick={() => { setHourAdjustForm(f => ({ ...f, selectedMission: m, missionSearch: m.title })); setHourAdjustMissionDropdown(false) }}
+                            style={{ padding:'10px 14px', cursor:'pointer', fontSize:'14px', borderBottom:'1px solid #f3f4f6', display:'flex', gap:'10px', alignItems:'center' }}
+                            onMouseOver={e => (e.currentTarget.style.background = '#f9fafb')} onMouseOut={e => (e.currentTarget.style.background = 'white')}>
+                            <span style={{ fontSize:'18px' }}>{m.icon || '📋'}</span>
+                            <div>
+                              <div style={{ fontWeight:'600', color:'#1f2937' }}>{m.title}</div>
+                              <div style={{ fontSize:'12px', color:'#6b7280' }}>{m.organization || ''}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })()}
+                  {hourAdjustForm.selectedMission && <div style={{ marginTop:'6px', padding:'6px 10px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:'8px', fontSize:'12px', color:'#15803d', fontWeight:'600' }}>✓ {hourAdjustForm.selectedMission.title}</div>}
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label style={{ display:'block', fontSize:'13px', fontWeight:'600', color:'#374151', marginBottom:'6px' }}>Admin Notes (optional)</label>
+                  <textarea value={hourAdjustForm.notes} onChange={e => setHourAdjustForm(f => ({ ...f, notes: e.target.value }))}
+                    placeholder="Reason for adjustment..." rows={2}
+                    style={{ width:'100%', padding:'10px 14px', border:'1px solid #e5e7eb', borderRadius:'10px', fontSize:'14px', outline:'none', resize:'vertical', fontFamily:'inherit', boxSizing:'border-box' }} />
+                </div>
+              </div>
+
+              <div style={{ display:'flex', gap:'12px', marginTop:'20px' }}>
+                <button onClick={() => setShowHourAdjustModal(false)} style={{ flex:1, padding:'12px', background:'#f3f4f6', color:'#374151', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}>Cancel</button>
+                <button onClick={() => {
+                  if (!hourAdjustTarget || !hourAdjustForm.newHours) { setNotifications(prev => [...prev, '⚠️ Select a volunteer and enter new hours']); return }
+                  const newHrs = parseFloat(hourAdjustForm.newHours)
+                  setAllUsers((prev: any[]) => prev.map((u: any) => u.email === hourAdjustTarget.email ? { ...u, hours: newHrs } : u))
+                  setNotifications(prev => [...prev, `✅ ${hourAdjustTarget.name}'s hours updated to ${newHrs}h${hourAdjustForm.selectedMission ? ` (${hourAdjustForm.selectedMission.title})` : ''}`])
+                  setHourAdjustTarget(null); setHourAdjustVolSearch(''); setHourAdjustForm({ newHours:'', missionSearch:'', selectedMission:null, notes:'' }); setShowHourAdjustModal(false)
+                }} style={{ flex:2, padding:'12px', background:'linear-gradient(135deg,#059669,#047857)', color:'white', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'700', cursor:'pointer' }}>
+                  Save Adjustment
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Admin Email Blast Modal ── */}
         {showAdminEmailModal && (
@@ -16844,6 +17101,27 @@ export default function KindWorldApp() {
                       <div style={{ fontSize:'13px', color:'#059669', marginBottom:'16px' }}>📊 {budgetEntries.length} entries recorded</div>
                       <div style={{ padding:'10px 20px', background:'linear-gradient(135deg,#059669,#10b981)', color:'white', borderRadius:'10px', fontSize:'14px', fontWeight:'700', textAlign:'center' }}>
                         {t('budgetAddEntry')} →
+                      </div>
+                    </div>
+
+                    {/* Adjust Volunteer Hours */}
+                    <div
+                      onClick={() => setShowHourAdjustModal(true)}
+                      style={{ background: 'linear-gradient(135deg,#f0fdf4,#dcfce7)', padding: '36px', borderRadius: '24px', border: '1px solid #a7f3d0', boxShadow: '0 10px 40px rgba(5,150,105,0.08)', transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative' }}
+                      onMouseOver={(e) => { e.currentTarget.style.boxShadow='0 20px 50px rgba(5,150,105,0.15)'; e.currentTarget.style.transform='translateY(-4px)' }}
+                      onMouseOut={(e) => { e.currentTarget.style.boxShadow='0 10px 40px rgba(5,150,105,0.08)'; e.currentTarget.style.transform='translateY(0)' }}
+                    >
+                      {hourRequests.filter((r: any) => r.status === 'pending').length > 0 && (
+                        <div style={{ position:'absolute', top:'16px', right:'16px', background:'#ef4444', color:'white', borderRadius:'999px', width:'22px', height:'22px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'12px', fontWeight:'700' }}>
+                          {hourRequests.filter((r: any) => r.status === 'pending').length}
+                        </div>
+                      )}
+                      <div style={{ width:'72px', height:'72px', background:'linear-gradient(135deg,#059669,#10b981)', borderRadius:'20px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'36px', marginBottom:'20px' }}>⏱</div>
+                      <h3 style={{ fontSize:'22px', fontWeight:'700', color:'#065f46', marginBottom:'12px' }}>Adjust Volunteer Hours</h3>
+                      <p style={{ color:'#047857', fontSize:'15px', marginBottom:'24px', lineHeight:'1.6' }}>Manually adjust volunteer hours, assign missed missions, and review pending hour requests.</p>
+                      <div style={{ fontSize:'13px', color:'#059669', marginBottom:'16px' }}>⏳ {hourRequests.filter((r: any) => r.status === 'pending').length} pending requests · {hourRequests.filter((r: any) => r.status === 'approved').length} approved</div>
+                      <div style={{ padding:'10px 20px', background:'linear-gradient(135deg,#059669,#10b981)', color:'white', borderRadius:'10px', fontSize:'14px', fontWeight:'700', textAlign:'center' }}>
+                        Adjust Hours →
                       </div>
                     </div>
 
@@ -23464,6 +23742,31 @@ export default function KindWorldApp() {
                     )
                   })}
                 </div>
+              </div>
+
+              {/* Request Hour Adjustment */}
+              <div style={{ background:'white', borderRadius:'16px', padding:'20px', border:'1px solid rgba(0,0,0,0.06)', boxShadow:'0 4px 16px rgba(0,0,0,0.06)', marginBottom:'24px' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <div>
+                    <h4 style={{ margin:0, fontWeight:'700', color:'#1e293b', fontSize:'16px' }}>⏱ Missing volunteer hours?</h4>
+                    <p style={{ margin:'4px 0 0', fontSize:'13px', color:'#6b7280' }}>Did a mission but hours weren't recorded? Request an admin adjustment.</p>
+                  </div>
+                  <button onClick={() => setShowHourRequestModal(true)} style={{ padding:'10px 18px', background:'linear-gradient(135deg,#3b82f6,#2563eb)', color:'white', border:'none', borderRadius:'10px', fontSize:'13px', fontWeight:'700', cursor:'pointer', whiteSpace:'nowrap' }}>
+                    Request Adjustment
+                  </button>
+                </div>
+                {hourRequests.filter((r: any) => r.volunteerEmail === user?.email).length > 0 && (
+                  <div style={{ marginTop:'14px', display:'grid', gap:'8px' }}>
+                    {hourRequests.filter((r: any) => r.volunteerEmail === user?.email).slice(-3).reverse().map((r: any) => (
+                      <div key={r.id} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'8px 12px', background:'#f9fafb', borderRadius:'8px', fontSize:'13px' }}>
+                        <span>{r.status === 'approved' ? '✅' : r.status === 'rejected' ? '❌' : '⏳'}</span>
+                        <span style={{ flex:1, color:'#374151', fontWeight:'600' }}>{r.missionTitle}</span>
+                        <span style={{ color:'#6b7280' }}>+{r.hoursToAdd}h</span>
+                        <span style={{ padding:'2px 8px', borderRadius:'6px', fontSize:'11px', fontWeight:'700', background: r.status === 'approved' ? '#d1fae5' : r.status === 'rejected' ? '#fee2e2' : '#fef3c7', color: r.status === 'approved' ? '#065f46' : r.status === 'rejected' ? '#991b1b' : '#92400e' }}>{r.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* All Available Badges Section */}
