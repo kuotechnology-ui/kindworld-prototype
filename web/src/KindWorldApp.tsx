@@ -11544,8 +11544,9 @@ export default function KindWorldApp() {
     setForgotPwError('')
     const code = String(Math.floor(100000 + Math.random() * 900000))
     const expiresAt = Date.now() + 15 * 60 * 1000
+    // Save to Firestore best-effort (don't block on it)
+    saveDocument('passwordResets', emailLower.replace(/[@.]/g, '_'), { code, expiresAt, email: emailLower }).catch(() => {})
     try {
-      await saveDocument('passwordResets', emailLower.replace(/[@.]/g, '_'), { code, expiresAt, email: emailLower })
       const svcId = import.meta.env.VITE_EMAILJS_SERVICE_ID
       const tplId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
       const pubKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
