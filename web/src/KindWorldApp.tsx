@@ -11559,8 +11559,10 @@ export default function KindWorldApp() {
       setForgotPwCode(code)
       setForgotPwCodeExpiry(expiresAt)
       setForgotPwStep(2)
-    } catch {
-      setForgotPwError('Failed to send reset code. Please try again.')
+    } catch (err: any) {
+      console.error('EmailJS error:', err)
+      const msg = err?.text || err?.message || JSON.stringify(err) || 'Unknown error'
+      setForgotPwError(`Failed to send reset code: ${msg}`)
     }
     setForgotPwLoading(false)
   }
