@@ -573,6 +573,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: 'Enter your password',
     password: 'Password',
     forgotPassword: 'Forgot Password?',
+    resetPwCheckEmail: 'Check Your Email',
+    resetPwSetNew: 'Set New Password',
+    resetPwEnterEmailDesc: "Enter your email and we'll send you a reset code",
+    resetPwCodeSentTo: 'We sent a 6-digit code to',
+    resetPwChooseStrong: 'Choose a strong new password',
+    resetPwSendCode: 'Send Reset Code',
+    resetPwSixDigitCode: '6-Digit Code',
+    resetPwExpires: 'Code expires in 15 minutes',
+    resetPwResend: 'Resend',
+    resetPwVerify: 'Verify Code →',
+    resetPwNewPw: 'New Password',
+    resetPwConfirmPw: 'Confirm New Password',
+    resetPwAtLeast8: 'At least 8 characters',
+    resetPwMatch: '✓ Passwords match',
+    resetPwMin8Err: 'Password must be at least 8 characters',
+    resetPwReset: 'Reset Password',
+    resetPwBack: '← Back to Sign In',
+    resetPwSending: 'Sending...',
+    resetPwSaving: 'Saving...',
+    resetPwNoAccount: 'No account found with this email address',
+    resetPwInvalidCode: 'Incorrect code. Please try again.',
+    resetPwExpiredCode: 'This code has expired. Please request a new one.',
     pleaseFillAllFields: 'Please enter your email and password',
     invalidCredentials: 'Invalid email or password',
     rememberMe: 'Remember me',
@@ -1513,6 +1535,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: 'Masukkan kata sandi Anda',
     password: 'Kata Sandi',
     forgotPassword: 'Lupa Kata Sandi?',
+    resetPwCheckEmail: 'Periksa Email Anda',
+    resetPwSetNew: 'Atur Kata Sandi Baru',
+    resetPwEnterEmailDesc: 'Masukkan email Anda dan kami akan mengirimkan kode reset',
+    resetPwCodeSentTo: 'Kami telah mengirimkan kode 6 digit ke',
+    resetPwChooseStrong: 'Pilih kata sandi yang kuat',
+    resetPwSendCode: 'Kirim Kode Reset',
+    resetPwSixDigitCode: 'Kode 6 Digit',
+    resetPwExpires: 'Kode kedaluwarsa dalam 15 menit',
+    resetPwResend: 'Kirim Ulang',
+    resetPwVerify: 'Verifikasi Kode →',
+    resetPwNewPw: 'Kata Sandi Baru',
+    resetPwConfirmPw: 'Konfirmasi Kata Sandi Baru',
+    resetPwAtLeast8: 'Minimal 8 karakter',
+    resetPwMatch: '✓ Kata sandi cocok',
+    resetPwMin8Err: 'Kata sandi minimal 8 karakter',
+    resetPwReset: 'Reset Kata Sandi',
+    resetPwBack: '← Kembali ke Masuk',
+    resetPwSending: 'Mengirim...',
+    resetPwSaving: 'Menyimpan...',
+    resetPwNoAccount: 'Tidak ada akun yang ditemukan dengan email ini',
+    resetPwInvalidCode: 'Kode salah. Silakan coba lagi.',
+    resetPwExpiredCode: 'Kode ini telah kedaluwarsa. Silakan minta yang baru.',
     pleaseFillAllFields: 'Silakan masukkan email dan kata sandi Anda',
     invalidCredentials: 'Email atau kata sandi salah',
     rememberMe: 'Ingat saya',
@@ -2288,6 +2332,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: '请输入密码',
     password: '密码',
     forgotPassword: '忘记密码？',
+    resetPwCheckEmail: '查看您的邮件',
+    resetPwSetNew: '设置新密码',
+    resetPwEnterEmailDesc: '输入您的邮箱，我们将发送重置码',
+    resetPwCodeSentTo: '我们已将6位数验证码发送至',
+    resetPwChooseStrong: '请选择一个强密码',
+    resetPwSendCode: '发送重置码',
+    resetPwSixDigitCode: '6位数验证码',
+    resetPwExpires: '验证码将在15分钟后失效',
+    resetPwResend: '重新发送',
+    resetPwVerify: '验证码 →',
+    resetPwNewPw: '新密码',
+    resetPwConfirmPw: '确认新密码',
+    resetPwAtLeast8: '至少8个字符',
+    resetPwMatch: '✓ 密码匹配',
+    resetPwMin8Err: '密码至少需要8个字符',
+    resetPwReset: '重置密码',
+    resetPwBack: '← 返回登录',
+    resetPwSending: '发送中...',
+    resetPwSaving: '保存中...',
+    resetPwNoAccount: '未找到与此邮箱关联的账户',
+    resetPwInvalidCode: '验证码错误，请重试。',
+    resetPwExpiredCode: '验证码已过期，请重新获取。',
     pleaseFillAllFields: '请输入您的邮箱和密码',
     invalidCredentials: '邮箱或密码错误',
     rememberMe: '记住我',
@@ -3062,6 +3128,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: '請輸入密碼',
     password: '密碼',
     forgotPassword: '忘記密碼？',
+    resetPwCheckEmail: '查看您的電子郵件',
+    resetPwSetNew: '設定新密碼',
+    resetPwEnterEmailDesc: '輸入您的電子郵件，我們將發送重設碼',
+    resetPwCodeSentTo: '我們已將6位數驗證碼發送至',
+    resetPwChooseStrong: '請選擇一個強密碼',
+    resetPwSendCode: '發送重設碼',
+    resetPwSixDigitCode: '6位數驗證碼',
+    resetPwExpires: '驗證碼將在15分鐘後失效',
+    resetPwResend: '重新發送',
+    resetPwVerify: '驗證碼 →',
+    resetPwNewPw: '新密碼',
+    resetPwConfirmPw: '確認新密碼',
+    resetPwAtLeast8: '至少8個字元',
+    resetPwMatch: '✓ 密碼相符',
+    resetPwMin8Err: '密碼至少需要8個字元',
+    resetPwReset: '重設密碼',
+    resetPwBack: '← 返回登入',
+    resetPwSending: '發送中...',
+    resetPwSaving: '儲存中...',
+    resetPwNoAccount: '未找到與此電子郵件相關聯的帳戶',
+    resetPwInvalidCode: '驗證碼錯誤，請重試。',
+    resetPwExpiredCode: '驗證碼已過期，請重新獲取。',
     pleaseFillAllFields: '請輸入您的電子郵件和密碼',
     invalidCredentials: '電子郵件或密碼錯誤',
     rememberMe: '記住我',
@@ -3902,6 +3990,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: 'Ingrese su contraseña',
     password: 'Contraseña',
     forgotPassword: '¿Olvidaste tu Contraseña?',
+    resetPwCheckEmail: 'Revisa tu Correo',
+    resetPwSetNew: 'Establecer Nueva Contraseña',
+    resetPwEnterEmailDesc: 'Ingresa tu correo y te enviaremos un código de restablecimiento',
+    resetPwCodeSentTo: 'Enviamos un código de 6 dígitos a',
+    resetPwChooseStrong: 'Elige una contraseña segura',
+    resetPwSendCode: 'Enviar Código',
+    resetPwSixDigitCode: 'Código de 6 Dígitos',
+    resetPwExpires: 'El código expira en 15 minutos',
+    resetPwResend: 'Reenviar',
+    resetPwVerify: 'Verificar Código →',
+    resetPwNewPw: 'Nueva Contraseña',
+    resetPwConfirmPw: 'Confirmar Nueva Contraseña',
+    resetPwAtLeast8: 'Al menos 8 caracteres',
+    resetPwMatch: '✓ Las contraseñas coinciden',
+    resetPwMin8Err: 'La contraseña debe tener al menos 8 caracteres',
+    resetPwReset: 'Restablecer Contraseña',
+    resetPwBack: '← Volver a Iniciar Sesión',
+    resetPwSending: 'Enviando...',
+    resetPwSaving: 'Guardando...',
+    resetPwNoAccount: 'No se encontró ninguna cuenta con este correo',
+    resetPwInvalidCode: 'Código incorrecto. Por favor intenta de nuevo.',
+    resetPwExpiredCode: 'Este código ha expirado. Solicita uno nuevo.',
     pleaseFillAllFields: 'Por favor ingresa tu correo y contraseña',
     invalidCredentials: 'Correo o contraseña inválidos',
     rememberMe: 'Recuérdame',
@@ -4657,6 +4767,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     emailOrUsername: 'Email ou Nom d\'utilisateur',
     password: 'Mot de Passe',
     forgotPassword: 'Mot de Passe Oublié?',
+    resetPwCheckEmail: 'Vérifiez votre Email',
+    resetPwSetNew: 'Définir un Nouveau Mot de Passe',
+    resetPwEnterEmailDesc: 'Entrez votre email et nous vous enverrons un code de réinitialisation',
+    resetPwCodeSentTo: 'Nous avons envoyé un code à 6 chiffres à',
+    resetPwChooseStrong: 'Choisissez un mot de passe fort',
+    resetPwSendCode: 'Envoyer le Code',
+    resetPwSixDigitCode: 'Code à 6 Chiffres',
+    resetPwExpires: 'Le code expire dans 15 minutes',
+    resetPwResend: 'Renvoyer',
+    resetPwVerify: 'Vérifier le Code →',
+    resetPwNewPw: 'Nouveau Mot de Passe',
+    resetPwConfirmPw: 'Confirmer le Nouveau Mot de Passe',
+    resetPwAtLeast8: 'Au moins 8 caractères',
+    resetPwMatch: '✓ Les mots de passe correspondent',
+    resetPwMin8Err: 'Le mot de passe doit comporter au moins 8 caractères',
+    resetPwReset: 'Réinitialiser le Mot de Passe',
+    resetPwBack: '← Retour à la Connexion',
+    resetPwSending: 'Envoi en cours...',
+    resetPwSaving: 'Sauvegarde...',
+    resetPwNoAccount: 'Aucun compte trouvé avec cet email',
+    resetPwInvalidCode: 'Code incorrect. Veuillez réessayer.',
+    resetPwExpiredCode: 'Ce code a expiré. Veuillez en demander un nouveau.',
     pleaseFillAllFields: 'Veuillez entrer votre email et mot de passe',
     invalidCredentials: 'Email ou mot de passe invalide',
     rememberMe: 'Se souvenir de moi',
@@ -5413,6 +5545,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: 'Digite sua senha',
     password: 'Senha',
     forgotPassword: 'Esqueceu a Senha?',
+    resetPwCheckEmail: 'Verifique seu Email',
+    resetPwSetNew: 'Definir Nova Senha',
+    resetPwEnterEmailDesc: 'Digite seu email e enviaremos um código de redefinição',
+    resetPwCodeSentTo: 'Enviamos um código de 6 dígitos para',
+    resetPwChooseStrong: 'Escolha uma senha forte',
+    resetPwSendCode: 'Enviar Código',
+    resetPwSixDigitCode: 'Código de 6 Dígitos',
+    resetPwExpires: 'O código expira em 15 minutos',
+    resetPwResend: 'Reenviar',
+    resetPwVerify: 'Verificar Código →',
+    resetPwNewPw: 'Nova Senha',
+    resetPwConfirmPw: 'Confirmar Nova Senha',
+    resetPwAtLeast8: 'Pelo menos 8 caracteres',
+    resetPwMatch: '✓ Senhas coincidem',
+    resetPwMin8Err: 'A senha deve ter pelo menos 8 caracteres',
+    resetPwReset: 'Redefinir Senha',
+    resetPwBack: '← Voltar para Login',
+    resetPwSending: 'Enviando...',
+    resetPwSaving: 'Salvando...',
+    resetPwNoAccount: 'Nenhuma conta encontrada com este email',
+    resetPwInvalidCode: 'Código incorreto. Por favor, tente novamente.',
+    resetPwExpiredCode: 'Este código expirou. Solicite um novo.',
     pleaseFillAllFields: 'Por favor, insira seu email e senha',
     invalidCredentials: 'Email ou senha inválidos',
     rememberMe: 'Lembrar-me',
@@ -6169,6 +6323,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: 'パスワードを入力してください',
     password: 'パスワード',
     forgotPassword: 'パスワードをお忘れですか？',
+    resetPwCheckEmail: 'メールを確認してください',
+    resetPwSetNew: '新しいパスワードを設定',
+    resetPwEnterEmailDesc: 'メールアドレスを入力してください。リセットコードを送信します',
+    resetPwCodeSentTo: '6桁のコードを次のアドレスに送信しました：',
+    resetPwChooseStrong: '強力なパスワードを選択してください',
+    resetPwSendCode: 'コードを送信',
+    resetPwSixDigitCode: '6桁のコード',
+    resetPwExpires: 'コードは15分後に失効します',
+    resetPwResend: '再送信',
+    resetPwVerify: 'コードを確認 →',
+    resetPwNewPw: '新しいパスワード',
+    resetPwConfirmPw: '新しいパスワードの確認',
+    resetPwAtLeast8: '8文字以上',
+    resetPwMatch: '✓ パスワードが一致しています',
+    resetPwMin8Err: 'パスワードは8文字以上にしてください',
+    resetPwReset: 'パスワードをリセット',
+    resetPwBack: '← サインインに戻る',
+    resetPwSending: '送信中...',
+    resetPwSaving: '保存中...',
+    resetPwNoAccount: 'このメールアドレスのアカウントが見つかりません',
+    resetPwInvalidCode: 'コードが正しくありません。再度お試しください。',
+    resetPwExpiredCode: 'このコードは期限切れです。新しいコードをリクエストしてください。',
     pleaseFillAllFields: 'メールアドレスとパスワードを入力してください',
     invalidCredentials: 'メールアドレスまたはパスワードが無効です',
     rememberMe: 'ログイン状態を保持',
@@ -6858,6 +7034,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: 'กรอกรหัสผ่านของคุณ',
     password: 'รหัสผ่าน',
     forgotPassword: 'ลืมรหัสผ่าน?',
+    resetPwCheckEmail: 'ตรวจสอบอีเมลของคุณ',
+    resetPwSetNew: 'ตั้งรหัสผ่านใหม่',
+    resetPwEnterEmailDesc: 'กรอกอีเมลของคุณและเราจะส่งรหัสรีเซ็ต',
+    resetPwCodeSentTo: 'เราส่งรหัส 6 หลักไปที่',
+    resetPwChooseStrong: 'เลือกรหัสผ่านที่คาดเดาได้ยาก',
+    resetPwSendCode: 'ส่งรหัสรีเซ็ต',
+    resetPwSixDigitCode: 'รหัส 6 หลัก',
+    resetPwExpires: 'รหัสจะหมดอายุใน 15 นาที',
+    resetPwResend: 'ส่งใหม่',
+    resetPwVerify: 'ยืนยันรหัส →',
+    resetPwNewPw: 'รหัสผ่านใหม่',
+    resetPwConfirmPw: 'ยืนยันรหัสผ่านใหม่',
+    resetPwAtLeast8: 'อย่างน้อย 8 ตัวอักษร',
+    resetPwMatch: '✓ รหัสผ่านตรงกัน',
+    resetPwMin8Err: 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
+    resetPwReset: 'รีเซ็ตรหัสผ่าน',
+    resetPwBack: '← กลับไปเข้าสู่ระบบ',
+    resetPwSending: 'กำลังส่ง...',
+    resetPwSaving: 'กำลังบันทึก...',
+    resetPwNoAccount: 'ไม่พบบัญชีที่ใช้อีเมลนี้',
+    resetPwInvalidCode: 'รหัสไม่ถูกต้อง กรุณาลองอีกครั้ง',
+    resetPwExpiredCode: 'รหัสนี้หมดอายุแล้ว กรุณาขอรหัสใหม่',
     pleaseFillAllFields: 'กรุณากรอกอีเมลและรหัสผ่านของคุณ',
     invalidCredentials: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
     rememberMe: 'จดจำฉัน',
@@ -7605,6 +7803,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: 'Nhập mật khẩu của bạn',
     password: 'Mật khẩu',
     forgotPassword: 'Quên mật khẩu?',
+    resetPwCheckEmail: 'Kiểm tra Email của bạn',
+    resetPwSetNew: 'Đặt Mật khẩu Mới',
+    resetPwEnterEmailDesc: 'Nhập email của bạn và chúng tôi sẽ gửi mã đặt lại',
+    resetPwCodeSentTo: 'Chúng tôi đã gửi mã 6 chữ số đến',
+    resetPwChooseStrong: 'Chọn mật khẩu mạnh',
+    resetPwSendCode: 'Gửi Mã Đặt Lại',
+    resetPwSixDigitCode: 'Mã 6 Chữ Số',
+    resetPwExpires: 'Mã hết hạn sau 15 phút',
+    resetPwResend: 'Gửi Lại',
+    resetPwVerify: 'Xác minh Mã →',
+    resetPwNewPw: 'Mật khẩu Mới',
+    resetPwConfirmPw: 'Xác nhận Mật khẩu Mới',
+    resetPwAtLeast8: 'Ít nhất 8 ký tự',
+    resetPwMatch: '✓ Mật khẩu khớp',
+    resetPwMin8Err: 'Mật khẩu phải có ít nhất 8 ký tự',
+    resetPwReset: 'Đặt Lại Mật Khẩu',
+    resetPwBack: '← Quay lại Đăng nhập',
+    resetPwSending: 'Đang gửi...',
+    resetPwSaving: 'Đang lưu...',
+    resetPwNoAccount: 'Không tìm thấy tài khoản với email này',
+    resetPwInvalidCode: 'Mã không đúng. Vui lòng thử lại.',
+    resetPwExpiredCode: 'Mã này đã hết hạn. Vui lòng yêu cầu mã mới.',
     pleaseFillAllFields: 'Vui lòng nhập email và mật khẩu của bạn',
     invalidCredentials: 'Email hoặc mật khẩu không hợp lệ',
     rememberMe: 'Ghi nhớ tôi',
@@ -8351,6 +8571,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: '비밀번호를 입력하세요',
     password: '비밀번호',
     forgotPassword: '비밀번호를 잊으셨나요?',
+    resetPwCheckEmail: '이메일을 확인하세요',
+    resetPwSetNew: '새 비밀번호 설정',
+    resetPwEnterEmailDesc: '이메일을 입력하시면 재설정 코드를 보내드립니다',
+    resetPwCodeSentTo: '6자리 코드를 다음으로 보냈습니다:',
+    resetPwChooseStrong: '강력한 비밀번호를 선택하세요',
+    resetPwSendCode: '코드 전송',
+    resetPwSixDigitCode: '6자리 코드',
+    resetPwExpires: '코드는 15분 후 만료됩니다',
+    resetPwResend: '재전송',
+    resetPwVerify: '코드 확인 →',
+    resetPwNewPw: '새 비밀번호',
+    resetPwConfirmPw: '새 비밀번호 확인',
+    resetPwAtLeast8: '최소 8자',
+    resetPwMatch: '✓ 비밀번호가 일치합니다',
+    resetPwMin8Err: '비밀번호는 최소 8자 이상이어야 합니다',
+    resetPwReset: '비밀번호 재설정',
+    resetPwBack: '← 로그인으로 돌아가기',
+    resetPwSending: '전송 중...',
+    resetPwSaving: '저장 중...',
+    resetPwNoAccount: '이 이메일로 등록된 계정을 찾을 수 없습니다',
+    resetPwInvalidCode: '코드가 올바르지 않습니다. 다시 시도해주세요.',
+    resetPwExpiredCode: '이 코드가 만료되었습니다. 새 코드를 요청해주세요.',
     pleaseFillAllFields: '이메일과 비밀번호를 입력해주세요',
     invalidCredentials: '이메일 또는 비밀번호가 올바르지 않습니다',
     rememberMe: '로그인 상태 유지',
@@ -9097,6 +9339,28 @@ const localTranslations: Record<string, Record<string, string>> = {
     enterPassword: 'Passwort eingeben',
     password: 'Passwort',
     forgotPassword: 'Passwort vergessen?',
+    resetPwCheckEmail: 'Überprüfe deine E-Mail',
+    resetPwSetNew: 'Neues Passwort festlegen',
+    resetPwEnterEmailDesc: 'Gib deine E-Mail ein und wir senden dir einen Reset-Code',
+    resetPwCodeSentTo: 'Wir haben einen 6-stelligen Code gesendet an',
+    resetPwChooseStrong: 'Wähle ein starkes Passwort',
+    resetPwSendCode: 'Code senden',
+    resetPwSixDigitCode: '6-stelliger Code',
+    resetPwExpires: 'Code läuft in 15 Minuten ab',
+    resetPwResend: 'Erneut senden',
+    resetPwVerify: 'Code bestätigen →',
+    resetPwNewPw: 'Neues Passwort',
+    resetPwConfirmPw: 'Neues Passwort bestätigen',
+    resetPwAtLeast8: 'Mindestens 8 Zeichen',
+    resetPwMatch: '✓ Passwörter stimmen überein',
+    resetPwMin8Err: 'Das Passwort muss mindestens 8 Zeichen lang sein',
+    resetPwReset: 'Passwort zurücksetzen',
+    resetPwBack: '← Zurück zur Anmeldung',
+    resetPwSending: 'Wird gesendet...',
+    resetPwSaving: 'Wird gespeichert...',
+    resetPwNoAccount: 'Kein Konto mit dieser E-Mail gefunden',
+    resetPwInvalidCode: 'Falscher Code. Bitte versuche es erneut.',
+    resetPwExpiredCode: 'Dieser Code ist abgelaufen. Bitte fordere einen neuen an.',
     pleaseFillAllFields: 'Bitte geben Sie Ihre E-Mail und Ihr Passwort ein',
     invalidCredentials: 'Ungültige E-Mail-Adresse oder falsches Passwort',
     rememberMe: 'Angemeldet bleiben',
@@ -11844,20 +12108,20 @@ export default function KindWorldApp() {
   useEffect(() => {
     const unsubs: (() => void)[] = []
 
-    unsubs.push(subscribeToCollection<any>(COLLECTIONS.USERS, (docs) => {
-      // Load localStorage users so accounts registered before Firestore rules were
-      // fixed (and never synced) are not lost when Firestore has fewer users.
+    // ── One-time reads for non-messaging collections (saves Firestore quota) ──
+    const loadFromLocalStorage = (key: string): any[] => {
+      try { return JSON.parse(localStorage.getItem(key) || '[]') } catch { return [] }
+    }
+
+    // USERS — one-time fetch, merge with localStorage
+    fetchCollection<any>(COLLECTIONS.USERS).then(docs => {
       let localArr: any[] = []
       try { localArr = JSON.parse(localStorage.getItem('kindworld_allusers') || '[]') } catch {}
-
       if (docs.length > 0 || localArr.length > 0) {
-        // Merge: localStorage users as base, Firestore overrides (more up-to-date)
         const merged = new Map<string, any>()
         localArr.forEach((u: any) => merged.set(String(u.id || u.email), u))
         docs.forEach((u: any) => merged.set(String(u.id || u.email), u))
         setAllUsers(Array.from(merged.values()))
-
-        // Upload any localStorage-only users to Firestore so future sessions see them
         localArr.forEach((u: any) => {
           const key = String(u.id || u.email)
           if (!docs.find((d: any) => String(d.id || d.email) === key)) {
@@ -11866,68 +12130,113 @@ export default function KindWorldApp() {
         })
       }
       firestoreReady.current = true
-    }))
+    }).catch(() => {
+      // Firestore unavailable — fall back to localStorage
+      const local = loadFromLocalStorage('kindworld_allusers')
+      if (local.length > 0) setAllUsers(local)
+      firestoreReady.current = true
+    })
 
-    unsubs.push(subscribeToCollection<any>(COLLECTIONS.MISSIONS, (docs) => {
-      if (docs.length > 0) {
-        setMissions(docs)
-      } else if (!firestoreReady.current) {
-        const local = localStorage.getItem('kindworld_missions')
-        if (local) { try { const arr = JSON.parse(local); arr.forEach((m: any) => saveDocument(COLLECTIONS.MISSIONS, String(m.id), m).catch(() => {})) } catch {} }
+    // MISSIONS — one-time fetch
+    fetchCollection<any>(COLLECTIONS.MISSIONS).then(docs => {
+      if (docs.length > 0) { setMissions(docs) }
+      else {
+        const local = loadFromLocalStorage('kindworld_missions')
+        if (local.length > 0) {
+          setMissions(local)
+          local.forEach((m: any) => saveDocument(COLLECTIONS.MISSIONS, String(m.id), m).catch(() => {}))
+        }
       }
-    }))
+    }).catch(() => {
+      const local = loadFromLocalStorage('kindworld_missions')
+      if (local.length > 0) setMissions(local)
+    })
 
-    unsubs.push(subscribeToCollection<any>(COLLECTIONS.REGISTRATIONS, (docs) => {
+    // REGISTRATIONS — one-time fetch
+    fetchCollection<any>(COLLECTIONS.REGISTRATIONS).then(docs => {
       if (docs.length > 0) setMissionRegistrations(docs)
-    }))
+      else {
+        const local = loadFromLocalStorage('kindworld_registrations')
+        if (local.length > 0) setMissionRegistrations(local)
+      }
+    }).catch(() => {
+      const local = loadFromLocalStorage('kindworld_registrations')
+      if (local.length > 0) setMissionRegistrations(local)
+    })
 
-    unsubs.push(subscribeToCollection<any>(COLLECTIONS.HOUR_SUBMISSIONS, (docs) => {
+    // HOUR_SUBMISSIONS — one-time fetch
+    fetchCollection<any>(COLLECTIONS.HOUR_SUBMISSIONS).then(docs => {
       if (docs.length > 0) setHourSubmissions(docs)
-    }))
+      else {
+        const local = loadFromLocalStorage('kindworld_hour_submissions')
+        if (local.length > 0) setHourSubmissions(local)
+      }
+    }).catch(() => {
+      const local = loadFromLocalStorage('kindworld_hour_submissions')
+      if (local.length > 0) setHourSubmissions(local)
+    })
 
+    // CERT_REQUESTS — one-time fetch
+    fetchCollection<any>(COLLECTIONS.CERT_REQUESTS).then(docs => {
+      if (docs.length > 0) setCertRequests(docs)
+    }).catch(() => {})
+
+    // CAMPAIGNS — one-time fetch
+    fetchCollection<any>(COLLECTIONS.CAMPAIGNS).then(docs => {
+      if (docs.length > 0) { setSponsorCampaigns(docs) }
+      else {
+        const local = loadFromLocalStorage('kindworld_campaigns')
+        if (local.length > 0) {
+          setSponsorCampaigns(local)
+          local.forEach((c: any) => saveDocument(COLLECTIONS.CAMPAIGNS, String(c.id), c).catch(() => {}))
+        }
+      }
+    }).catch(() => {
+      const local = loadFromLocalStorage('kindworld_campaigns')
+      if (local.length > 0) setSponsorCampaigns(local)
+    })
+
+    // BUDGET_ENTRIES — one-time fetch
+    fetchCollection<any>(COLLECTIONS.BUDGET_ENTRIES).then(docs => {
+      if (docs.length > 0) { setBudgetEntries(docs) }
+      else {
+        const local = loadFromLocalStorage('kindworld_budget_entries')
+        if (local.length > 0) {
+          setBudgetEntries(local)
+          local.forEach((e: any) => saveDocument(COLLECTIONS.BUDGET_ENTRIES, String(e.id), e).catch(() => {}))
+        }
+      }
+    }).catch(() => {
+      const local = loadFromLocalStorage('kindworld_budget_entries')
+      if (local.length > 0) setBudgetEntries(local)
+    })
+
+    // NGO_EXPENSES — one-time fetch
+    fetchCollection<any>(COLLECTIONS.NGO_EXPENSES).then(docs => {
+      if (docs.length > 0) { setNgoExpenses(docs) }
+      else {
+        const local = loadFromLocalStorage('kindworld_ngo_expenses')
+        if (local.length > 0) {
+          setNgoExpenses(local)
+          local.forEach((e: any) => saveDocument(COLLECTIONS.NGO_EXPENSES, String(e.id), e).catch(() => {}))
+        }
+      }
+    }).catch(() => {
+      const local = loadFromLocalStorage('kindworld_ngo_expenses')
+      if (local.length > 0) setNgoExpenses(local)
+    })
+
+    // ── Real-time listener ONLY for direct messages (needs live updates) ──
     unsubs.push(subscribeToCollection<any>(COLLECTIONS.DIRECT_MESSAGES, (docs) => {
       if (docs.length > 0) {
         setDirectMessages(prev => {
-          // Merge Firestore docs with local state — preserve local read status
           const prevMap = new Map(prev.map((m: any) => [m.id, m]))
           const merged = docs.map((d: any) => {
             const local = prevMap.get(d.id)
-            // If we already have it locally and it's been marked read, keep that
             return local?.read ? { ...d, read: true } : d
           })
           return merged
         })
-      }
-    }))
-
-    unsubs.push(subscribeToCollection<any>(COLLECTIONS.CERT_REQUESTS, (docs) => {
-      if (docs.length > 0) setCertRequests(docs)
-    }))
-
-    unsubs.push(subscribeToCollection<any>(COLLECTIONS.CAMPAIGNS, (docs) => {
-      if (docs.length > 0) {
-        setSponsorCampaigns(docs)
-      } else if (!firestoreReady.current) {
-        const local = localStorage.getItem('kindworld_campaigns')
-        if (local) { try { const arr = JSON.parse(local); arr.forEach((c: any) => saveDocument(COLLECTIONS.CAMPAIGNS, String(c.id), c).catch(() => {})) } catch {} }
-      }
-    }))
-
-    unsubs.push(subscribeToCollection<any>(COLLECTIONS.BUDGET_ENTRIES, (docs) => {
-      if (docs.length > 0) {
-        setBudgetEntries(docs)
-      } else if (!firestoreReady.current) {
-        const local = localStorage.getItem('kindworld_budget_entries')
-        if (local) { try { const arr = JSON.parse(local); arr.forEach((e: any) => saveDocument(COLLECTIONS.BUDGET_ENTRIES, String(e.id), e).catch(() => {})) } catch {} }
-      }
-    }))
-
-    unsubs.push(subscribeToCollection<any>(COLLECTIONS.NGO_EXPENSES, (docs) => {
-      if (docs.length > 0) {
-        setNgoExpenses(docs)
-      } else if (!firestoreReady.current) {
-        const local = localStorage.getItem('kindworld_ngo_expenses')
-        if (local) { try { const arr = JSON.parse(local); arr.forEach((e: any) => saveDocument(COLLECTIONS.NGO_EXPENSES, String(e.id), e).catch(() => {})) } catch {} }
       }
     }))
 
