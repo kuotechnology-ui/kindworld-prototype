@@ -1,0 +1,15 @@
+node_modules/
+web/node_modules/
+functions/node_modules/
+server/node_modules/
+.git/
+android/
+ios/
+*.log
+firebase-debug.log
+.DS_Store
+dist/
+web/dist/
+build/
+coverage/
+.nyc_output/

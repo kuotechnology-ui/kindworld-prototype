@@ -11847,8 +11847,10 @@ export default function KindWorldApp() {
     try {
       const updated = allUsers.map((u: any) => u.email === emailLower ? { ...u, password: forgotPwNewPw } : u)
       setAllUsers(updated)
-      localStorage.setItem('kindworld_users', JSON.stringify(updated))
-      await saveDocument('users', emailLower, { password: forgotPwNewPw })
+      localStorage.setItem('kindworld_allusers', JSON.stringify(updated))
+      const targetUser = allUsers.find((u: any) => u.email === emailLower)
+      const firestoreKey = String(targetUser?.id || emailLower)
+      await saveDocument(COLLECTIONS.USERS, firestoreKey, { password: forgotPwNewPw })
       await deleteDocument('passwordResets', emailLower.replace(/[@.]/g, '_')).catch(() => {})
       setShowForgotPassword(false)
       setForgotPwStep(1); setForgotPwEmail(''); setForgotPwCode(''); setForgotPwInput(''); setForgotPwNewPw(''); setForgotPwConfirm(''); setForgotPwError('')
@@ -12074,14 +12076,11 @@ export default function KindWorldApp() {
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          // Merge with defaultAllUsers to update stale values (e.g. hours)
-          return parsed.map((u: any) => {
-            const defaultUser = defaultAllUsers.find((d: any) => d.email === u.email)
-            if (defaultUser) {
-              return { ...u, hours: defaultUser.hours, completedMissions: defaultUser.completedMissions }
-            }
-            return u
-          })
+          // Merge: add any new demo users not yet in localStorage, but preserve saved hours/missions
+          const merged = new Map<string, any>()
+          defaultAllUsers.forEach((d: any) => merged.set(d.email, d))
+          parsed.forEach((u: any) => merged.set(u.email, u)) // saved data wins (preserves admin adjustments)
+          return Array.from(merged.values())
         } catch (e) {
           return defaultAllUsers
         }
@@ -16946,7 +16945,13 @@ export default function KindWorldApp() {
                 <button onClick={() => {
                   if (!hourAdjustTarget || !hourAdjustForm.newHours) { setNotifications(prev => [...prev, '⚠️ Select a volunteer and enter new hours']); return }
                   const newHrs = parseFloat(hourAdjustForm.newHours)
-                  setAllUsers((prev: any[]) => prev.map((u: any) => u.email === hourAdjustTarget.email ? { ...u, hours: newHrs } : u))
+                  const updatedUser = { ...hourAdjustTarget, hours: newHrs }
+                  setAllUsers((prev: any[]) => {
+                    const updated = prev.map((u: any) => u.email === hourAdjustTarget.email ? updatedUser : u)
+                    localStorage.setItem('kindworld_users', JSON.stringify(updated))
+                    return updated
+                  })
+                  syncUserToFirestore(updatedUser)
                   setNotifications(prev => [...prev, `✅ ${hourAdjustTarget.name}'s hours updated to ${newHrs}h${hourAdjustForm.selectedMission ? ` (${hourAdjustForm.selectedMission.title})` : ''}`])
                   setHourAdjustTarget(null); setHourAdjustVolSearch(''); setHourAdjustForm({ newHours:'', missionSearch:'', selectedMission:null, notes:'' }); setShowHourAdjustModal(false)
                 }} style={{ flex:2, padding:'12px', background:'linear-gradient(135deg,#059669,#047857)', color:'white', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:'700', cursor:'pointer' }}>
@@ -20908,7 +20913,7 @@ export default function KindWorldApp() {
                   const orgsHelpedCount = new Set([...orgsFromJoined, ...orgsFromSubs]).size
 
                   return [
-                    { value: totalHours, label: t('volunteerHours'), icon: '⏱️', color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))', ring: true },
+                    { value: user.hours || totalHours, label: t('volunteerHours'), icon: '⏱️', color: 'var(--td)', bg: 'linear-gradient(135deg, var(--tl), var(--tl2))', ring: true },
                     { value: thisMonthHours, label: t('thisMonthHours'), icon: '📅', color: '#059669', bg: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', highlight: true },
                     { value: completedMissionsCount, label: t('projectsCompleted'), icon: '🎯', color: '#d97706', bg: 'linear-gradient(135deg, #fffbeb, #fef3c7)' },
                     { value: orgsHelpedCount, label: t('organizationsHelped'), icon: '🏢', color: '#dc2626', bg: 'linear-gradient(135deg, #fef2f2, #fecaca)' }
