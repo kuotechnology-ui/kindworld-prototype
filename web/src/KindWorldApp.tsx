@@ -18084,7 +18084,7 @@ export default function KindWorldApp() {
                               borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                               color: 'white', fontSize: '13px', fontWeight: '700'
                             }}>
-                              {userData.name.charAt(0)}
+                              {(userData.name || userData.email || '?').charAt(0)}
                             </div>
                             <div style={{ minWidth: 0 }}>
                               <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
